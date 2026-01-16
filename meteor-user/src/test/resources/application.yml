@@ -1,0 +1,73 @@
+# 开发环境配置
+application:
+  version: 1.0.0
+spring:
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://${programmer.mysql.host}:3306/meteor_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${programmer.mysql.username}
+    password: ${programmer.mysql.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+  application:
+    name: user-service
+  profiles:
+    # 开发环境
+    active: local
+  servlet:
+    multipart:
+      # 文件上传限制
+      max-file-size: 10MB
+      # 请求限制
+      max-request-size: 100MB
+  redis:
+    host: ${programmer.redis.host}
+    port: ${programmer.redis.port}
+    password: ${programmer.redis.password}
+    timeout: 5000ms
+
+# MP 配置
+mybatis-plus:
+  # 实体扫描，多个package用逗号或者分号分隔
+  type-aliases-package: com.meteor.domain
+  configuration:
+    # 驼峰转下划线
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      # 主键自增
+      id-type: auto
+      # 逻辑删除
+      logic-delete-field: deleted
+      # 逻辑删除值
+      logic-delete-value: 1
+      # 逻辑未删除值
+      logic-not-delete-value: 0
+
+# 日志级别
+logging:
+  level:
+    com.meteor: debug
+  file:
+    path: logs
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+server:
+  port: 8081
+
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: false
+  is-share: true
+  token-style: uuid
+  is-log: true
+

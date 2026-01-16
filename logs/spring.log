@@ -1,0 +1,112 @@
+2026-01-16T22:47:31.271+08:00  INFO 41128 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Starting MeteorGatewayApplication using Java 17.0.16 with PID 41128 (J:\code\system\meteor\meteor-gateway\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-16T22:47:31.273+08:00 DEBUG 41128 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-16T22:47:31.274+08:00  INFO 41128 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : The following 1 profile is active: "local"
+2026-01-16T22:47:31.660+08:00  INFO 41128 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-16T22:47:31.662+08:00  INFO 41128 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-16T22:47:31.681+08:00  INFO 41128 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 0 Redis repository interfaces.
+2026-01-16T22:47:31.910+08:00  INFO 41128 --- [meteor-gateway] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-16T22:47:31.912+08:00  INFO 41128 --- [meteor-gateway] [main] o.a.catalina.core.AprLifecycleListener   : Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
+2026-01-16T22:47:31.914+08:00  INFO 41128 --- [meteor-gateway] [main] o.a.catalina.core.AprLifecycleListener   : OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
+2026-01-16T22:47:31.919+08:00  INFO 41128 --- [meteor-gateway] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-16T22:47:31.919+08:00  INFO 41128 --- [meteor-gateway] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-01-16T22:47:31.955+08:00  INFO 41128 --- [meteor-gateway] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-16T22:47:31.955+08:00  INFO 41128 --- [meteor-gateway] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 646 ms
+2026-01-16T22:47:32.285+08:00  WARN 41128 --- [meteor-gateway] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cn.dev33.satoken.reactor.spring.SpringBootVersionCompatibilityChecker': Failed to instantiate [cn.dev33.satoken.reactor.spring.SpringBootVersionCompatibilityChecker]: Constructor threw exception
+2026-01-16T22:47:32.300+08:00  INFO 41128 --- [meteor-gateway] [main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-01-16T22:47:32.308+08:00  INFO 41128 --- [meteor-gateway] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-16T22:47:32.322+08:00 ERROR 41128 --- [meteor-gateway] [main] o.s.boot.SpringApplication               : Application run failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'cn.dev33.satoken.reactor.spring.SpringBootVersionCompatibilityChecker': Failed to instantiate [cn.dev33.satoken.reactor.spring.SpringBootVersionCompatibilityChecker]: Constructor threw exception
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1317) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1202) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:562) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:522) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:975) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:962) ~[spring-context-6.1.6.jar:6.1.6]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:624) ~[spring-context-6.1.6.jar:6.1.6]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:754) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:456) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:334) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1343) ~[spring-boot-3.2.5.jar:3.2.5]
+	at com.meteor.gateway.MeteorGatewayApplication.main(MeteorGatewayApplication.java:16) ~[classes/:na]
+Caused by: org.springframework.beans.BeanInstantiationException: Failed to instantiate [cn.dev33.satoken.reactor.spring.SpringBootVersionCompatibilityChecker]: Constructor threw exception
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:221) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:88) ~[spring-beans-6.1.6.jar:6.1.6]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1311) ~[spring-beans-6.1.6.jar:6.1.6]
+	... 17 common frames omitted
+Caused by: cn.dev33.satoken.exception.SaTokenException: 当前 SpringBoot 版本（3.2.5）与 Sa-Token 依赖不兼容，请将依赖 sa-token-reactor-spring-boot-starter 修改为：sa-token-reactor-spring-boot3-starter
+	at cn.dev33.satoken.reactor.spring.SpringBootVersionCompatibilityChecker.<init>(SpringBootVersionCompatibilityChecker.java:23) ~[sa-token-reactor-spring-boot-starter-1.44.0.jar:na]
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45) ~[na:na]
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500) ~[na:na]
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:481) ~[na:na]
+	at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:195) ~[spring-beans-6.1.6.jar:6.1.6]
+	... 19 common frames omitted
+
+2026-01-16T22:48:23.867+08:00  INFO 38076 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Starting MeteorGatewayApplication using Java 17.0.16 with PID 38076 (J:\code\system\meteor\meteor-gateway\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-16T22:48:23.868+08:00 DEBUG 38076 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-16T22:48:23.869+08:00  INFO 38076 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : The following 1 profile is active: "local"
+2026-01-16T22:48:24.150+08:00  WARN 38076 --- [meteor-gateway] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid bean definition with name 'saTokenContextFilterForServlet' defined in class path resource [cn/dev33/satoken/spring/SaTokenContextRegister.class]: Cannot register bean definition [Root bean: class [null]; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=cn.dev33.satoken.spring.SaTokenContextRegister; factoryMethodName=saTokenContextFilterForServlet; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [cn/dev33/satoken/spring/SaTokenContextRegister.class]] for bean 'saTokenContextFilterForServlet' since there is already [Root bean: class [null]; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=cn.dev33.satoken.reactor.spring.SaTokenContextRegister; factoryMethodName=saTokenContextFilterForServlet; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [cn/dev33/satoken/reactor/spring/SaTokenContextRegister.class]] bound.
+2026-01-16T22:48:24.155+08:00  INFO 38076 --- [meteor-gateway] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-16T22:48:24.163+08:00 ERROR 38076 --- [meteor-gateway] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The bean 'saTokenContextFilterForServlet', defined in class path resource [cn/dev33/satoken/spring/SaTokenContextRegister.class], could not be registered. A bean with that name has already been defined in class path resource [cn/dev33/satoken/reactor/spring/SaTokenContextRegister.class] and overriding is disabled.
+
+Action:
+
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+
+2026-01-16T22:52:41.702+08:00  INFO 32752 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Starting MeteorGatewayApplication using Java 17.0.16 with PID 32752 (J:\code\system\meteor\meteor-gateway\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-16T22:52:41.703+08:00 DEBUG 32752 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-16T22:52:41.704+08:00  INFO 32752 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : The following 1 profile is active: "local"
+2026-01-16T22:52:41.982+08:00  WARN 32752 --- [meteor-gateway] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid bean definition with name 'saTokenContextFilterForServlet' defined in class path resource [cn/dev33/satoken/spring/SaTokenContextRegister.class]: Cannot register bean definition [Root bean: class [null]; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=cn.dev33.satoken.spring.SaTokenContextRegister; factoryMethodName=saTokenContextFilterForServlet; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [cn/dev33/satoken/spring/SaTokenContextRegister.class]] for bean 'saTokenContextFilterForServlet' since there is already [Root bean: class [null]; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=cn.dev33.satoken.reactor.spring.SaTokenContextRegister; factoryMethodName=saTokenContextFilterForServlet; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [cn/dev33/satoken/reactor/spring/SaTokenContextRegister.class]] bound.
+2026-01-16T22:52:41.987+08:00  INFO 32752 --- [meteor-gateway] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-16T22:52:41.996+08:00 ERROR 32752 --- [meteor-gateway] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The bean 'saTokenContextFilterForServlet', defined in class path resource [cn/dev33/satoken/spring/SaTokenContextRegister.class], could not be registered. A bean with that name has already been defined in class path resource [cn/dev33/satoken/reactor/spring/SaTokenContextRegister.class] and overriding is disabled.
+
+Action:
+
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+
+2026-01-16T22:55:52.551+08:00  INFO 41280 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Starting MeteorGatewayApplication using Java 17.0.16 with PID 41280 (J:\code\system\meteor\meteor-gateway\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-16T22:55:52.552+08:00 DEBUG 41280 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-16T22:55:52.553+08:00  INFO 41280 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : The following 1 profile is active: "local"
+2026-01-16T22:55:52.835+08:00  INFO 41280 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-16T22:55:52.837+08:00  INFO 41280 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-16T22:55:52.854+08:00  INFO 41280 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces.
+2026-01-16T22:55:53.514+08:00  INFO 41280 --- [meteor-gateway] [main] o.s.b.web.embedded.netty.NettyWebServer  : Netty started on port 8080
+2026-01-16T22:55:53.519+08:00  INFO 41280 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Started MeteorGatewayApplication in 1.236 seconds (process running for 1.537)
+2026-01-16T22:56:50.045+08:00  INFO 20552 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Starting MeteorGatewayApplication using Java 17.0.16 with PID 20552 (J:\code\system\meteor\meteor-gateway\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-16T22:56:50.047+08:00 DEBUG 20552 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-16T22:56:50.048+08:00  INFO 20552 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : The following 1 profile is active: "local"
+2026-01-16T22:56:50.438+08:00  INFO 20552 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-16T22:56:50.440+08:00  INFO 20552 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-16T22:56:50.465+08:00  INFO 20552 --- [meteor-gateway] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 11 ms. Found 0 Redis repository interfaces.
+2026-01-16T22:56:51.217+08:00  INFO 20552 --- [meteor-gateway] [main] o.s.b.web.embedded.netty.NettyWebServer  : Netty started on port 8080
+2026-01-16T22:56:51.222+08:00  INFO 20552 --- [meteor-gateway] [main] c.m.gateway.MeteorGatewayApplication     : Started MeteorGatewayApplication in 1.555 seconds (process running for 1.964)
