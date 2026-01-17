@@ -1,7 +1,5 @@
 package com.meteor.user.controller;
 
-import cn.dev33.satoken.annotation.SaCheckLogin;
-import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.common.result.Result;
 import com.meteor.user.domain.dto.UserLoginReq;
 import com.meteor.user.domain.dto.UserRegisterReq;

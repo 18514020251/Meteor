@@ -1,6 +1,5 @@
 package com.meteor.common.exception;
 
-import com.meteor.common.result.ResultCode;
 import lombok.Getter;
 
 /**

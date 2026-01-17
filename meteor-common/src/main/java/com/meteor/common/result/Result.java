@@ -21,8 +21,6 @@ public class Result<T> implements Serializable {
     private String msg;
     private T data;
 
-    public Result() {}
-
     public Result(int code, String msg, T data) {
         this.code = code;
         this.msg = msg;
@@ -47,26 +45,11 @@ public class Result<T> implements Serializable {
     }
 
 
-    public static <T> Result<T> fail() {
-        return new Result<>(
-                ResultCode.FAIL.getCode(),
-                ResultCode.FAIL.getMsg(),
-                null
-        );
-    }
 
     public static <T> Result<T> fail(String msg) {
         return new Result<>(
                 ResultCode.FAIL.getCode(),
                 msg,
-                null
-        );
-    }
-
-    public static <T> Result<T> fail(ResultCode code) {
-        return new Result<>(
-                code.getCode(),
-                code.getMsg(),
                 null
         );
     }

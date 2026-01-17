@@ -2,7 +2,6 @@ package com.meteor.gateway.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteor.common.result.Result;
-import lombok.NonNull;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -26,7 +25,7 @@ public class GlobalGatewayExceptionHandler implements ErrorWebExceptionHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public Mono<Void> handle(ServerWebExchange exchange, @NonNull Throwable ex) {
+    public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
 
         // 已提交就不处理
         if (exchange.getResponse().isCommitted()) {
