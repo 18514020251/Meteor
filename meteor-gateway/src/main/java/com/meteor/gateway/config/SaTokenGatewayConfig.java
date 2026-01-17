@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Sa 拦截器
+ *
  * @author Programmer
  * @date 2026-01-16 23:18
  */

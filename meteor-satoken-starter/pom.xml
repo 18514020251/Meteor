@@ -1,0 +1,29 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.meteor</groupId>
+        <artifactId>meteor</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>meteor-satoken-starter</artifactId>
+    <description>启动级 sa-token 连接注入模块</description>
+    <dependencies>
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-spring-boot3-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-redis-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-redis-starter</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

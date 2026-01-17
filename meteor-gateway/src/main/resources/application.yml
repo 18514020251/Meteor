@@ -1,13 +1,25 @@
-server:
-  port: 8080
-
+# 开发环境配置
+application:
+  version: 1.0.0
 spring:
-  # 容器名
+  # 程序名称
   application:
     name: meteor-gateway
   # 开发环境
   profiles:
     active: local
+  # 上传文件限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
+  # redis 配置
+  redis:
+    host: ${programmer.redis.host}
+    port: ${programmer.redis.port}
+    password: ${programmer.redis.password}
+    timeout: 5000ms
+
   # 网关配置
   cloud:
     gateway:
@@ -16,13 +28,17 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/user/**
-  # redis
-  redis:
-    host: ${programmer.redis.host}
-    port: ${programmer.redis.port}
-    password: ${programmer.redis.password}
-    timeout: 5000ms
 
+
+# 日志级别
+logging:
+  level:
+    com.meteor: debug
+  file:
+    path: logs
+server:
+  port: 8080
+# sa-token
 sa-token:
   token-name: Authorization
   timeout: 86400
@@ -32,3 +48,4 @@ sa-token:
   token-style: uuid
   is-log: true
   token-prefix: Bearer
+

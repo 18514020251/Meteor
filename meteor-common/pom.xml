@@ -6,7 +6,6 @@
         <artifactId>meteor</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-
     <description>公共模块</description>
 
     <artifactId>meteor-common</artifactId>

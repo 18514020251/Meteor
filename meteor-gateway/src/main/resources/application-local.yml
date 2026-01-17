@@ -1,6 +1,21 @@
 # 本地配置
 programmer:
+  mysql:
+    host: 127.0.0.1
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+
   redis:
     host: 127.0.0.1
     port: 6379
-    password: ${REDIS_PASSWORD:}
+    password: ${REDIS_PASSWORD:07210521}
+
+# mybatis-plus 配置
+mybatis-plus:
+  configuration:
+    # 打印 sql
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+springdoc:
+  swagger-ui:
+    path: swagger-ui.html
