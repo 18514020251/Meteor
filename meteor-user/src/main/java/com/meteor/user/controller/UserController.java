@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -45,4 +46,15 @@ public class UserController {
         return Result.success(userService.getCurrentUserInfo());
     }
 
+
+    /**
+     * 上传用户头像
+     */
+    @PostMapping("/avatar")
+    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        String avatarUrl = userService.uploadAvatar(file);
+        return Result.success(avatarUrl);
+    }
+
+    // todo: 默认头像
 }

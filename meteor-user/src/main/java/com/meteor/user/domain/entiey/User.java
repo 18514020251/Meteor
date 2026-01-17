@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.enums.UserStatus;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -29,6 +27,8 @@ import java.time.LocalDateTime;
 @TableName("user")
 @Schema(description="用户表")
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User implements Serializable {
 
     @Serial

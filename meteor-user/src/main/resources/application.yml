@@ -74,3 +74,10 @@ sa-token:
   is-log: true
   token-prefix: Bearer
 
+meteor:
+  minio:
+    endpoint: http://127.0.0.1:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket: avatar
+

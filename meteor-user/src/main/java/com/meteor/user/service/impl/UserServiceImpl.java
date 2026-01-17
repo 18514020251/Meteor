@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.utils.RedisTtlUtil;
+import com.meteor.minio.properties.MeteorMinioProperties;
+import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.UserLoginReq;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.entiey.User;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +48,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final StringRedisTemplate redisTemplate;
 
     private final  ObjectMapper objectMapper;
+
+    private final MinioUtil minioUtil;
+
+    private final MeteorMinioProperties  minioProperties;
 
     /*
      * 注册
@@ -238,7 +245,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         resp.setUserId(user.getId());
         resp.setUsername(user.getUsername());
         resp.setRole(RoleEnum.fromCode(user.getRole()));
+        resp.setAvatar(user.getAvatar());
         return resp;
+    }
+
+
+    // todo: 优化代码质量
+    @Override
+    public String uploadAvatar(MultipartFile file) {
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        String objectName = minioUtil.uploadAvatar(file);
+
+        String avatarUrl = buildAvatarUrl(objectName);
+
+        User update = new User();
+        update.setId(userId);
+        update.setAvatar(avatarUrl);
+        userMapper.updateById(update);
+
+        String cacheKey = buildInfoKey(userId);
+        redisTemplate.delete(cacheKey);
+
+        return avatarUrl;
+    }
+
+    private String buildAvatarUrl(String objectName) {
+        return "http://127.0.0.1:9000/"
+                + minioProperties.getBucket()
+                + "/"
+                + objectName;
     }
 
 }

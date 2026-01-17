@@ -17,4 +17,6 @@ public class UserInfoVO {
     private String username;
 
     private RoleEnum role;
+
+    private String avatar;
 }

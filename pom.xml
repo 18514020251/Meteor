@@ -25,6 +25,7 @@
 		<module>meteor-user</module>
 		<module>meteor-gateway</module>
 		<module>meteor-common-starter</module>
+		<module>meteor-minio-starter</module>
 	</modules>
 
 	<properties>
@@ -37,6 +38,7 @@
 		<spring-boot.version>3.2.5</spring-boot.version>
 		<spring-cloud.version>2023.0.1</spring-cloud.version>
 		<spring-cloud-alibaba.version>2023.0.1.2</spring-cloud-alibaba.version>
+		<minio.version>8.5.11</minio.version>
 	</properties>
 
 	<!-- 统一版本管理 -->
@@ -69,6 +71,12 @@
 				<groupId>com.meteor</groupId>
 				<artifactId>meteor-satoken-starter</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.meteor</groupId>
+				<artifactId>meteor-minio-starter</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
@@ -144,6 +152,12 @@
 				<groupId>org.springdoc</groupId>
 				<artifactId>springdoc-openapi-starter-common</artifactId>
 				<version>${springdoc.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.minio</groupId>
+				<artifactId>minio</artifactId>
+				<version>${minio.version}</version>
 			</dependency>
 
 		</dependencies>

@@ -6,6 +6,7 @@ import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.entiey.User;
 import com.meteor.user.domain.vo.UserInfoVO;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -22,4 +23,6 @@ public interface IUserService extends IService<User> {
     String login(@Valid UserLoginReq req);
 
     UserInfoVO getCurrentUserInfo();
+
+    String uploadAvatar(MultipartFile file);
 }

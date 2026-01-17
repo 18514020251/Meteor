@@ -95,6 +95,11 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-minio-starter</artifactId>
+        </dependency>
+
 
     </dependencies>
 </project>
