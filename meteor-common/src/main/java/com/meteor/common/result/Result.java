@@ -1,5 +1,7 @@
 package com.meteor.common.result;
 
+import lombok.Data;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -9,6 +11,7 @@ import java.io.Serializable;
  * @author Programmer
  * @Date 2026-01-13 18:49
  */
+@Data
 public class Result<T> implements Serializable {
 
     @Serial
@@ -72,29 +75,4 @@ public class Result<T> implements Serializable {
         return new Result<>(code, msg, null);
     }
 
-    /* ================== Getter / Setter ================== */
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
 }

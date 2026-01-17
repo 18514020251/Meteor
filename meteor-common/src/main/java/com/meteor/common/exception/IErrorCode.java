@@ -1,0 +1,13 @@
+package com.meteor.common.exception;
+
+/**
+ * 错误码接口
+ *
+ * @author Programmer
+ * @date 2026-01-17 15:50
+ */
+public interface IErrorCode {
+    int getCode();
+
+    String getMessage();
+}

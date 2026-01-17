@@ -12,7 +12,7 @@ spring:
       connection-timeout: 30000
       maximum-pool-size: 10
   application:
-    name: user-service
+    name: meteor-user
   profiles:
     # 开发环境
     active: local
@@ -27,6 +27,10 @@ spring:
     port: ${programmer.redis.port}
     password: ${programmer.redis.password}
     timeout: 5000ms
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
 
 # MP 配置
 mybatis-plus:

@@ -1,6 +1,7 @@
 package com.meteor.common.exception;
 
 import com.meteor.common.result.ResultCode;
+import lombok.Getter;
 
 /**
  * 业务异常
@@ -8,10 +9,19 @@ import com.meteor.common.result.ResultCode;
  * @author Programmer
  * @date 2026-01-17 15:32
  */
-public class BizException extends BaseException {
+@Getter
+public class BizException extends RuntimeException {
 
-    public BizException(String msg) {
-        super(ResultCode.FAIL.getCode(), msg);
+    private final int code;
+
+    public BizException(IErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.code = errorCode.getCode();
+    }
+
+    public BizException(IErrorCode errorCode, String message) {
+        super(message);
+        this.code = errorCode.getCode();
     }
 
 }

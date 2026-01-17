@@ -2,6 +2,7 @@ package com.meteor.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  * 网关模块启动类
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Programmer
  * @date 2026-01-16 22:38
  */
+@EnableDiscoveryClient
 @SpringBootApplication
 public class MeteorGatewayApplication {
 

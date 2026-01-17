@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.exception.BizException;
+import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.user.domain.dto.UserLoginReq;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.entiey.User;
 import com.meteor.common.enums.DeleteStatus;
+import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.enums.UserStatus;
 import com.meteor.user.mapper.UserMapper;
@@ -44,7 +46,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         boolean exists = exists(req.getUsername());
 
         if (exists) {
-            throw new BizException("用户已存在");
+            throw new BizException(CommonErrorCode.USER_EXIST);
         }
 
         User user = buildUser(req);
@@ -58,7 +60,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private void registerNonEmpty(UserRegisterReq req) {
         if (StringUtils.isBlank(req.getUsername())
                 || StringUtils.isBlank(req.getPassword())) {
-            throw new BizException("用户名或密码不能为空");
+            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
         }
     }
 
@@ -95,15 +97,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User user = getByUsername(req.getUsername());
 
         if (user == null) {
-            throw new BizException("用户名或密码错误");
+            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
         }
 
         if (!PasswordUtil.matches(req.getPassword(), user.getPassword())) {
-            throw new BizException("用户名或密码错误");
+            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
         }
 
         if (!user.isNormal()) {
-            throw new BizException("账号不可用");
+            throw new BizException(CommonErrorCode.ACCOUNT_DISABLED);
         }
 
         // 登录
@@ -122,6 +124,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         .eq(User::getUsername, username)
                         .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
         );
+    }
+
+
+    /*
+    *  获取当前用户信息
+    * */
+    @Override
+    public UserInfoVO getCurrentUserInfo() {
+
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        User user = userMapper.selectById(userId);
+
+        if (user == null) {
+            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        }
+
+        return buildUserInfoVO(user);
+    }
+
+    /*
+    *  构建用户信息VO
+    * */
+    private UserInfoVO buildUserInfoVO(User user) {
+        UserInfoVO resp = new UserInfoVO();
+        resp.setUserId(user.getId());
+        resp.setUsername(user.getUsername());
+        resp.setRole(RoleEnum.fromCode(user.getRole()));
+        return resp;
     }
 
 }

@@ -2,6 +2,7 @@ package com.meteor.user.enums;
 
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
@@ -32,10 +33,11 @@ public enum RoleEnum {
 
     public static RoleEnum fromCode(Integer code) {
         for (RoleEnum role : RoleEnum.values()) {
-            if (role.code == code) {
+            if (role.code.equals(code)) {
                 return role;
             }
         }
         return null;
     }
+
 }

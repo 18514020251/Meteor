@@ -4,7 +4,7 @@ application:
 spring:
   # 数据库配置
   datasource:
-    url: jdbc:mysql://${programmer.mysql.host}:3306/meteor_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${programmer.mysql.host}:3306/meteor_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${programmer.mysql.username}
     password: ${programmer.mysql.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -18,6 +18,11 @@ spring:
   # 开发环境
   profiles:
     active: local
+  cloud:
+    # nacos
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
   # 上传文件限制
   servlet:
     multipart:

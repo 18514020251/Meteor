@@ -42,12 +42,9 @@ public class UserController {
         return Result.success(token);
     }
 
-    @SaCheckLogin
     @GetMapping("/info")
     public Result<UserInfoVO> info() {
-        Long userId = StpUtil.getLoginIdAsLong();
-        //return Result.success(userService.getUserInfo(userId));
-        return Result.success();
+        return Result.success(userService.getCurrentUserInfo());
     }
 
 }

@@ -22,10 +22,14 @@ spring:
 
   # 网关配置
   cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+
     gateway:
       routes:
-        - id: user-service
-          uri: http://localhost:8081
+        - id: meteor-user
+          uri: lb://meteor-user
           predicates:
             - Path=/user/**
 
