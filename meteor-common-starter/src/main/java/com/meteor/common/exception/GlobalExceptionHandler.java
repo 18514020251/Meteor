@@ -1,35 +1,29 @@
 package com.meteor.common.exception;
 
 import com.meteor.common.result.Result;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * 全局异常处理
- *
  * @author Programmer
- * @date 2026-01-16 16:43
+ * @date 2026-01-17 15:34
  */
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BizException.class)
     public Result<Void> handleBizException(BizException e) {
-        return Result.fail(e.getMessage());
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Result<Void> handleValidException(MethodArgumentNotValidException e) {
-        String msg = e.getBindingResult()
-                .getFieldError()
-                .getDefaultMessage();
-        return Result.fail(msg);
+        log.warn("业务异常：{}", e.getMessage());
+        return Result.fail(400, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
-        // 真正项目里要打 error 日志
+        log.error("系统异常", e);
         return Result.fail("系统异常，请稍后重试");
     }
 }
+

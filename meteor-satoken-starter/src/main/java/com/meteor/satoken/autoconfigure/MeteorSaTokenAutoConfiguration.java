@@ -5,6 +5,12 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * sa-token 配置类
+ *
+ * @author Programmer
+ * @Date 2026-01-16 15:12:00
+ */
 @AutoConfiguration
 public class MeteorSaTokenAutoConfiguration {
 

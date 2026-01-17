@@ -15,6 +15,10 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 /**
+ * 自定义Redis连接工厂
+ * Redis 配置文件
+ * 确保正确传递密码
+ *
  * @author Programmer
  */
 @AutoConfiguration

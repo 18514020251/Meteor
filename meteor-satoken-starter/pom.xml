@@ -8,7 +8,8 @@
     </parent>
 
     <artifactId>meteor-satoken-starter</artifactId>
-    <description>启动级 sa-token 连接注入模块</description>
+    <description>sa token 自动配置 Starter</description>
+
     <dependencies>
         <dependency>
             <groupId>cn.dev33</groupId>

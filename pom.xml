@@ -24,6 +24,7 @@
 		<module>meteor-common</module>
 		<module>meteor-user</module>
 		<module>meteor-gateway</module>
+		<module>meteor-common-starter</module>
 	</modules>
 
 	<properties>
@@ -65,6 +66,12 @@
 			<dependency>
 				<groupId>com.meteor</groupId>
 				<artifactId>meteor-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.meteor</groupId>
+				<artifactId>meteor-common-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

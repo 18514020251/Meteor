@@ -1,27 +1,25 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.meteor</groupId>
         <artifactId>meteor</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>meteor-redis-starter</artifactId>
-    <description>Redis 自动配置 Starter</description>
+    <artifactId>meteor-common-starter</artifactId>
+    <description>common 模块自动配置 Starter</description>
 
     <dependencies>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
+
 </project>

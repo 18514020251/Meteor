@@ -6,6 +6,8 @@ import lombok.Data;
 import java.time.Duration;
 
 /**
+ * 接收配置文件参数
+ *
  * @author Programmer
  * @date 2026-01-17 12:46
  */
