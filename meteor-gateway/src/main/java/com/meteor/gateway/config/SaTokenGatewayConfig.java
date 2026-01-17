@@ -26,8 +26,6 @@ public class SaTokenGatewayConfig {
                         "/swagger-ui.html"
                 )
                 // 鉴权逻辑
-                .setAuth(obj -> {
-                    StpUtil.checkLogin();
-                });
+                .setAuth(obj -> StpUtil.checkLogin());
     }
 }
