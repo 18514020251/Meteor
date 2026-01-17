@@ -20,6 +20,9 @@ target/
 *.ipr
 logs
 *.log
+error.log
+app.log
+spring.log
 
 ### NetBeans ###
 /nbproject/private/
