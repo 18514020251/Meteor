@@ -2,8 +2,13 @@ server:
   port: 8080
 
 spring:
+  # 容器名
   application:
     name: meteor-gateway
+  # 开发环境
+  profiles:
+    active: local
+  # 网关配置
   cloud:
     gateway:
       routes:
@@ -11,5 +16,19 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/user/**
-      default-filters:
-        - AddResponseHeader=X-Gateway-Test, OK
+  # redis
+  redis:
+    host: ${programmer.redis.host}
+    port: ${programmer.redis.port}
+    password: ${programmer.redis.password}
+    timeout: 5000ms
+
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: false
+  is-share: true
+  token-style: uuid
+  is-log: true
+  token-prefix: Bearer

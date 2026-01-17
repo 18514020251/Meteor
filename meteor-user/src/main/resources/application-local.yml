@@ -16,3 +16,6 @@ mybatis-plus:
     # 打印 sql
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+springdoc:
+  swagger-ui:
+    path: swagger-ui.html

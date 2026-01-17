@@ -22,7 +22,8 @@ public class SaTokenGatewayConfig {
                 .addExclude(
                         "/user/login",
                         "/user/register",
-                        "/error"
+                        "/error",
+                        "/swagger-ui.html"
                 )
                 // 鉴权逻辑
                 .setAuth(obj -> {

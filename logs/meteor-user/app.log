@@ -1,218 +1,170 @@
-2026-01-16 22:07:36.373 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 36440 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:07:36.374 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:07:36.374 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:07:36.812 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:07:36.814 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:07:36.835 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:07:37.146 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:07:37.148 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:07:37.150 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:07:37.154 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:07:37.156 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:07:37.156 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:07:37.194 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:07:37.195 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 795 ms
-2026-01-16 22:07:37.914 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:07:37.924 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:07:37.930 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.895 seconds (process running for 2.22)
-2026-01-16 22:07:44.606 [http-nio-8081-exec-3] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-01-16 22:07:44.606 [http-nio-8081-exec-3] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-01-16 22:07:44.607 [http-nio-8081-exec-3] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
-2026-01-16 22:07:44.719 [http-nio-8081-exec-3] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-01-16 22:07:44.805 [http-nio-8081-exec-3] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3c42372e
-2026-01-16 22:07:44.807 [http-nio-8081-exec-3] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-01-16 22:07:45.159 [http-nio-8081-exec-3] ERROR o.a.c.c.C.[.[localhost].[/].[dispatcherServlet] - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: org.springframework.data.redis.RedisConnectionFailureException: Unable to connect to Redis] with root cause
-io.lettuce.core.RedisCommandExecutionException: NOAUTH Authentication required.
-	at io.lettuce.core.internal.ExceptionFactory.createExecutionException(ExceptionFactory.java:147)
-	at io.lettuce.core.internal.ExceptionFactory.createExecutionException(ExceptionFactory.java:116)
-	at io.lettuce.core.protocol.AsyncCommand.completeResult(AsyncCommand.java:120)
-	at io.lettuce.core.protocol.AsyncCommand.complete(AsyncCommand.java:111)
-	at io.lettuce.core.protocol.CommandHandler.complete(CommandHandler.java:745)
-	at io.lettuce.core.protocol.CommandHandler.decode(CommandHandler.java:680)
-	at io.lettuce.core.protocol.CommandHandler.channelRead(CommandHandler.java:597)
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
-	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
-	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
-	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
-	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
-	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
-	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
-	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
-	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+2026-01-17 09:31:16.770 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 32020 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-17 09:31:16.772 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-17 09:31:16.772 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
+2026-01-17 09:31:17.493 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-17 09:31:17.497 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-17 09:31:17.524 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2026-01-17 09:31:18.175 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-01-17 09:31:18.177 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
+2026-01-17 09:31:18.180 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
+2026-01-17 09:31:18.187 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:31:18.188 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-01-17 09:31:18.188 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-01-17 09:31:18.237 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-01-17 09:31:18.237 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1422 ms
+2026-01-17 09:31:19.230 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:31:19.242 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
+2026-01-17 09:31:19.249 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 2.937 seconds (process running for 3.395)
+2026-01-17 09:31:27.753 [http-nio-8081-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-17 09:31:27.753 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-01-17 09:31:27.753 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2026-01-17 09:31:27.882 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-01-17 09:31:27.987 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4c6c5951
+2026-01-17 09:31:27.989 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-01-17 09:35:11.777 [http-nio-8081-exec-6] INFO  org.springdoc.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 103 ms
+2026-01-17 09:36:07.423 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-01-17 09:36:07.428 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-01-17 09:36:15.567 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 37264 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-17 09:36:15.568 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-17 09:36:15.568 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
+2026-01-17 09:36:15.996 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-17 09:36:15.997 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-17 09:36:16.017 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2026-01-17 09:36:16.590 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-01-17 09:36:16.592 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
+2026-01-17 09:36:16.594 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
+2026-01-17 09:36:16.598 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:36:16.599 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-01-17 09:36:16.599 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-01-17 09:36:16.630 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-01-17 09:36:16.632 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1032 ms
+2026-01-17 09:36:17.370 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:36:17.380 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
+2026-01-17 09:36:17.387 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 2.124 seconds (process running for 2.557)
+2026-01-17 09:36:40.949 [http-nio-8081-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-17 09:36:40.949 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-01-17 09:36:40.950 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-01-17 09:36:41.055 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-01-17 09:36:41.143 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1a5da753
+2026-01-17 09:36:41.143 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-01-17 09:37:53.163 [http-nio-8081-exec-7] ERROR o.a.c.c.C.[.[localhost].[/].[dispatcherServlet] - Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: com.meteor.common.exception.BizException: 用户已存在] with root cause
+com.meteor.common.exception.BizException: 用户已存在
+	at com.meteor.user.service.impl.UserServiceImpl.register(UserServiceImpl.java:47)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:354)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:716)
+	at com.meteor.user.service.impl.UserServiceImpl$$SpringCGLIB$$0.register(<generated>)
+	at com.meteor.user.controller.UserController.register(UserController.java:36)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:206)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at cn.dev33.satoken.filter.SaFirewallCheckFilterForJakartaServlet.doFilter(SaFirewallCheckFilterForJakartaServlet.java:69)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at cn.dev33.satoken.filter.SaTokenCorsFilterForJakartaServlet.doFilter(SaTokenCorsFilterForJakartaServlet.java:52)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at cn.dev33.satoken.filter.SaTokenContextFilterForJakartaServlet.doFilter(SaTokenContextFilterForJakartaServlet.java:40)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:175)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:150)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1736)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
 	at java.base/java.lang.Thread.run(Thread.java:840)
-2026-01-16 22:08:38.044 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-01-16 22:08:38.048 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-01-16 22:08:41.557 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 51428 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:08:41.558 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:08:41.558 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:08:42.178 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:08:42.180 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:08:42.207 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 15 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:08:42.615 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:08:42.618 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:08:42.620 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:08:42.626 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:08:42.627 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:08:42.627 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:08:42.676 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:08:42.676 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1079 ms
-2026-01-16 22:08:43.648 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:08:43.660 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:08:43.667 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 2.591 seconds (process running for 3.045)
-2026-01-16 22:09:20.840 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 21312 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:09:20.841 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:09:20.842 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:09:21.277 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:09:21.278 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:09:21.298 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:09:21.604 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:09:21.606 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:09:21.608 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:09:21.612 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:09:21.613 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:09:21.613 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:09:21.646 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:09:21.647 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 777 ms
-2026-01-16 22:09:22.357 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:09:22.367 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:09:22.373 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.89 seconds (process running for 2.213)
-2026-01-16 22:09:25.657 [http-nio-8081-exec-2] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-01-16 22:09:25.657 [http-nio-8081-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-01-16 22:09:25.658 [http-nio-8081-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
-2026-01-16 22:09:25.765 [http-nio-8081-exec-2] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-01-16 22:09:25.855 [http-nio-8081-exec-2] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@574d5685
-2026-01-16 22:09:25.856 [http-nio-8081-exec-2] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-01-16 22:20:33.668 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-01-16 22:20:33.672 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-01-16 22:20:36.592 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 30616 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:20:36.593 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:20:36.593 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:20:37.049 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:20:37.050 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:20:37.070 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:20:37.373 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:20:37.375 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:20:37.376 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:20:37.382 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:20:37.382 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:20:37.382 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:20:37.418 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:20:37.419 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 797 ms
-2026-01-16 22:20:38.149 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:20:38.160 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:20:38.166 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.907 seconds (process running for 2.238)
-2026-01-16 22:31:38.188 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 12888 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:31:38.189 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:31:38.189 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:31:38.608 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:31:38.609 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:31:38.633 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 10 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:31:38.948 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:31:38.951 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:31:38.954 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:31:38.958 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:31:38.959 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:31:38.959 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:31:38.995 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:31:38.995 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 778 ms
-2026-01-16 22:31:39.704 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:31:39.715 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:31:39.722 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.864 seconds (process running for 2.181)
-2026-01-16 22:31:45.274 [http-nio-8081-exec-7] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-01-16 22:31:45.274 [http-nio-8081-exec-7] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-01-16 22:31:45.275 [http-nio-8081-exec-7] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
-2026-01-16 22:31:45.402 [http-nio-8081-exec-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-01-16 22:31:45.514 [http-nio-8081-exec-7] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4055b162
-2026-01-16 22:31:45.515 [http-nio-8081-exec-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-01-16 22:35:02.784 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-01-16 22:35:02.788 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-01-16 22:35:05.003 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 43148 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:35:05.005 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:35:05.005 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:35:05.445 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:35:05.448 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:35:05.468 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 8 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:35:05.758 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:35:05.760 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:35:05.762 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:35:05.766 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:35:05.767 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:35:05.767 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:35:05.801 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:35:05.801 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 770 ms
-2026-01-16 22:35:06.490 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:35:06.500 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:35:06.506 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.848 seconds (process running for 2.173)
-2026-01-16 22:35:10.271 [http-nio-8081-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-01-16 22:35:10.271 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-01-16 22:35:10.271 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 0 ms
-2026-01-16 22:35:10.382 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-01-16 22:35:10.471 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@652055d
-2026-01-16 22:35:10.472 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-01-16 22:48:35.885 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-01-16 22:48:35.889 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2026-01-16 22:48:37.713 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 52168 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 22:48:37.714 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 22:48:37.714 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 22:48:38.136 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 22:48:38.141 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 22:48:38.158 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces.
-2026-01-16 22:48:38.444 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 22:48:38.447 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 22:48:38.449 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 22:48:38.453 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:48:38.454 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 22:48:38.454 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 22:48:38.493 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 22:48:38.494 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 754 ms
-2026-01-16 22:48:39.160 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 22:48:39.171 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 22:48:39.178 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.824 seconds (process running for 2.149)
-2026-01-16 23:00:19.732 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 14816 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 23:00:19.733 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 23:00:19.733 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 23:00:20.153 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 23:00:20.154 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 23:00:20.174 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 13 ms. Found 0 Redis repository interfaces.
-2026-01-16 23:00:20.473 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 23:00:20.475 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 23:00:20.477 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 23:00:20.481 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 23:00:20.482 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 23:00:20.482 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 23:00:20.520 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 23:00:20.520 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 760 ms
-2026-01-16 23:00:21.232 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 23:00:21.242 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 23:00:21.248 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.864 seconds (process running for 2.202)
-2026-01-16 23:31:34.231 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 23068 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
-2026-01-16 23:31:34.232 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
-2026-01-16 23:31:34.232 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
-2026-01-16 23:31:34.665 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
-2026-01-16 23:31:34.667 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-01-16 23:31:34.692 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 16 ms. Found 0 Redis repository interfaces.
-2026-01-16 23:31:35.009 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
-2026-01-16 23:31:35.010 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
-2026-01-16 23:31:35.012 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
-2026-01-16 23:31:35.016 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
-2026-01-16 23:31:35.017 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
-2026-01-16 23:31:35.017 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
-2026-01-16 23:31:35.052 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-2026-01-16 23:31:35.052 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 793 ms
-2026-01-16 23:31:35.746 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
-2026-01-16 23:31:35.759 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
-2026-01-16 23:31:35.765 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 2.002 seconds (process running for 2.389)
-2026-01-16 23:31:41.120 [http-nio-8081-exec-2] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-01-16 23:31:41.120 [http-nio-8081-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-2026-01-16 23:31:41.121 [http-nio-8081-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 0 ms
-2026-01-16 23:31:41.225 [http-nio-8081-exec-2] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-2026-01-16 23:31:41.313 [http-nio-8081-exec-2] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7e1c0aeb
-2026-01-16 23:31:41.314 [http-nio-8081-exec-2] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-2026-01-16 23:34:15.536 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2026-01-16 23:34:15.539 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-01-17 09:40:17.590 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-01-17 09:40:17.595 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-01-17 09:40:19.291 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 41944 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-17 09:40:19.292 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-17 09:40:19.292 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
+2026-01-17 09:40:19.698 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-17 09:40:19.699 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-17 09:40:19.719 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2026-01-17 09:40:20.023 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-01-17 09:40:20.024 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
+2026-01-17 09:40:20.027 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
+2026-01-17 09:40:20.030 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:40:20.031 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-01-17 09:40:20.031 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-01-17 09:40:20.064 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-01-17 09:40:20.064 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 748 ms
+2026-01-17 09:40:20.750 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:40:20.760 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
+2026-01-17 09:40:20.767 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 1.836 seconds (process running for 2.169)
+2026-01-17 09:41:38.479 [http-nio-8081-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-17 09:41:38.480 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-01-17 09:41:38.481 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-01-17 09:41:38.591 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-01-17 09:41:38.674 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@154824b0
+2026-01-17 09:41:38.675 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-01-17 09:53:10.847 [http-nio-8081-exec-5] INFO  org.springdoc.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 96 ms
+2026-01-17 09:55:30.766 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-01-17 09:55:30.770 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-01-17 09:55:34.385 [main] INFO  com.meteor.user.UserApplication - Starting UserApplication using Java 17.0.16 with PID 45588 (J:\code\system\meteor\meteor-user\target\classes started by Programmer in J:\code\system\meteor)
+2026-01-17 09:55:34.385 [main] DEBUG com.meteor.user.UserApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-01-17 09:55:34.386 [main] INFO  com.meteor.user.UserApplication - The following 1 profile is active: "local"
+2026-01-17 09:55:34.930 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-17 09:55:34.933 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-17 09:55:34.965 [main] INFO  o.s.d.r.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 18 ms. Found 0 Redis repository interfaces.
+2026-01-17 09:55:35.395 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port 8081 (http)
+2026-01-17 09:55:35.397 [main] INFO  org.apache.catalina.core.AprLifecycleListener - Loaded Apache Tomcat Native library [2.0.9] using APR version [1.7.6].
+2026-01-17 09:55:35.399 [main] INFO  org.apache.catalina.core.AprLifecycleListener - OpenSSL successfully initialized [OpenSSL 3.5.0 8 Apr 2025]
+2026-01-17 09:55:35.404 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:55:35.405 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-01-17 09:55:35.405 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-01-17 09:55:35.444 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-01-17 09:55:35.444 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1032 ms
+2026-01-17 09:55:36.455 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
+2026-01-17 09:55:36.468 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port 8081 (http) with context path ''
+2026-01-17 09:55:36.477 [main] INFO  com.meteor.user.UserApplication - Started UserApplication in 2.448 seconds (process running for 2.751)
+2026-01-17 09:55:43.667 [http-nio-8081-exec-1] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-17 09:55:43.667 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-01-17 09:55:43.668 [http-nio-8081-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-01-17 09:55:43.785 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-01-17 09:55:43.872 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@28b78a6e
+2026-01-17 09:55:43.873 [http-nio-8081-exec-1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.

@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -43,11 +42,12 @@ public class UserController {
         return Result.success(token);
     }
 
-    //@SaCheckLogin
-    //@GetMapping("/info")
-    //public Result<UserInfoVO> info() {
-    //    Long userId = StpUtil.getLoginIdAsLong();
-    //    return Result.success(userService.getUserInfo(userId));
-    //}
+    @SaCheckLogin
+    @GetMapping("/info")
+    public Result<UserInfoVO> info() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        //return Result.success(userService.getUserInfo(userId));
+        return Result.success();
+    }
 
 }
