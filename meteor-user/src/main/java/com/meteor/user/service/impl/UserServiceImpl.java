@@ -202,6 +202,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     *  更新用户头像
     * */
     private void updateUserAvatar(Long userId, String avatarUrl) {
+        // todo：删除之前头像
         User update = new User();
         update.setId(userId);
         update.setAvatar(avatarUrl);
@@ -218,5 +219,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 + "/"
                 + objectName;
     }
+
+
+    @Override
+    public void deleteUserAndRelatedInfo() {
+        // todo: 待确定token是否及时失效、Redis缓存、Minio是否清理
+        Long userId = StpUtil.getLoginIdAsLong();
+        User user = userMapper.selectById(userId);
+
+        userCacheService.evictUserInfo(userId);
+
+        userMapper.deleteById(userId);
+
+        if (user.getAvatar() != null && !user.getAvatar().equals(AvatarConstants.DEFAULT_AVATAR)) {
+            minioUtil.delete(user.getAvatar());
+        }
+    }
+
 
 }

@@ -1,14 +1,20 @@
 package com.meteor.common.utils;
 
 /**
+ * 打印 Meteor 欢迎横幅
+ *
  * @author Programmer
  * @date 2026-01-17 10:02
  */
 public class PrintMeteor {
 
-    public static void printWelcomeBanner(){
+    private static final int WELCOME_BANNER_DELAY = 500;
+    private static final int BANNER_LINE_DELAY = 50;
+    private static final int CLEAR_CONSOLE_LINES = 60;
+
+    public static void printWelcomeBanner() {
         try {
-            Thread.sleep(2000);
+            Thread.sleep(WELCOME_BANNER_DELAY);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -18,7 +24,7 @@ public class PrintMeteor {
 
     private static void clearConsole() {
         // 打印空行清屏效果
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < CLEAR_CONSOLE_LINES; i++) {
             System.out.println();
         }
     }
@@ -45,7 +51,7 @@ public class PrintMeteor {
         for (String line : banner) {
             System.out.println(line);
             try {
-                Thread.sleep(50);
+                Thread.sleep(BANNER_LINE_DELAY);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -56,5 +62,4 @@ public class PrintMeteor {
         return java.time.LocalDateTime.now()
                 .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
-
 }

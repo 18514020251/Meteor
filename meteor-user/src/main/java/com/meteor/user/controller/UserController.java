@@ -1,5 +1,6 @@
 package com.meteor.user.controller;
 
+import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;
 import com.meteor.user.domain.dto.UserLoginReq;
 import com.meteor.user.domain.dto.UserRegisterReq;
@@ -23,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/user")
 @Slf4j
-@Tag(name = "用户管理" , description = "用户管理")
+@Tag(name = "用户管理", description = "用户管理")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -43,17 +44,20 @@ public class UserController {
 
     @GetMapping("/info")
     public Result<UserInfoVO> info() {
-        return Result.success(userService.getCurrentUserInfo());
+        UserInfoVO userInfo = userService.getCurrentUserInfo();
+        return Result.success(userInfo);
     }
 
-
-    /**
-     * 上传用户头像
-     */
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatarUrl = userService.uploadAvatar(file);
         return Result.success(avatarUrl);
     }
 
+    @DeleteMapping("")
+    public Result<String> deleteUser() {
+        userService.deleteUserAndRelatedInfo();
+        return Result.success("用户删除成功");
+    }
 }
+

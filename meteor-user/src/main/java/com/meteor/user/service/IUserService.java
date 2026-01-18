@@ -25,4 +25,6 @@ public interface IUserService extends IService<User> {
     UserInfoVO getCurrentUserInfo();
 
     String uploadAvatar(MultipartFile file);
+
+    void deleteUserAndRelatedInfo();
 }

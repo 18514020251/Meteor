@@ -77,4 +77,5 @@ public class Result<T> implements Serializable {
     public static <T> Result<T> fail(String message) {
         return fail(CommonErrorCode.SYSTEM_ERROR, message);
     }
+
 }

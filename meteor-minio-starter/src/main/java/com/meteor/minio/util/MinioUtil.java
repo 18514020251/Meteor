@@ -4,6 +4,7 @@ import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,7 +42,6 @@ public class MinioUtil {
      * @return      对象在 MinIO 中的完整 objectName
      */
     public String upload(String path, MultipartFile file) {
-
         String objectName = path + "/"
                 + UUID.randomUUID()
                 + "-"
@@ -62,6 +62,24 @@ public class MinioUtil {
 
         } catch (Exception e) {
             throw new RuntimeException(CommonErrorCode.FILE_UPLOAD_FAILED.getMessage(), e);
+        }
+    }
+
+    /**
+     * 删除 MinIO 上的文件
+     *
+     * @param objectName 文件的对象名称
+     */
+    public void delete(String objectName) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(CommonErrorCode.FILE_DELETE_FAILED.getMessage(), e);
         }
     }
 }

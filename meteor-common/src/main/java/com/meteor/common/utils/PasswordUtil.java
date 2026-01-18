@@ -3,6 +3,8 @@ package com.meteor.common.utils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
+ *  密码工具类
+ *
  * @author Programmer
  * @date 2026-01-16 17:42
  */

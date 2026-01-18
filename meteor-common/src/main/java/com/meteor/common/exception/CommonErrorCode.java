@@ -25,7 +25,8 @@ public enum CommonErrorCode implements IErrorCode {
     ACCOUNT_DISABLED(1004, "账号已禁用", HttpStatus.FORBIDDEN),
 
     // 文件上传模块
-    FILE_UPLOAD_FAILED(2001, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR);
+    FILE_UPLOAD_FAILED(2001, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_DELETE_FAILED(2002, "文件删除失败", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;
