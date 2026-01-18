@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.enums.MinioPathEnum;
@@ -95,6 +96,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return User.builder()
                 .username(req.getUsername())
                 .password(PasswordUtil.encrypt(req.getPassword()))
+                .avatar(AvatarConstants.DEFAULT_AVATAR)
                 .status(UserStatus.NORMAL.getCode())
                 .role(RoleEnum.USER.getCode())
                 .isDeleted(DeleteStatus.NORMAL.getCode())
@@ -174,7 +176,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         resp.setUserId(user.getId());
         resp.setUsername(user.getUsername());
         resp.setRole(RoleEnum.fromCode(user.getRole()));
-        resp.setAvatar(user.getAvatar());
+        resp.setAvatar(buildAvatarUrl(user.getAvatar()));
         return resp;
     }
 
@@ -189,13 +191,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         String objectName = minioUtil.upload(MinioPathEnum.USER_AVATAR.path(), file);
 
-        String avatarUrl = buildAvatarUrl(objectName);
-
-        updateUserAvatar(userId, avatarUrl);
+        updateUserAvatar(userId, objectName);
 
         userCacheService.evictUserInfo(userId);
 
-        return avatarUrl;
+        return buildAvatarUrl(objectName);
     }
 
     /*

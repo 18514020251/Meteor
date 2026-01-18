@@ -79,5 +79,5 @@ meteor:
     endpoint: http://127.0.0.1:9000
     access-key: minioadmin
     secret-key: minioadmin
-    bucket: avatar
+    bucket: meteor
 

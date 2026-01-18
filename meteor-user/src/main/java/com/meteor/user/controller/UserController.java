@@ -56,5 +56,4 @@ public class UserController {
         return Result.success(avatarUrl);
     }
 
-    // todo: 默认头像
 }
