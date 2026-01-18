@@ -22,15 +22,31 @@ public class MinioUtil {
     private final MeteorMinioProperties properties;
 
     /**
-     * 上传头像
+     * 上传文件到 MinIO 指定路径
+     *
+     * <p>
+     * 注意：
+     * <ul>
+     *   <li>path 表示对象在 MinIO 中的逻辑目录</li>
+     *   <li>不包含 bucket 名称</li>
+     *   <li>推荐通过 {@link com.meteor.minio.enums.MinioPathEnum}
+     *       获取路径，避免硬编码字符串</li>
+     * </ul>
+     * </p>
+     *
+     * @param path  MinIO 对象存储路径（如 avatar、movie/poster）
+     *              <br/>建议使用 {@code MinioPathEnum.path()} 获取
+     * @param file  上传的文件
+     * @return      对象在 MinIO 中的完整 objectName
      */
-    public String uploadAvatar(MultipartFile file) {
-        try (InputStream is = file.getInputStream()) {
+    public String upload(String path, MultipartFile file) {
 
-            String objectName = "avatar/"
-                    + UUID.randomUUID()
-                    + "-"
-                    + file.getOriginalFilename();
+        String objectName = path + "/"
+                + UUID.randomUUID()
+                + "-"
+                + UUID.randomUUID();
+
+        try (InputStream is = file.getInputStream()) {
 
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -42,9 +58,9 @@ public class MinioUtil {
             );
 
             return objectName;
+
         } catch (Exception e) {
-            throw new RuntimeException("上传头像失败", e);
+            throw new RuntimeException("MinIO upload failed", e);
         }
     }
 }
-

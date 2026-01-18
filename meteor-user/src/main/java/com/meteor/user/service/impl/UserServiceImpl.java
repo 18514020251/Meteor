@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.utils.RedisTtlUtil;
+import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.UserLoginReq;
@@ -19,16 +19,12 @@ import com.meteor.user.enums.UserStatus;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
+import com.meteor.user.service.cache.IUserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.concurrent.TimeUnit;
-
-import static com.meteor.common.redis.RedisKeyConstants.*;
 
 /**
  * <p>
@@ -45,13 +41,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     private final UserMapper userMapper;
 
-    private final StringRedisTemplate redisTemplate;
-
-    private final  ObjectMapper objectMapper;
-
     private final MinioUtil minioUtil;
 
     private final MeteorMinioProperties  minioProperties;
+
+    private final IUserCacheService userCacheService;
 
     /*
      * 注册
@@ -154,88 +148,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     // todo： 后续增加功能，防击穿
     public UserInfoVO getCurrentUserInfo() {
         Long userId = StpUtil.getLoginIdAsLong();
-        String cacheKey = buildInfoKey(userId);
 
-        String cacheValue = getCache(cacheKey);
-
-        if (CACHE_NULL_VALUE.equals(cacheValue)) {
-            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
-        }
-
-        if (StringUtils.isNotBlank(cacheValue)) {
-            return deserialize(cacheValue);
+        UserInfoVO cached = userCacheService.getUserInfo(userId);
+        if (cached != null) {
+            return cached;
         }
 
         User user = userMapper.selectById(userId);
         if (user == null) {
-            saveNullToCache(cacheKey);
+            userCacheService.cacheNull(userId);
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
 
-        UserInfoVO infoVO = buildUserInfoVO(user);
-        saveUserInfoToCache(cacheKey, infoVO);
-
-        return infoVO;
+        UserInfoVO vo = buildUserInfoVO(user);
+        userCacheService.cacheUserInfo(userId, vo);
+        return vo;
     }
 
-    /*
-    *  反序列化用户信息
-    * */
-    private UserInfoVO deserialize(String json) {
-        try {
-            return objectMapper.readValue(json, UserInfoVO.class);
-        } catch (Exception e) {
-            log.warn("反序列化用户信息失败");
-            return null;
-        }
-    }
-
-    /*
-    *  查缓存
-    * */
-    private String getCache(String cacheKey) {
-        try {
-            return redisTemplate.opsForValue().get(cacheKey);
-        } catch (Exception e) {
-            log.warn("读取用户缓存失败, key={}", cacheKey, e);
-            return null;
-        }
-    }
-
-
-    /*
-    *  保存用户信息到缓存
-    * */
-    private void saveUserInfoToCache(String cacheKey, UserInfoVO userInfoVO) {
-        try {
-            String json = objectMapper.writeValueAsString(userInfoVO);
-            redisTemplate.opsForValue().set(
-                    cacheKey,
-                    json,
-                    RedisTtlUtil.withRandom(USER_INFO_TTL, 20),
-                    TimeUnit.SECONDS
-            );
-        } catch (Exception e) {
-            log.warn("保存用户缓存失败, key={}", cacheKey, e);
-        }
-    }
-
-    private void saveNullToCache(String cacheKey) {
-        try {
-            redisTemplate.opsForValue().set(
-                    cacheKey,
-                    CACHE_NULL_VALUE,
-                    RedisTtlUtil.toSeconds(USER_INFO_NULL_TTL),
-                    TimeUnit.SECONDS
-            );
-        } catch (Exception e) {
-            log.warn("保存空缓存失败, key={}", cacheKey, e);
-        }
-    }
-
-    private String buildInfoKey(Long userId) {
-        return String.format(USER_INFO_KEY , userId);
-    }
 
     /*
      *  构建用户信息 VO
@@ -250,26 +179,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
 
-    // todo: 优化代码质量
+    // todo: 后续桶改为private
+    /*
+    *  上传头像
+    * */
     @Override
     public String uploadAvatar(MultipartFile file) {
         Long userId = StpUtil.getLoginIdAsLong();
 
-        String objectName = minioUtil.uploadAvatar(file);
+        String objectName = minioUtil.upload(MinioPathEnum.USER_AVATAR.path(), file);
 
         String avatarUrl = buildAvatarUrl(objectName);
 
-        User update = new User();
-        update.setId(userId);
-        update.setAvatar(avatarUrl);
-        userMapper.updateById(update);
+        updateUserAvatar(userId, avatarUrl);
 
-        String cacheKey = buildInfoKey(userId);
-        redisTemplate.delete(cacheKey);
+        userCacheService.evictUserInfo(userId);
 
         return avatarUrl;
     }
 
+    /*
+    *  更新用户头像
+    * */
+    private void updateUserAvatar(Long userId, String avatarUrl) {
+        User update = new User();
+        update.setId(userId);
+        update.setAvatar(avatarUrl);
+        userMapper.updateById(update);
+    }
+
+
+    /*
+    *  构建用户头像 URL
+    * */
     private String buildAvatarUrl(String objectName) {
         return "http://127.0.0.1:9000/"
                 + minioProperties.getBucket()
