@@ -1,5 +1,6 @@
 package com.meteor.common.result;
 
+import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.exception.IErrorCode;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,27 +34,17 @@ public class Result<T> implements Serializable {
 
     public static <T> Result<T> success() {
         return new Result<>(
-                ResultCode.SUCCESS.getCode(),
-                ResultCode.SUCCESS.getMsg(),
+                CommonErrorCode.SUCCESS.getCode(),
+                CommonErrorCode.SUCCESS.getMessage(),
                 null
         );
     }
 
     public static <T> Result<T> success(T data) {
         return new Result<>(
-                ResultCode.SUCCESS.getCode(),
-                ResultCode.SUCCESS.getMsg(),
+                CommonErrorCode.SUCCESS.getCode(),
+                CommonErrorCode.SUCCESS.getMessage(),
                 data
-        );
-    }
-
-
-
-    public static <T> Result<T> fail(String msg) {
-        return new Result<>(
-                ResultCode.FAIL.getCode(),
-                msg,
-                null
         );
     }
 
@@ -69,4 +60,21 @@ public class Result<T> implements Serializable {
         return new Result<>(code, msg, null);
     }
 
+
+
+    public static <T> Result<T> fail(CommonErrorCode errorCode, String message) {
+        return new Result<>(
+                errorCode.getCode(),
+                message,
+                null
+        );
+    }
+
+    /**
+     * 兜底失败返回（仅用于框架 / 非业务场景）
+     * 业务代码禁止使用
+     */
+    public static <T> Result<T> fail(String message) {
+        return fail(CommonErrorCode.SYSTEM_ERROR, message);
+    }
 }

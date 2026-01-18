@@ -1,5 +1,6 @@
 package com.meteor.minio.util;
 
+import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -60,7 +61,7 @@ public class MinioUtil {
             return objectName;
 
         } catch (Exception e) {
-            throw new RuntimeException("MinIO upload failed", e);
+            throw new RuntimeException(CommonErrorCode.FILE_UPLOAD_FAILED.getMessage(), e);
         }
     }
 }

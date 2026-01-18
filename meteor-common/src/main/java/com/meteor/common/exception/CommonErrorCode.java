@@ -22,7 +22,10 @@ public enum CommonErrorCode implements IErrorCode {
     USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),
     USER_NOT_EXIST(1002, "用户不存在", HttpStatus.NOT_FOUND),
     PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
-    ACCOUNT_DISABLED(1004, "账号已禁用", HttpStatus.FORBIDDEN);
+    ACCOUNT_DISABLED(1004, "账号已禁用", HttpStatus.FORBIDDEN),
+
+    // 文件上传模块
+    FILE_UPLOAD_FAILED(2001, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;
