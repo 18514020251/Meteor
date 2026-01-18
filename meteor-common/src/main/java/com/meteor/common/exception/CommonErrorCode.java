@@ -1,5 +1,7 @@
 package com.meteor.common.exception;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * 业务异常枚举
  *
@@ -9,26 +11,27 @@ package com.meteor.common.exception;
 public enum CommonErrorCode implements IErrorCode {
 
     // 通用
-    SUCCESS(0, "成功"),
-    PARAM_INVALID(400, "参数不合法"),
-    UNAUTHORIZED(401, "未登录或登录失效"),
-    FORBIDDEN(403, "无权限访问"),
+    SUCCESS(0, "成功", HttpStatus.OK),
+    PARAM_INVALID(400, "参数不合法", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED(401, "未登录或登录失效", HttpStatus.UNAUTHORIZED),
+    FORBIDDEN(403, "无权限访问", HttpStatus.FORBIDDEN),
+    SYSTEM_ERROR(500, "系统异常", HttpStatus.INTERNAL_SERVER_ERROR),
+    SERVICE_UNAVAILABLE(503, "服务不可用，请稍后重试", HttpStatus.SERVICE_UNAVAILABLE),
 
     // 用户模块
-    USER_EXIST(1001, "用户已存在"),
-    USER_NOT_EXIST(1002, "用户不存在"),
-    PASSWORD_ERROR(1003, "用户名或密码错误"),
-    ACCOUNT_DISABLED(1004, "账号已禁用");
-
-
-
+    USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),
+    USER_NOT_EXIST(1002, "用户不存在", HttpStatus.NOT_FOUND),
+    PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_DISABLED(1004, "账号已禁用", HttpStatus.FORBIDDEN);
 
     private final int code;
     private final String message;
+    private final HttpStatus httpStatus;
 
-    CommonErrorCode(int code, String message) {
+    CommonErrorCode(int code, String message, HttpStatus httpStatus) {
         this.code = code;
         this.message = message;
+        this.httpStatus = httpStatus;
     }
 
     @Override
@@ -39,6 +42,11 @@ public enum CommonErrorCode implements IErrorCode {
     @Override
     public String getMessage() {
         return message;
+    }
+
+    @Override
+    public HttpStatus getHttpStatus() {
+        return this.httpStatus;
     }
 }
 

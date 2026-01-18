@@ -1,6 +1,8 @@
 package com.meteor.common.result;
 
+import com.meteor.common.exception.IErrorCode;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -12,6 +14,7 @@ import java.io.Serializable;
  * @Date 2026-01-13 18:49
  */
 @Data
+@NoArgsConstructor
 public class Result<T> implements Serializable {
 
     @Serial
@@ -52,6 +55,14 @@ public class Result<T> implements Serializable {
                 msg,
                 null
         );
+    }
+
+    public static <T> Result<T> fail(IErrorCode errorCode) {
+        Result<T> result = new Result<>();
+        result.setCode(errorCode.getCode());
+        result.setMsg(errorCode.getMessage());
+        result.setData(null);
+        return result;
     }
 
     public static <T> Result<T> fail(int code, String msg) {
