@@ -1,8 +1,10 @@
 package com.meteor.user.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;
 import com.meteor.user.domain.dto.UserLoginReq;
+import com.meteor.user.domain.dto.UserProfileUpdateDTO;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.service.IUserService;
@@ -31,7 +33,7 @@ public class UserController {
     private final IUserService userService;
 
     @PostMapping("/register")
-    public Result<String> register(@Valid @RequestBody UserRegisterReq req) {
+    public Result<Void> register(@Valid @RequestBody UserRegisterReq req) {
         userService.register(req);
         return Result.success();
     }
@@ -44,20 +46,34 @@ public class UserController {
 
     @GetMapping("/info")
     public Result<UserInfoVO> info() {
-        UserInfoVO userInfo = userService.getCurrentUserInfo();
+        Long userId = StpUtil.getLoginIdAsLong();
+        UserInfoVO userInfo = userService.getCurrentUserInfo(userId);
         return Result.success(userInfo);
     }
 
     @PostMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        String avatarUrl = userService.uploadAvatar(file);
+        Long userId = StpUtil.getLoginIdAsLong();
+        String avatarUrl = userService.uploadAvatar(file , userId);
         return Result.success(avatarUrl);
     }
 
     @DeleteMapping("")
-    public Result<String> deleteUser() {
-        userService.deleteUserAndRelatedInfo();
-        return Result.success("用户删除成功");
+    public Result<Void> deleteUser() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        userService.deleteUserAndRelatedInfo(userId);
+        return Result.success();
     }
+
+    @PutMapping("/profile")
+    public Result<Void> updateProfile(@RequestBody UserProfileUpdateDTO dto) {
+
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        userService.updateProfile(userId, dto);
+
+        return Result.success();
+    }
+
 }
 

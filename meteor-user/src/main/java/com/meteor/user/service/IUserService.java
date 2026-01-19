@@ -2,6 +2,7 @@ package com.meteor.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.meteor.user.domain.dto.UserLoginReq;
+import com.meteor.user.domain.dto.UserProfileUpdateDTO;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.entiey.User;
 import com.meteor.user.domain.vo.UserInfoVO;
@@ -22,9 +23,11 @@ public interface IUserService extends IService<User> {
 
     String login(@Valid UserLoginReq req);
 
-    UserInfoVO getCurrentUserInfo();
+    UserInfoVO getCurrentUserInfo(Long userId);
 
-    String uploadAvatar(MultipartFile file);
+    String uploadAvatar(MultipartFile file , Long userId);
 
-    void deleteUserAndRelatedInfo();
+    void deleteUserAndRelatedInfo(Long userId);
+
+    void updateProfile(Long userId, UserProfileUpdateDTO dto);
 }

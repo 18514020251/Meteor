@@ -11,6 +11,7 @@ import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.UserLoginReq;
+import com.meteor.user.domain.dto.UserProfileUpdateDTO;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.entiey.User;
 import com.meteor.common.enums.DeleteStatus;
@@ -113,13 +114,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public String login(UserLoginReq req) {
 
-        User user = getByUsername(req.getUsername());
+        User user = getNormalUserByUsername(req.getUsername());
+
+        if (!PasswordUtil.matches(req.getPassword(), user.getPassword())) {
+            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
+        }
+
+        StpUtil.login(user.getId());
+        return StpUtil.getTokenValue();
+    }
+
+    /*
+    *  根据用户名获取用户信息
+    * */
+    private User getNormalUserByUsername(String username) {
+        User user = getByUsername(username);
 
         if (user == null) {
             throw new BizException(CommonErrorCode.PASSWORD_ERROR);
         }
 
-        if (!PasswordUtil.matches(req.getPassword(), user.getPassword())) {
+        if (user.isDeleted()) {
             throw new BizException(CommonErrorCode.PASSWORD_ERROR);
         }
 
@@ -127,10 +142,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.ACCOUNT_DISABLED);
         }
 
-        // 登录
-        StpUtil.login(user.getId());
-
-        return StpUtil.getTokenValue();
+        return user;
     }
 
 
@@ -141,9 +153,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return getOne(
                 new LambdaQueryWrapper<User>()
                         .eq(User::getUsername, username)
-                        .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
         );
     }
+
 
 
     /*
@@ -151,9 +163,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * */
     @Override
     // todo： 后续增加功能，防击穿
-    public UserInfoVO getCurrentUserInfo() {
-        Long userId = StpUtil.getLoginIdAsLong();
-
+    public UserInfoVO getCurrentUserInfo(Long userId) {
         UserInfoVO cached = userCacheService.getUserInfo(userId);
         if (cached != null) {
             return cached;
@@ -189,7 +199,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     *  上传头像
     * */
     @Override
-    public String uploadAvatar(MultipartFile file) {
+    public String uploadAvatar(MultipartFile file , Long userId) {
 
         if (file.getSize() > MAX_SIZE) {
             throw new BizException(CommonErrorCode.AVATAR_SIZE_ERROR);
@@ -198,8 +208,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (!ALLOWED_TYPES.contains(file.getContentType())) {
             throw new BizException(CommonErrorCode.AVATAR_TYPE_ERROR);
         }
-
-        Long userId = StpUtil.getLoginIdAsLong();
 
         String objectName = minioUtil.upload(MinioPathEnum.USER_AVATAR.path(), file);
 
@@ -224,10 +232,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         deleteUserAvatar(oldUser);
     }
 
+    /*
+    *  删除用户及关联信息
+    * */
     @Override
-    public void deleteUserAndRelatedInfo() {
-        // todo: 待确定token是否及时失效、Redis缓存、Minio是否清理
-        Long userId = StpUtil.getLoginIdAsLong();
+    public void deleteUserAndRelatedInfo(Long userId) {
         User user = userMapper.selectById(userId);
 
         StpUtil.logout();
@@ -244,6 +253,61 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (user.getAvatar() != null && !user.getAvatar().equals(AvatarConstants.DEFAULT_AVATAR)) {
             minioUtil.delete(user.getAvatar());
             log.info("删除用户头像：用户ID{}", user.getId());
+        }
+    }
+
+
+    @Override
+    public void updateProfile(Long userId, UserProfileUpdateDTO dto) {
+
+        User user = userMapper.selectById(userId);
+        if (user == null || user.isDeleted()) {
+            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        }
+
+        if (dto.getUserName() != null && !dto.getUserName().equals(user.getUsername())) {
+            checkUsernameUnique(dto.getUserName(), userId);
+            user.setUsername(dto.getUserName());
+        }
+
+        if (dto.getPhone() != null && !dto.getPhone().equals(user.getPhone())) {
+            checkPhoneUnique(dto.getPhone(), userId);
+            user.setPhone(dto.getPhone());
+        }
+
+        userCacheService.evictUserInfo(userId);
+
+        userMapper.updateById(user);
+    }
+
+
+    /*
+    *  检查用户名唯一
+    * */
+    private void checkUsernameUnique(String username, Long userId) {
+        boolean exists = lambdaQuery()
+                .eq(User::getUsername, username)
+                .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
+                .ne(User::getId, userId)
+                .exists();
+
+        if (exists) {
+            throw new BizException(CommonErrorCode.USER_EXIST);
+        }
+    }
+
+    /*
+    *  检查手机号唯一
+    * */
+    private void checkPhoneUnique(String phone, Long userId) {
+        boolean exists = lambdaQuery()
+                .eq(User::getPhone, phone)
+                .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
+                .ne(User::getId, userId)
+                .exists();
+
+        if (exists) {
+            throw new BizException(CommonErrorCode.PHONE_EXIST);
         }
     }
 

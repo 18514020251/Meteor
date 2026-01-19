@@ -3,6 +3,7 @@ package com.meteor.user.domain.entiey;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.enums.UserStatus;
 import lombok.*;
@@ -74,5 +75,9 @@ public class User implements Serializable {
 
     public boolean isUser(){
         return RoleEnum.USER.getCode().equals(this.role);
+    }
+
+    public boolean isDeleted(){
+        return DeleteStatus.DELETED.getCode().equals(this.isDeleted);
     }
 }
