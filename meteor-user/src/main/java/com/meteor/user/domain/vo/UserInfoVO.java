@@ -4,7 +4,7 @@ import com.meteor.user.enums.RoleEnum;
 import lombok.Data;
 
 /**
- * Info 接口 VO
+ * Info 接口 VO(带URL)
  *
  * @author Programmer
  * @date 2026-01-16 18:38

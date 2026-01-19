@@ -1,4 +1,4 @@
-package com.meteor.common.redis;
+package com.meteor.common.cache;
 
 import java.time.Duration;
 

@@ -1,6 +1,7 @@
 package com.meteor.user.service.cache;
 
 import com.meteor.user.domain.vo.UserInfoVO;
+import com.meteor.user.service.cache.model.UserInfoCache;
 
 /**
  * 用户信息缓存服务
@@ -17,20 +18,21 @@ public interface IUserCacheService {
      *  - 命中：UserInfoVO
      *  - 未命中：null
      */
-    UserInfoVO getUserInfo(Long userId);
+    UserInfoCache getUserInfo(Long userId);
 
     /**
      * 缓存用户信息
      */
-    void cacheUserInfo(Long userId, UserInfoVO userInfo);
+    void cacheUserInfo(Long userId, UserInfoCache cache);
 
     /**
-     * 缓存空值（防缓存穿透）
+     * 缓存空值（防穿透）
      */
     void cacheNull(Long userId);
 
     /**
-     * 删除用户信息缓存
+     * 删除用户信息缓存（头像 / 信息更新时）
      */
     void evictUserInfo(Long userId);
-}
+    }
+

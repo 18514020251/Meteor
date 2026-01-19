@@ -7,7 +7,6 @@ import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.enums.MinioPathEnum;
-import com.meteor.minio.properties.MeteorMinioProperties;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entiey.User;
@@ -19,6 +18,7 @@ import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
 import com.meteor.user.service.cache.IUserCacheService;
+import com.meteor.user.service.cache.model.UserInfoCache;
 import com.meteor.user.service.domain.UserDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,8 +46,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final UserMapper userMapper;
 
     private final MinioUtil minioUtil;
-
-    private final MeteorMinioProperties  minioProperties;
 
     private final UserDomainService userDomainService;
 
@@ -126,26 +124,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return StpUtil.getTokenValue();
     }
 
-    /*
-     * 根据用户名查询用户
-     * */
-    private User getByUsername(String username) {
-        return getOne(
-                new LambdaQueryWrapper<User>()
-                        .eq(User::getUsername, username)
-        );
-    }
-
 
     /*
      *  获取当前用户信息
      * */
     @Override
-    // todo： 后续增加功能，防击穿
+    // todo：后续可加分布式锁防击穿
     public UserInfoVO getCurrentUserInfo(Long userId) {
-        UserInfoVO cached = userCacheService.getUserInfo(userId);
-        if (cached != null) {
-            return cached;
+
+        UserInfoCache cache = userCacheService.getUserInfo(userId);
+        if (cache != null) {
+            return buildUserInfoVOFromCache(cache);
         }
 
         User user = userMapper.selectById(userId);
@@ -154,26 +143,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
 
-        UserInfoVO vo = buildUserInfoVO(user);
-        userCacheService.cacheUserInfo(userId, vo);
+        UserInfoCache userCache = buildUserInfoCache(user);
+        userCacheService.cacheUserInfo(userId, userCache);
+
+        return buildUserInfoVOFromCache(userCache);
+    }
+
+    private UserInfoCache buildUserInfoCache(User user) {
+        UserInfoCache cache = new UserInfoCache();
+        cache.setUserId(user.getId());
+        cache.setUsername(user.getUsername());
+        cache.setRole(user.getRole());
+        cache.setAvatarObject(user.getAvatar());
+        return cache;
+    }
+
+    private UserInfoVO buildUserInfoVOFromCache(UserInfoCache cache) {
+        UserInfoVO vo = new UserInfoVO();
+        vo.setUserId(cache.getUserId());
+        vo.setUsername(cache.getUsername());
+        vo.setRole(RoleEnum.fromCode(cache.getRole()));
+        vo.setAvatar(minioUtil.buildPresignedUrl(cache.getAvatarObject()));
         return vo;
     }
 
-
-    /*
-     *  构建用户信息 VO
-     * */
-    private UserInfoVO buildUserInfoVO(User user) {
-        UserInfoVO resp = new UserInfoVO();
-        resp.setUserId(user.getId());
-        resp.setUsername(user.getUsername());
-        resp.setRole(RoleEnum.fromCode(user.getRole()));
-        resp.setAvatar(minioUtil.buildPresignedUrl(user.getAvatar()));
-        return resp;
-    }
-
-
-    // todo: 后续桶改为private
     /*
     *  上传头像
     * */
