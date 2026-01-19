@@ -2,14 +2,17 @@ package com.meteor.minio.util;
 
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.properties.MeteorMinioProperties;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Minio 工具类
@@ -85,6 +88,7 @@ public class MinioUtil {
     /*
      *  构建用户头像 URL
      * */
+    @Deprecated
     public String buildObjectUrl(String objectName) {
         if (properties.isPathStyle()) {
             return properties.getEndpoint()
@@ -94,4 +98,34 @@ public class MinioUtil {
         return properties.getEndpoint()
                 + "/" + objectName;
     }
+
+    /**
+     * 生成对象的临时访问 URL（Presigned URL）
+     *
+     * @param objectName MinIO 中的对象名（UUID-UUID）
+     * @return           带签名的临时访问 URL
+     */
+    public String buildPresignedUrl(String objectName) {
+        if (objectName == null || objectName.isBlank()) {
+            return null;
+        }
+
+        try {
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .expiry(
+                                    properties.getPresignedUrlExpireMinutes(),
+                                    TimeUnit.MINUTES
+                            )
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(CommonErrorCode.FILE_URL_GENERATE_FAILED.getMessage(), e);
+        }
+    }
+
+
 }

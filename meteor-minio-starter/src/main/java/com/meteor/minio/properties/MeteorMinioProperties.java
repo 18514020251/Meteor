@@ -40,4 +40,9 @@ public class MeteorMinioProperties {
     *  是否使用路径样式
     * */
     private boolean pathStyle = true;
+
+    /*
+    *  头像有效期
+    * */
+    private int presignedUrlExpireMinutes = 5;
 }

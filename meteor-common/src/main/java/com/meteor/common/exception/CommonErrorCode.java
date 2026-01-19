@@ -29,10 +29,12 @@ public enum CommonErrorCode implements IErrorCode {
     USER_OR_PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
 
 
-    // 文件上传模块
+    // 文件相关模块
     FILE_UPLOAD_FAILED(2001, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_DELETE_FAILED(2002, "文件删除失败", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_SIZE_ERROR(2003,"文件大小超出限制" , HttpStatus.BAD_REQUEST),
+    FILE_URL_GENERATE_FAILED(2004, "文件访问地址生成失败", HttpStatus.INTERNAL_SERVER_ERROR),
+
 
     // 图片相关异常
     AVATAR_SIZE_ERROR(3001, "头像大小不能超过 2MB", HttpStatus.BAD_REQUEST),

@@ -85,4 +85,5 @@ meteor:
     secret-key: minioadmin
     bucket: meteor
     path-style: true
+    presigned-url-expire-minutes: 5
 

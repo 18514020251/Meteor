@@ -168,7 +168,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         resp.setUserId(user.getId());
         resp.setUsername(user.getUsername());
         resp.setRole(RoleEnum.fromCode(user.getRole()));
-        resp.setAvatar(minioUtil.buildObjectUrl(user.getAvatar()));
+        resp.setAvatar(minioUtil.buildPresignedUrl(user.getAvatar()));
         return resp;
     }
 
@@ -194,7 +194,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         userCacheService.evictUserInfo(userId);
 
-        return minioUtil.buildObjectUrl(objectName);
+        return minioUtil.buildPresignedUrl(objectName);
     }
 
     /*
