@@ -11,6 +11,7 @@ import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.UserLoginReq;
+import com.meteor.user.domain.dto.UserPasswordUpdateDTO;
 import com.meteor.user.domain.dto.UserProfileUpdateDTO;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.entiey.User;
@@ -79,7 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private void registerNonEmpty(UserRegisterReq req) {
         if (StringUtils.isBlank(req.getUsername())
                 || StringUtils.isBlank(req.getPassword())) {
-            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
+            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
     }
 
@@ -117,7 +118,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User user = getNormalUserByUsername(req.getUsername());
 
         if (!PasswordUtil.matches(req.getPassword(), user.getPassword())) {
-            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
+            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 
         StpUtil.login(user.getId());
@@ -131,11 +132,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User user = getByUsername(username);
 
         if (user == null) {
-            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
+            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 
         if (user.isDeleted()) {
-            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
+            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 
         if (!user.isNormal()) {
@@ -144,7 +145,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         return user;
     }
-
 
     /*
      * 根据用户名查询用户
@@ -155,7 +155,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         .eq(User::getUsername, username)
         );
     }
-
 
 
     /*
@@ -256,7 +255,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
-
+    /*
+    *  更新用户信息
+    * */
     @Override
     public void updateProfile(Long userId, UserProfileUpdateDTO dto) {
 
@@ -279,7 +280,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         userMapper.updateById(user);
     }
-
 
     /*
     *  检查用户名唯一
@@ -311,5 +311,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
+    /*
+    *  更新密码
+    * */
+    @Override
+    public void updatePassword(Long userId, UserPasswordUpdateDTO dto) {
+
+        User user = userMapper.selectById(userId);
+        if (user == null || user.isDeleted()) {
+            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        }
+
+        if (!PasswordUtil.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new BizException(CommonErrorCode.PASSWORD_ERROR);
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new BizException(CommonErrorCode.PASSWORD_CONFIRM_ERROR);
+        }
+
+        user.setPassword(PasswordUtil.encrypt(dto.getNewPassword()));
+        userMapper.updateById(user);
+    }
 
 }

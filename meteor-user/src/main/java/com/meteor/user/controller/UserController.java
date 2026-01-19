@@ -4,10 +4,12 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;
 import com.meteor.user.domain.dto.UserLoginReq;
+import com.meteor.user.domain.dto.UserPasswordUpdateDTO;
 import com.meteor.user.domain.dto.UserProfileUpdateDTO;
 import com.meteor.user.domain.dto.UserRegisterReq;
 import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.service.IUserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +74,14 @@ public class UserController {
 
         userService.updateProfile(userId, dto);
 
+        return Result.success();
+    }
+
+    @Operation(summary = "修改用户密码", description = "用户可以修改自己的密码")
+    @PutMapping("/update-password")
+    public Result<Void> updatePassword(@RequestBody @Valid UserPasswordUpdateDTO dto) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        userService.updatePassword(userId, dto);
         return Result.success();
     }
 

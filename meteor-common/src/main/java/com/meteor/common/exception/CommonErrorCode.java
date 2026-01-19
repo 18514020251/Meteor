@@ -21,9 +21,12 @@ public enum CommonErrorCode implements IErrorCode {
     // 用户模块
     USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),
     USER_NOT_EXIST(1002, "用户不存在", HttpStatus.NOT_FOUND),
-    PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
+    PASSWORD_ERROR(1003, "密码错误", HttpStatus.UNAUTHORIZED),
     ACCOUNT_DISABLED(1004, "账号已禁用", HttpStatus.FORBIDDEN),
     PHONE_EXIST(1005, "手机号已存在", HttpStatus.BAD_REQUEST),
+    PASSWORD_CONFIRM_ERROR(1006, "新密码与确认密码不一致", HttpStatus.BAD_REQUEST),
+    USER_OR_PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
+
 
     // 文件上传模块
     FILE_UPLOAD_FAILED(2001, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR),

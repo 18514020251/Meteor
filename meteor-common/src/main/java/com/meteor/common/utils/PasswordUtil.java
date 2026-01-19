@@ -22,6 +22,9 @@ public class PasswordUtil {
 
     /**
      * 密码校验
+     *
+     * @param rawPassword 明文密码
+     * @param encodedPassword   加密后的密码
      */
     public static boolean matches(String rawPassword, String encodedPassword) {
         return ENCODER.matches(rawPassword, encodedPassword);
