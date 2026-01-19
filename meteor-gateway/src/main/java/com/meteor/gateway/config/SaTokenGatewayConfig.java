@@ -1,23 +1,30 @@
 package com.meteor.gateway.config;
 
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.stp.StpUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Sa 拦截器
+ *  Sa-Token 配置
  *
  * @author Programmer
- * @date 2026-01-16 23:18
  */
-
 @Configuration
 public class SaTokenGatewayConfig {
+
+    private final ObjectMapper objectMapper;
+
+    public SaTokenGatewayConfig(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Bean
     public SaReactorFilter saReactorFilter() {
@@ -29,22 +36,29 @@ public class SaTokenGatewayConfig {
                         "/error",
                         "/swagger-ui.html"
                 )
-                // 鉴权逻辑
                 .setAuth(obj -> StpUtil.checkLogin())
                 .setError(this::handleSaTokenError);
     }
 
-    private Result<Void> handleSaTokenError(Throwable e) {
+    private String handleSaTokenError(Throwable e) {
+
+        Result<Void> result;
 
         if (e instanceof NotLoginException) {
-            return Result.fail(CommonErrorCode.UNAUTHORIZED);
+            result = Result.fail(CommonErrorCode.UNAUTHORIZED);
+        } else if (e instanceof NotPermissionException) {
+            result = Result.fail(CommonErrorCode.FORBIDDEN);
+        } else {
+            result = Result.fail(CommonErrorCode.SYSTEM_ERROR);
         }
 
-        if (e instanceof NotPermissionException) {
-            return Result.fail(CommonErrorCode.FORBIDDEN);
-        }
+        SaHolder.getResponse()
+                .setHeader("Content-Type", "application/json;charset=UTF-8");
 
-        return Result.fail(CommonErrorCode.SYSTEM_ERROR);
+        try {
+            return objectMapper.writeValueAsString(result);
+        } catch (JsonProcessingException ex) {
+            return "{\"code\":500,\"message\":\"系统异常\",\"data\":null}";
+        }
     }
 }
-

@@ -230,6 +230,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Long userId = StpUtil.getLoginIdAsLong();
         User user = userMapper.selectById(userId);
 
+        StpUtil.logout();
         userCacheService.evictUserInfo(userId);
 
         userMapper.deleteById(userId);

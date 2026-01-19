@@ -48,12 +48,8 @@ public class Result<T> implements Serializable {
         );
     }
 
-    public static <T> Result<T> fail(IErrorCode errorCode) {
-        Result<T> result = new Result<>();
-        result.setCode(errorCode.getCode());
-        result.setMsg(errorCode.getMessage());
-        result.setData(null);
-        return result;
+    public static <T> Result<T> fail(CommonErrorCode errorCode) {
+        return new Result<>(errorCode.getCode(), errorCode.getMessage(), null);
     }
 
     public static <T> Result<T> fail(int code, String msg) {
