@@ -2,6 +2,7 @@ package com.meteor.user.domain.entiey;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.enums.RoleEnum;
@@ -67,6 +68,7 @@ public class User implements Serializable {
     private LocalDateTime updateTime;
 
     @Schema(description = "是否删除" , example = "是否删除：0-未删除，1-已删除")
+    @TableLogic
     private Integer isDeleted;
 
     public boolean isNormal(){

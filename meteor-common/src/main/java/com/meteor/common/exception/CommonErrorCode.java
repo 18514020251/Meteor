@@ -15,6 +15,7 @@ public enum CommonErrorCode implements IErrorCode {
     PARAM_INVALID(400, "参数不合法", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "未登录或登录失效", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "无权限访问", HttpStatus.FORBIDDEN),
+    NOT_FOUND(404, "未找到该资源", HttpStatus.NOT_FOUND),
     SYSTEM_ERROR(500, "系统异常", HttpStatus.INTERNAL_SERVER_ERROR),
     SERVICE_UNAVAILABLE(503, "服务不可用，请稍后重试", HttpStatus.SERVICE_UNAVAILABLE),
 

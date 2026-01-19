@@ -1,10 +1,7 @@
 package com.meteor.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.meteor.user.domain.dto.UserLoginReq;
-import com.meteor.user.domain.dto.UserPasswordUpdateDTO;
-import com.meteor.user.domain.dto.UserProfileUpdateDTO;
-import com.meteor.user.domain.dto.UserRegisterReq;
+import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entiey.User;
 import com.meteor.user.domain.vo.UserInfoVO;
 import jakarta.validation.Valid;
@@ -33,4 +30,6 @@ public interface IUserService extends IService<User> {
     void updateProfile(Long userId, UserProfileUpdateDTO dto);
 
     void updatePassword(Long userId, @Valid UserPasswordUpdateDTO dto);
+
+    void updatePasswordByPhone(@Valid UserPasswordResetByPhoneDTO dto);
 }

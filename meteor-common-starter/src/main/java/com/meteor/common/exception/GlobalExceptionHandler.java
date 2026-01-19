@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 
 /**
  *  全局异常处理器
@@ -30,6 +31,11 @@ public class GlobalExceptionHandler {
         return Result.fail(CommonErrorCode.FILE_SIZE_ERROR);
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Result<Void> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.warn("未找到该资源：{}", e.getMessage());
+        return Result.fail(CommonErrorCode.NOT_FOUND);
+    }
 
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {

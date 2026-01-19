@@ -64,7 +64,7 @@ public class GlobalGatewayExceptionHandler implements ErrorWebExceptionHandler {
         }
 
         if (ex instanceof NotFoundException) {
-            return CommonErrorCode.SERVICE_UNAVAILABLE;
+            return CommonErrorCode.NOT_FOUND;
         }
 
         return CommonErrorCode.SYSTEM_ERROR;

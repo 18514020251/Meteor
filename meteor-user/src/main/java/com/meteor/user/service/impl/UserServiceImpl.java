@@ -2,7 +2,6 @@ package com.meteor.user.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.exception.BizException;
@@ -10,10 +9,7 @@ import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import com.meteor.minio.util.MinioUtil;
-import com.meteor.user.domain.dto.UserLoginReq;
-import com.meteor.user.domain.dto.UserPasswordUpdateDTO;
-import com.meteor.user.domain.dto.UserProfileUpdateDTO;
-import com.meteor.user.domain.dto.UserRegisterReq;
+import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entiey.User;
 import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.domain.vo.UserInfoVO;
@@ -23,10 +19,12 @@ import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
 import com.meteor.user.service.cache.IUserCacheService;
+import com.meteor.user.service.domain.UserDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.apache.commons.lang3.StringUtils;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
 import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
@@ -50,6 +48,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final MinioUtil minioUtil;
 
     private final MeteorMinioProperties  minioProperties;
+
+    private final UserDomainService userDomainService;
 
     private final IUserCacheService userCacheService;
 
@@ -80,7 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private void registerNonEmpty(UserRegisterReq req) {
         if (StringUtils.isBlank(req.getUsername())
                 || StringUtils.isBlank(req.getPassword())) {
-            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
     }
 
@@ -91,6 +91,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return this.exists(
                 new LambdaQueryWrapper<User>()
                         .eq(User::getUsername, username)
+                        .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
         );
     }
 
@@ -115,7 +116,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public String login(UserLoginReq req) {
 
-        User user = getNormalUserByUsername(req.getUsername());
+        User user = userDomainService.getNormalUserByUsername(req.getUsername());
 
         if (!PasswordUtil.matches(req.getPassword(), user.getPassword())) {
             throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
@@ -123,27 +124,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         StpUtil.login(user.getId());
         return StpUtil.getTokenValue();
-    }
-
-    /*
-    *  根据用户名获取用户信息
-    * */
-    private User getNormalUserByUsername(String username) {
-        User user = getByUsername(username);
-
-        if (user == null) {
-            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
-        }
-
-        if (user.isDeleted()) {
-            throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
-        }
-
-        if (!user.isNormal()) {
-            throw new BizException(CommonErrorCode.ACCOUNT_DISABLED);
-        }
-
-        return user;
     }
 
     /*
@@ -169,7 +149,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         User user = userMapper.selectById(userId);
-        if (user == null) {
+        if (user == null || user.isDeleted()) {
             userCacheService.cacheNull(userId);
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
@@ -261,25 +241,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void updateProfile(Long userId, UserProfileUpdateDTO dto) {
 
-        User user = userMapper.selectById(userId);
-        if (user == null || user.isDeleted()) {
-            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        if (dto == null
+                || (StringUtils.isBlank(dto.getUsername())
+                && StringUtils.isBlank(dto.getPhone()))) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
 
-        if (dto.getUserName() != null && !dto.getUserName().equals(user.getUsername())) {
-            checkUsernameUnique(dto.getUserName(), userId);
-            user.setUsername(dto.getUserName());
+        User user = userDomainService.getValidUser(userId);
+
+        boolean changed = false;
+
+        if (StringUtils.isNotBlank(dto.getUsername())
+                && !dto.getUsername().equals(user.getUsername())) {
+
+            checkUsernameUnique(dto.getUsername(), userId);
+            user.setUsername(dto.getUsername());
+            changed = true;
         }
 
-        if (dto.getPhone() != null && !dto.getPhone().equals(user.getPhone())) {
+        if (StringUtils.isNotBlank(dto.getPhone())
+                && !dto.getPhone().equals(user.getPhone())) {
+
             checkPhoneUnique(dto.getPhone(), userId);
             user.setPhone(dto.getPhone());
+            changed = true;
         }
 
-        userCacheService.evictUserInfo(userId);
+        if (!changed) {
+            return;
+        }
 
         userMapper.updateById(user);
+        userCacheService.evictUserInfo(userId);
     }
+
 
     /*
     *  检查用户名唯一
@@ -317,10 +312,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void updatePassword(Long userId, UserPasswordUpdateDTO dto) {
 
-        User user = userMapper.selectById(userId);
-        if (user == null || user.isDeleted()) {
-            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        if (dto == null
+                || StringUtils.isAnyBlank(
+                dto.getOldPassword(),
+                dto.getNewPassword(),
+                dto.getConfirmPassword())) {
+
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
+
+        User user = userDomainService.getValidUser(userId);
 
         if (!PasswordUtil.matches(dto.getOldPassword(), user.getPassword())) {
             throw new BizException(CommonErrorCode.PASSWORD_ERROR);
@@ -329,6 +330,36 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             throw new BizException(CommonErrorCode.PASSWORD_CONFIRM_ERROR);
         }
+
+        user.setPassword(PasswordUtil.encrypt(dto.getNewPassword()));
+        userMapper.updateById(user);
+
+        StpUtil.logout();
+    }
+
+
+    /*
+    *  重置密码
+    * */
+    @Override
+    public void updatePasswordByPhone(UserPasswordResetByPhoneDTO  dto) {
+
+        // todo： 短信验证码
+
+        if (dto == null
+                || StringUtils.isAnyBlank(
+                dto.getPhone(),
+                dto.getNewPassword(),
+                dto.getConfirmPassword())) {
+
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new BizException(CommonErrorCode.PASSWORD_CONFIRM_ERROR);
+        }
+
+        User user = userDomainService.getValidUserByPhone(dto.getPhone());
 
         user.setPassword(PasswordUtil.encrypt(dto.getNewPassword()));
         userMapper.updateById(user);

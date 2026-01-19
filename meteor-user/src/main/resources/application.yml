@@ -12,6 +12,10 @@ spring:
     hikari:
       connection-timeout: 30000
       maximum-pool-size: 10
+  # MVC配置
+  mvc:
+    throw-exception-if-no-handler-found: true
+    static-path-pattern: /static/**
   # 程序名称
   application:
     name: meteor-user
@@ -43,7 +47,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
-      logic-delete-field: deleted
+      logic-delete-field: is_deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
 
@@ -69,7 +73,7 @@ sa-token:
   timeout: 86400
   active-timeout: -1
   is-concurrent: false
-  is-share: true
+  is-share: false
   token-style: uuid
   is-log: true
   token-prefix: Bearer
