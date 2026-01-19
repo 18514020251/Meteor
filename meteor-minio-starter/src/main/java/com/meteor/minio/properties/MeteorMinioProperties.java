@@ -35,4 +35,9 @@ public class MeteorMinioProperties {
      */
     @NotBlank(message = "默认 Bucket 不能为空")
     private String bucket;
+
+    /*
+    *  是否使用路径样式
+    * */
+    private boolean pathStyle = true;
 }

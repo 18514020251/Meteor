@@ -26,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
+import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
+
 
 /**
  * <p>
@@ -176,7 +179,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         resp.setUserId(user.getId());
         resp.setUsername(user.getUsername());
         resp.setRole(RoleEnum.fromCode(user.getRole()));
-        resp.setAvatar(buildAvatarUrl(user.getAvatar()));
+        resp.setAvatar(minioUtil.buildObjectUrl(user.getAvatar()));
         return resp;
     }
 
@@ -187,6 +190,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     * */
     @Override
     public String uploadAvatar(MultipartFile file) {
+
+        if (file.getSize() > MAX_SIZE) {
+            throw new BizException(CommonErrorCode.AVATAR_SIZE_ERROR);
+        }
+
+        if (!ALLOWED_TYPES.contains(file.getContentType())) {
+            throw new BizException(CommonErrorCode.AVATAR_TYPE_ERROR);
+        }
+
         Long userId = StpUtil.getLoginIdAsLong();
 
         String objectName = minioUtil.upload(MinioPathEnum.USER_AVATAR.path(), file);
@@ -195,31 +207,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         userCacheService.evictUserInfo(userId);
 
-        return buildAvatarUrl(objectName);
+        return minioUtil.buildObjectUrl(objectName);
     }
 
     /*
     *  更新用户头像
     * */
-    private void updateUserAvatar(Long userId, String avatarUrl) {
-        // todo：删除之前头像
+    private void updateUserAvatar(Long userId, String newAvatar) {
+        User oldUser = userMapper.selectById(userId);
+
         User update = new User();
         update.setId(userId);
-        update.setAvatar(avatarUrl);
+        update.setAvatar(newAvatar);
         userMapper.updateById(update);
+
+        deleteUserAvatar(oldUser);
     }
-
-
-    /*
-    *  构建用户头像 URL
-    * */
-    private String buildAvatarUrl(String objectName) {
-        return "http://127.0.0.1:9000/"
-                + minioProperties.getBucket()
-                + "/"
-                + objectName;
-    }
-
 
     @Override
     public void deleteUserAndRelatedInfo() {
@@ -230,9 +233,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userCacheService.evictUserInfo(userId);
 
         userMapper.deleteById(userId);
+        deleteUserAvatar(user);
+    }
 
+    /*
+    *  删除用户头像
+    * */
+    private void deleteUserAvatar(User user){
         if (user.getAvatar() != null && !user.getAvatar().equals(AvatarConstants.DEFAULT_AVATAR)) {
             minioUtil.delete(user.getAvatar());
+            log.info("删除用户头像：用户ID{}", user.getId());
         }
     }
 

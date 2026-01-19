@@ -26,7 +26,12 @@ public enum CommonErrorCode implements IErrorCode {
 
     // 文件上传模块
     FILE_UPLOAD_FAILED(2001, "文件上传失败", HttpStatus.INTERNAL_SERVER_ERROR),
-    FILE_DELETE_FAILED(2002, "文件删除失败", HttpStatus.INTERNAL_SERVER_ERROR);
+    FILE_DELETE_FAILED(2002, "文件删除失败", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_SIZE_ERROR(2003,"文件大小超出限制" , HttpStatus.BAD_REQUEST),
+
+    // 图片相关异常
+    AVATAR_SIZE_ERROR(3001, "头像大小不能超过 2MB", HttpStatus.BAD_REQUEST),
+    AVATAR_TYPE_ERROR(3002, "头像格式错误", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;

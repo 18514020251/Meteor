@@ -59,7 +59,6 @@ public class MinioUtil {
             );
 
             return objectName;
-
         } catch (Exception e) {
             throw new RuntimeException(CommonErrorCode.FILE_UPLOAD_FAILED.getMessage(), e);
         }
@@ -81,5 +80,18 @@ public class MinioUtil {
         } catch (Exception e) {
             throw new RuntimeException(CommonErrorCode.FILE_DELETE_FAILED.getMessage(), e);
         }
+    }
+
+    /*
+     *  构建用户头像 URL
+     * */
+    public String buildObjectUrl(String objectName) {
+        if (properties.isPathStyle()) {
+            return properties.getEndpoint()
+                    + "/" + properties.getBucket()
+                    + "/" + objectName;
+        }
+        return properties.getEndpoint()
+                + "/" + objectName;
     }
 }
