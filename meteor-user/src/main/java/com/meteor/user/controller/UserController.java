@@ -114,10 +114,7 @@ public class UserController {
 
         Long userId = StpUtil.getLoginIdAsLong();
 
-        merchantApplyService.apply(
-                userId,
-                dto.getApplyReason()
-        );
+        merchantApplyService.apply(userId, dto);
 
         return Result.success();
     }

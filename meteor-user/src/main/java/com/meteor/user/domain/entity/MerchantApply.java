@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.meteor.common.enums.DeleteStatus;
+import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.domain.merchant.enums.MerchantApplyStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -41,6 +42,9 @@ public class MerchantApply implements Serializable {
 
     @Schema(description = "用户 ID", example = "10001")
     private Long userId;
+
+    @Schema(description = "店铺名称", example = "Meteor 店铺")
+    private String shopName;
 
     @Schema(description = "申请备注/说明", example = "本人有实体店铺，申请成为商家")
     private String applyReason;
@@ -99,10 +103,11 @@ public class MerchantApply implements Serializable {
     /*
     *  创建待审核申请
     * */
-    public static MerchantApply pending(Long userId, String reason) {
+    public static MerchantApply pending(Long userId, MerchantApplyDTO dto) {
         return MerchantApply.builder()
                 .userId(userId)
-                .applyReason(reason)
+                .applyReason(dto.getApplyReason())
+                .shopName(dto.getShopName())
                 .status(MerchantApplyStatusEnum.PENDING.getCode())
                 .build();
     }

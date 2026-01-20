@@ -2,6 +2,7 @@ package com.meteor.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.meteor.common.exception.BizException;
+import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.domain.entity.MerchantApply;
 import com.meteor.user.domain.merchant.enums.MerchantApplyStatusEnum;
 import com.meteor.user.mapper.MerchantApplyMapper;
@@ -22,7 +23,8 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
     private final MerchantApplyMapper merchantApplyMapper;
 
     @Override
-    public void apply(Long userId, String applyReason) {
+    // todo: 名字重复无法重复添加
+    public void apply(Long userId, MerchantApplyDTO applyReason) {
 
         boolean exists = merchantApplyMapper.exists(
                 new LambdaQueryWrapper<MerchantApply>()

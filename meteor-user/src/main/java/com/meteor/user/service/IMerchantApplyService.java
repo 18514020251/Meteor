@@ -1,5 +1,7 @@
 package com.meteor.user.service;
 
+import com.meteor.user.domain.dto.MerchantApplyDTO;
+
 /**
  *  商家申请表服务接口
  *
@@ -9,5 +11,5 @@ package com.meteor.user.service;
 
 public interface IMerchantApplyService {
 
-    void apply(Long userId, String applyReason);
+    void apply(Long userId, MerchantApplyDTO applyReason);
 }

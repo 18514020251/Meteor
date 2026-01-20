@@ -1,7 +1,6 @@
 package com.meteor.user.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.enums.VerifyCodeSceneEnum;
@@ -16,7 +15,6 @@ import com.meteor.user.domain.entity.User;
 import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.enums.RoleEnum;
-import com.meteor.user.enums.UserStatus;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
@@ -66,65 +64,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
     /*
-     * 注册
-     * */
+    *  注册
+    * */
     @Override
     public void register(UserRegisterReq req) {
 
-        // todo： 验证码的获取/判断/
+        if (req == null
+                || StringUtils.isBlank(req.getUsername())
+                || StringUtils.isBlank(req.getPassword())) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
 
-        registerNonEmpty(req);
-
-        boolean exists = exists(req.getUsername());
+        boolean exists = lambdaQuery()
+                .eq(User::getUsername, req.getUsername())
+                .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
+                .exists();
 
         if (exists) {
             throw new BizException(CommonErrorCode.USER_EXIST);
         }
 
-        User user = buildUser(req);
+        User user = User.createRegisterUser(
+                req.getUsername(),
+                req.getPassword()
+        );
 
         userMapper.insert(user);
     }
 
-    /*
-     * 注册非空判断
-     * */
-    private void registerNonEmpty(UserRegisterReq req) {
-        if (StringUtils.isBlank(req.getUsername())
-                || StringUtils.isBlank(req.getPassword())) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID);
-        }
-    }
 
     /*
-     * 查询用户是否存在
-     * */
-    private boolean exists(String username) {
-        return this.exists(
-                new LambdaQueryWrapper<User>()
-                        .eq(User::getUsername, username)
-                        .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
-        );
-    }
-
-    /*
-     * 构建注册用户
-     * */
-    private User buildUser(UserRegisterReq req) {
-        return User.builder()
-                .username(req.getUsername())
-                .password(PasswordUtil.encrypt(req.getPassword()))
-                .avatar(AvatarConstants.DEFAULT_AVATAR)
-                .status(UserStatus.NORMAL.getCode())
-                .role(RoleEnum.USER.getCode())
-                .isDeleted(DeleteStatus.NORMAL.getCode())
-                .build();
-    }
-
-
-    /*
-     * 登录
-     * */
+    *  登录
+    * */
     @Override
     public String login(UserLoginReq req) {
 
@@ -140,11 +111,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
     /*
-     *  获取当前用户信息
-     * */
+    *  获取用户当前信息
+    * */
     @Override
-    // todo：后续可加分布式锁防击穿
-    // todo: 后续考虑手机号脱敏
     public UserInfoVO getCurrentUserInfo(Long userId) {
 
         UserInfoCache cache = userCacheService.getUserInfo(userId);
@@ -177,7 +146,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return cache;
     }
 
-
     /*
     *  构建用户信息 VO
     * */
@@ -190,7 +158,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         vo.setPhone(cache.getPhone());
         return vo;
     }
-
     /*
     *  上传头像
     * */
