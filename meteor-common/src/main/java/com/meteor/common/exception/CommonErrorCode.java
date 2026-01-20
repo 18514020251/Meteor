@@ -43,8 +43,10 @@ public enum CommonErrorCode implements IErrorCode {
     // 图片相关异常
     AVATAR_SIZE_ERROR(3001, "头像大小不能超过 2MB", HttpStatus.BAD_REQUEST),
     AVATAR_TYPE_ERROR(3002, "头像格式错误", HttpStatus.BAD_REQUEST),
-    IMAGE_PROCESS_ERROR(3003, "图片处理失败", HttpStatus.INTERNAL_SERVER_ERROR);
+    IMAGE_PROCESS_ERROR(3003, "图片处理失败", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    // 商家相关异常
+    OPERATION_NOT_ALLOWED(5001, "操作不允许", HttpStatus.FORBIDDEN);
 
     private final int code;
     private final String message;

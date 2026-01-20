@@ -2,7 +2,7 @@ package com.meteor.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.meteor.user.domain.dto.*;
-import com.meteor.user.domain.entiey.User;
+import com.meteor.user.domain.entity.User;
 import com.meteor.user.domain.vo.UserInfoVO;
 import jakarta.validation.Valid;
 import org.springframework.web.multipart.MultipartFile;

@@ -1,7 +1,7 @@
 package com.meteor.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.meteor.user.domain.entiey.User;
+import com.meteor.user.domain.entity.User;
 import org.apache.ibatis.annotations.Select;
 
 /**

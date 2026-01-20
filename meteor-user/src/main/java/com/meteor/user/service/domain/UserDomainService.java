@@ -2,7 +2,7 @@ package com.meteor.user.service.domain;
 
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.user.domain.entiey.User;
+import com.meteor.user.domain.entity.User;
 import com.meteor.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class UserDomainService {
      */
     public User getValidUser(Long userId) {
         User user = userMapper.selectById(userId);
-        if (user == null || user.isDeleted()) {
+        if (user == null || user.deleted()) {
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
         return user;
@@ -32,7 +32,7 @@ public class UserDomainService {
      */
     public User getValidUserByPhone(String phone) {
         User user = userMapper.selectByPhone(phone);
-        if (user == null || user.isDeleted()) {
+        if (user == null || user.deleted()) {
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
         return user;
@@ -48,7 +48,7 @@ public class UserDomainService {
             throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 
-        if (user.isDeleted()) {
+        if (user.deleted()) {
             throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 

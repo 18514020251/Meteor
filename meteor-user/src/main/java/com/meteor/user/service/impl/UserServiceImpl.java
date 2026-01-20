@@ -12,7 +12,7 @@ import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.*;
-import com.meteor.user.domain.entiey.User;
+import com.meteor.user.domain.entity.User;
 import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.enums.RoleEnum;
@@ -153,7 +153,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         User user = userMapper.selectById(userId);
-        if (user == null || user.isDeleted()) {
+        if (user == null || user.deleted()) {
             userCacheService.cacheNull(userId);
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
@@ -512,8 +512,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         phoneCodeCacheService.saveCode(scene, phone, code);
 
-        log.info("【模拟短信】场景：{}，手机号：{}，验证码：{}",
-                scene.name(), phone, code);
     }
 
 

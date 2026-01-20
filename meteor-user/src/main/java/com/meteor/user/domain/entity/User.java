@@ -1,4 +1,4 @@
-package com.meteor.user.domain.entiey;
+package com.meteor.user.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -79,7 +79,7 @@ public class User implements Serializable {
         return RoleEnum.USER.getCode().equals(this.role);
     }
 
-    public boolean isDeleted(){
+    public boolean deleted(){
         return DeleteStatus.DELETED.getCode().equals(this.isDeleted);
     }
 }

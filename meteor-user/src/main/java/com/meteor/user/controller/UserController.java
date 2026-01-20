@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.common.result.Result;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.vo.UserInfoVO;
+import com.meteor.user.service.IMerchantApplyService;
 import com.meteor.user.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     private final IUserService userService;
+    private final IMerchantApplyService merchantApplyService;
 
     @Operation(summary = "用户注册", description = "用户通过用户名、密码注册账号")
     @PostMapping("/register")
@@ -105,4 +107,20 @@ public class UserController {
         userService.sendPhoneVerifyCode(dto);
         return Result.success();
     }
+
+    @Operation(summary = "申请成为商户", description = "用户申请成为商户")
+    @PostMapping("/merchant/apply")
+    public Result<Void> applyMerchant(@RequestBody MerchantApplyDTO dto) {
+
+        Long userId = StpUtil.getLoginIdAsLong();
+
+        merchantApplyService.apply(
+                userId,
+                dto.getApplyReason()
+        );
+
+        return Result.success();
+    }
+
+
 }
