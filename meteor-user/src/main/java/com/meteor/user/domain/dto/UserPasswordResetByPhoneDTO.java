@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import static com.meteor.common.constants.VerifyCodeConstants.CODE_LENGTH;
+
 /**
  *  根据手机号修改密码
  *
@@ -22,6 +24,11 @@ public class UserPasswordResetByPhoneDTO {
             message = "手机号格式不正确"
     )
     private String phone;
+
+    @Schema(description = "手机验证码", example = "123456")
+    @NotBlank(message = "手机验证码不能为空")
+    @Size(min = CODE_LENGTH, max = CODE_LENGTH, message = "手机验证码长度必须为 6 位")
+    private String phoneCode;
 
     @Schema(description = "新密码", example = "123456")
     @NotBlank(message = "新密码不能为空")

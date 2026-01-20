@@ -101,8 +101,8 @@ public class UserController {
             description = "用户获取手机验证码,用户绑定手机号"
     )
     @PostMapping("/phone/code")
-    public Result<Void> sendPhoneCode(@RequestParam String phone) {
-        userService.sendPhoneVerifyCode(phone);
+    public Result<Void> sendPhoneVerifyCode( @RequestBody PhoneVerifyCodeSendDTO dto) {
+        userService.sendPhoneVerifyCode(dto);
         return Result.success();
     }
 }

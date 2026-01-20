@@ -36,7 +36,7 @@ import java.io.InputStream;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
 import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
-import static com.meteor.common.exception.CommonErrorCode.PHONE_CODE_TOO_FREQUENT;
+import static com.meteor.common.exception.CommonErrorCode.*;
 
 
 /**
@@ -299,6 +299,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  更新用户信息
     * */
+
     @Override
     public void updateProfile(Long userId, UserProfileUpdateDTO dto) {
 
@@ -323,7 +324,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (StringUtils.isNotBlank(dto.getPhone())
                 && !dto.getPhone().equals(user.getPhone())) {
 
+            verifyPhoneCode(
+                    dto.getPhone(),
+                    dto.getPhoneCode()
+            );
+
             checkPhoneUnique(dto.getPhone(), userId);
+
             user.setPhone(dto.getPhone());
             changed = true;
         }
@@ -335,6 +342,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userMapper.updateById(user);
         userCacheService.evictUserInfo(userId);
     }
+
+    /*
+    *  验证手机验证码
+    * */
+    private void verifyPhoneCode(
+            String phone,
+            String code
+    ) {
+        if (StringUtils.isBlank(code)) {
+            throw new BizException(PHONE_CODE_REQUIRED);
+        }
+
+        boolean valid = phoneCodeCacheService.verifyAndDelete(
+                VerifyCodeSceneEnum.BIND_PHONE,
+                phone,
+                code
+        );
+
+        if (!valid) {
+            throw new BizException(PHONE_CODE_ERROR);
+        }
+    }
+
+
 
 
     /*
@@ -355,6 +386,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  检查手机号唯一
     * */
+    // TODO:
+    // 当手机号已被其他账号绑定时，目前策略为直接拒绝。
+    // 后续可扩展为：
+    // 1. 提示用户选择是否迁移账号
+    // 2. 原账号二次确认 / 注销后释放手机号
+    // 3. 风控审核流程（高风险操作）
+
     private void checkPhoneUnique(String phone, Long userId) {
         boolean exists = lambdaQuery()
                 .eq(User::getPhone, phone)
@@ -424,6 +462,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
 
+        boolean valid = phoneCodeCacheService.verifyAndDelete(
+                VerifyCodeSceneEnum.RESET_PASSWORD,
+                dto.getPhone(),
+                dto.getPhoneCode()
+        );
+
+        if (!valid) {
+            throw new BizException(CommonErrorCode.PHONE_CODE_ERROR);
+        }
+
+
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             throw new BizException(CommonErrorCode.PASSWORD_CONFIRM_ERROR);
         }
@@ -439,30 +488,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     * */
     // TODO: 网关层增加 IP 限流，防止恶意刷验证码
     @Override
-    public void sendPhoneVerifyCode(String phone) {
+    public void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO dto) {
+
+        if (dto == null
+                || StringUtils.isBlank(dto.getPhone())
+                || dto.getScene() == null) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
+        String phone = dto.getPhone();
+        VerifyCodeSceneEnum scene = dto.getScene();
 
         if (!PhoneUtil.isValid(phone)) {
             throw new BizException(CommonErrorCode.PHONE_FORMAT_ERROR);
         }
 
-        boolean allow = phoneCodeLimitCacheService.tryAcquire(
-                VerifyCodeSceneEnum.BIND_PHONE,
-                phone
-        );
-
+        boolean allow = phoneCodeLimitCacheService.tryAcquire(scene, phone);
         if (!allow) {
             throw new BizException(PHONE_CODE_TOO_FREQUENT);
         }
 
         String code = PhoneUtil.generateSixDigit();
 
-        phoneCodeCacheService.saveCode(
-                VerifyCodeSceneEnum.BIND_PHONE,
-                phone,
-                code
-        );
+        phoneCodeCacheService.saveCode(scene, phone, code);
 
-        log.info("【模拟短信】手机号：{}，验证码：{}", phone, code);
+        log.info("【模拟短信】场景：{}，手机号：{}，验证码：{}",
+                scene.name(), phone, code);
     }
+
 
 }

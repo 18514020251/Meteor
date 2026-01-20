@@ -1,5 +1,6 @@
 package com.meteor.user.service.cache.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.common.enums.VerifyCodeSceneEnum;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
@@ -43,6 +44,27 @@ public class PhoneCodeCacheServiceImpl implements IPhoneCodeCacheService {
         redisTemplate.delete(
                 RedisKeyConstants.phoneCodeKey(scene, phone)
         );
+    }
+
+    @Override
+    public boolean verifyAndDelete(
+            VerifyCodeSceneEnum scene,
+            String phone,
+            String inputCode
+    ) {
+        if (StringUtils.isBlank(inputCode)) {
+            return false;
+        }
+
+        String key = RedisKeyConstants.phoneCodeKey(scene, phone);
+        String realCode = redisTemplate.opsForValue().get(key);
+
+        if (!inputCode.equals(realCode)) {
+            return false;
+        }
+
+        redisTemplate.delete(key);
+        return true;
     }
 }
 

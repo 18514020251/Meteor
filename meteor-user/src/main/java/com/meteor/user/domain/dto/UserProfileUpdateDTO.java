@@ -24,6 +24,12 @@ public class UserProfileUpdateDTO {
             message = "手机号格式不正确"
     )
     private String phone;
+
+    /**
+     * 手机验证码（仅当修改手机号时必填）
+     */
+    @Schema(description = "手机验证码" , example = "123456")
+    private String phoneCode;
 }
 
 

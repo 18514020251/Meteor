@@ -15,6 +15,8 @@ public class VerifyCodeConstants {
     // 验证码 TTL
     public static final Duration PHONE_CODE_TTL = Duration.ofMinutes(5);
 
+    public static final int CODE_LENGTH = 6;
+
     public static final int MIN_CODE = 100000;
     public static final int MAX_CODE = 1000000;
 
