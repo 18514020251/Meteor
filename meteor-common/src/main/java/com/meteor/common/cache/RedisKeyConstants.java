@@ -15,11 +15,15 @@ public class RedisKeyConstants {
     // 用户模块
     public static final String USER_INFO_KEY = "user:info:%d";
     private static final String PHONE_CODE_PREFIX = "sms:code:%s:%s";
+    private static final String PHONE_CODE_LIMIT_PREFIX = "sms:limit:%s:%s";
 
     public static final Duration USER_INFO_TTL = Duration.ofHours(1);
     public static final Duration USER_INFO_NULL_TTL = Duration.ofSeconds(60);
+    public static final Duration PHONE_CODE_LIMIT_TTL = Duration.ofSeconds(60);
 
     public static final String CACHE_NULL_VALUE = "__NULL__";
+
+    public static final String LIMIT_FLAG = "1";
 
     /*
     *  用户信息缓存 TTL 随机抖动上限（秒）
@@ -30,5 +34,8 @@ public class RedisKeyConstants {
         return String.format(PHONE_CODE_PREFIX, scene, phone);
     }
 
+    public static String phoneCodeLimitKey(VerifyCodeSceneEnum scene, String phone) {
+        return String.format(PHONE_CODE_LIMIT_PREFIX, scene, phone);
+    }
 
 }

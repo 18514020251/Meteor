@@ -21,6 +21,7 @@ import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
+import com.meteor.user.service.cache.IPhoneCodeLimitCacheService;
 import com.meteor.user.service.cache.IUserCacheService;
 import com.meteor.user.service.cache.model.UserInfoCache;
 import com.meteor.user.service.domain.UserDomainService;
@@ -35,6 +36,7 @@ import java.io.InputStream;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
 import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
+import static com.meteor.common.exception.CommonErrorCode.PHONE_CODE_TOO_FREQUENT;
 
 
 /**
@@ -59,6 +61,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IUserCacheService userCacheService;
 
     private final IPhoneCodeCacheService phoneCodeCacheService;
+
+    private final IPhoneCodeLimitCacheService phoneCodeLimitCacheService;
 
 
     /*
@@ -410,7 +414,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     * */
     @Override
     public void updatePasswordByPhone(UserPasswordResetByPhoneDTO  dto) {
-        // todo： 短信验证码
 
         if (dto == null
                 || StringUtils.isAnyBlank(
@@ -434,17 +437,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  发送手机验证码
     * */
+    // TODO: 网关层增加 IP 限流，防止恶意刷验证码
     @Override
     public void sendPhoneVerifyCode(String phone) {
 
-        boolean exists = existsPhone(phone);
-
-        if (!exists) {
-            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
-        }
-
         if (!PhoneUtil.isValid(phone)) {
             throw new BizException(CommonErrorCode.PHONE_FORMAT_ERROR);
+        }
+
+        boolean allow = phoneCodeLimitCacheService.tryAcquire(
+                VerifyCodeSceneEnum.BIND_PHONE,
+                phone
+        );
+
+        if (!allow) {
+            throw new BizException(PHONE_CODE_TOO_FREQUENT);
         }
 
         String code = PhoneUtil.generateSixDigit();
@@ -457,8 +464,5 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         log.info("【模拟短信】手机号：{}，验证码：{}", phone, code);
     }
-
-
-
 
 }

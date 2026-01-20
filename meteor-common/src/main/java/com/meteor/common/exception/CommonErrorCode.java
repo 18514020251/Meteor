@@ -18,6 +18,7 @@ public enum CommonErrorCode implements IErrorCode {
     NOT_FOUND(404, "未找到该资源", HttpStatus.NOT_FOUND),
     SYSTEM_ERROR(500, "系统异常", HttpStatus.INTERNAL_SERVER_ERROR),
     SERVICE_UNAVAILABLE(503, "服务不可用，请稍后重试", HttpStatus.SERVICE_UNAVAILABLE),
+    PHONE_CODE_TOO_FREQUENT(400, "验证码发送过于频繁", HttpStatus.BAD_REQUEST),
 
     // 用户模块
     USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),
