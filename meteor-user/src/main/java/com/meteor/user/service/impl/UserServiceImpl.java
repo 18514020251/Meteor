@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.dto.*;
@@ -25,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
 import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
@@ -149,6 +153,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return buildUserInfoVOFromCache(userCache);
     }
 
+    /*
+    *  构建用户信息缓存
+    * */
     private UserInfoCache buildUserInfoCache(User user) {
         UserInfoCache cache = new UserInfoCache();
         cache.setUserId(user.getId());
@@ -158,6 +165,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return cache;
     }
 
+    /*
+    *  构建用户信息 VO
+    * */
     private UserInfoVO buildUserInfoVOFromCache(UserInfoCache cache) {
         UserInfoVO vo = new UserInfoVO();
         vo.setUserId(cache.getUserId());
@@ -171,7 +181,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     *  上传头像
     * */
     @Override
-    public String uploadAvatar(MultipartFile file , Long userId) {
+    public String uploadAvatar(MultipartFile file, Long userId) {
+
+        validateAvatar(file);
+
+        InputStream processedStream;
+        try {
+            processedStream = ImageCropUtil.cropToSquare(
+                    file.getInputStream(),
+                    getImageFormat(file)
+            );
+        } catch (IOException e) {
+            throw new BizException(CommonErrorCode.IMAGE_PROCESS_ERROR);
+        }
+
+
+        String objectName = minioUtil.upload(
+                MinioPathEnum.USER_AVATAR.path(),
+                processedStream,
+                file.getContentType()
+        );
+
+        updateUserAvatar(userId, objectName);
+        userCacheService.evictUserInfo(userId);
+
+        return minioUtil.buildPresignedUrl(objectName);
+    }
+
+    /*
+    *  获取图片格式
+    * */
+    private String getImageFormat(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new BizException(CommonErrorCode.AVATAR_TYPE_ERROR);
+        }
+
+        if ("image/png".equals(contentType)) {
+            return "png";
+        }
+        if ("image/jpeg".equals(contentType) || "image/jpg".equals(contentType)) {
+            return "jpg";
+        }
+
+        throw new BizException(CommonErrorCode.AVATAR_TYPE_ERROR);
+    }
+
+
+
+    /*
+    *  验证头像
+    * */
+    private void validateAvatar(MultipartFile file) {
 
         if (file.getSize() > MAX_SIZE) {
             throw new BizException(CommonErrorCode.AVATAR_SIZE_ERROR);
@@ -180,15 +241,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (!ALLOWED_TYPES.contains(file.getContentType())) {
             throw new BizException(CommonErrorCode.AVATAR_TYPE_ERROR);
         }
-
-        String objectName = minioUtil.upload(MinioPathEnum.USER_AVATAR.path(), file);
-
-        updateUserAvatar(userId, objectName);
-
-        userCacheService.evictUserInfo(userId);
-
-        return minioUtil.buildPresignedUrl(objectName);
     }
+
 
     /*
     *  更新用户头像

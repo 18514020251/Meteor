@@ -1,6 +1,5 @@
 package com.meteor.user.service.cache;
 
-import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.service.cache.model.UserInfoCache;
 
 /**

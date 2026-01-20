@@ -1,5 +1,6 @@
 package com.meteor.minio.util;
 
+import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.properties.MeteorMinioProperties;
 import io.minio.GetPresignedObjectUrlArgs;
@@ -63,7 +64,7 @@ public class MinioUtil {
 
             return objectName;
         } catch (Exception e) {
-            throw new RuntimeException(CommonErrorCode.FILE_UPLOAD_FAILED.getMessage(), e);
+            throw new BizException(CommonErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -81,7 +82,7 @@ public class MinioUtil {
                             .build()
             );
         } catch (Exception e) {
-            throw new RuntimeException(CommonErrorCode.FILE_DELETE_FAILED.getMessage(), e);
+            throw new BizException(CommonErrorCode.FILE_DELETE_FAILED);
         }
     }
 
@@ -126,6 +127,50 @@ public class MinioUtil {
             throw new RuntimeException(CommonErrorCode.FILE_URL_GENERATE_FAILED.getMessage(), e);
         }
     }
+
+    /**
+     * 上传文件到 MinIO 指定路径
+     *
+     * <p>
+     * 注意：
+     * <ul>
+     *   <li>path 表示对象在 MinIO 中的逻辑目录</li>
+     *   <li>不包含 bucket 名称</li>
+     *   <li>推荐通过 {@link com.meteor.minio.enums.MinioPathEnum}
+     *       获取路径，避免硬编码字符串</li>
+     * </ul>
+     * </p>
+     *
+     * @param path  MinIO 对象存储路径（如 avatar、movie/poster）
+     *              <br/>建议使用 {@code MinioPathEnum.path()} 获取
+     * @param inputStream  上传的文件
+     * @param contentType  文件类型
+     * @return      对象在 MinIO 中的完整 objectName
+     */
+    public String upload(String path, InputStream inputStream, String contentType) {
+
+        String objectName = path + "/"
+                + UUID.randomUUID()
+                + "-"
+                + UUID.randomUUID();
+
+        try {
+
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .stream(inputStream, -1, 5 * 1024 * 1024)
+                            .contentType(contentType)
+                            .build()
+            );
+
+            return objectName;
+        } catch (Exception e) {
+            throw new BizException(CommonErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
 
 
 }

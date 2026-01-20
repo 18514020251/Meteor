@@ -21,7 +21,6 @@ public final class AvatarConstants {
     /** 允许的 MIME 类型 */
     public static final Set<String> ALLOWED_TYPES = Set.of(
             "image/jpeg",
-            "image/png",
-            "image/webp"
+            "image/png"
     );
 }
