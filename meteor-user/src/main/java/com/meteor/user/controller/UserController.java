@@ -95,4 +95,14 @@ public class UserController {
         userService.updatePasswordByPhone(dto);
         return Result.success();
     }
+
+    @Operation(
+            summary = "用户获取验证码" ,
+            description = "用户获取手机验证码,用户绑定手机号"
+    )
+    @PostMapping("/phone/code")
+    public Result<Void> sendPhoneCode(@RequestParam String phone) {
+        userService.sendPhoneVerifyCode(phone);
+        return Result.success();
+    }
 }

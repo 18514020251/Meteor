@@ -27,6 +27,7 @@ public enum CommonErrorCode implements IErrorCode {
     PHONE_EXIST(1005, "手机号已存在", HttpStatus.BAD_REQUEST),
     PASSWORD_CONFIRM_ERROR(1006, "新密码与确认密码不一致", HttpStatus.BAD_REQUEST),
     USER_OR_PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
+    PHONE_FORMAT_ERROR(1007, "手机号格式错误", HttpStatus.BAD_REQUEST),
 
 
     // 文件相关模块

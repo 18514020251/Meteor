@@ -32,4 +32,6 @@ public interface IUserService extends IService<User> {
     void updatePassword(Long userId, @Valid UserPasswordUpdateDTO dto);
 
     void updatePasswordByPhone(@Valid UserPasswordResetByPhoneDTO dto);
+
+    void sendPhoneVerifyCode(String phone);
 }

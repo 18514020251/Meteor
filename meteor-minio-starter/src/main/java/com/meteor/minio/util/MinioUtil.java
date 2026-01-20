@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static com.meteor.common.constants.MinioConstants.MIN_PART_SIZE;
+
 /**
  * Minio 工具类
  *
@@ -160,7 +162,7 @@ public class MinioUtil {
                     PutObjectArgs.builder()
                             .bucket(properties.getBucket())
                             .object(objectName)
-                            .stream(inputStream, -1, 5 * 1024 * 1024)
+                            .stream(inputStream, -1, MIN_PART_SIZE)
                             .contentType(contentType)
                             .build()
             );

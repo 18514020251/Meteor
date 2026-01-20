@@ -19,4 +19,6 @@ public class UserInfoVO {
     private RoleEnum role;
 
     private String avatar;
+
+    private String phone;
 }

@@ -4,8 +4,10 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.constants.AvatarConstants;
+import com.meteor.common.enums.VerifyCodeSceneEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.common.utils.PhoneUtil;
 import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.util.MinioUtil;
@@ -18,6 +20,7 @@ import com.meteor.user.enums.UserStatus;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
+import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import com.meteor.user.service.cache.IUserCacheService;
 import com.meteor.user.service.cache.model.UserInfoCache;
 import com.meteor.user.service.domain.UserDomainService;
@@ -54,6 +57,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final UserDomainService userDomainService;
 
     private final IUserCacheService userCacheService;
+
+    private final IPhoneCodeCacheService phoneCodeCacheService;
+
 
     /*
      * 注册
@@ -134,6 +140,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * */
     @Override
     // todo：后续可加分布式锁防击穿
+    // todo: 后续考虑手机号脱敏
     public UserInfoVO getCurrentUserInfo(Long userId) {
 
         UserInfoCache cache = userCacheService.getUserInfo(userId);
@@ -162,8 +169,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         cache.setUsername(user.getUsername());
         cache.setRole(user.getRole());
         cache.setAvatarObject(user.getAvatar());
+        cache.setPhone(user.getPhone());
         return cache;
     }
+
 
     /*
     *  构建用户信息 VO
@@ -174,6 +183,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         vo.setUsername(cache.getUsername());
         vo.setRole(RoleEnum.fromCode(cache.getRole()));
         vo.setAvatar(minioUtil.buildPresignedUrl(cache.getAvatarObject()));
+        vo.setPhone(cache.getPhone());
         return vo;
     }
 
@@ -354,6 +364,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /*
+    *  检查手机号是否存在
+    * */
+    private boolean existsPhone (String phone) {
+        return lambdaQuery()
+                .eq(User::getPhone, phone)
+                .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
+                .exists();
+    }
+
+    /*
     *  更新密码
     * */
     @Override
@@ -390,7 +410,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     * */
     @Override
     public void updatePasswordByPhone(UserPasswordResetByPhoneDTO  dto) {
-
         // todo： 短信验证码
 
         if (dto == null
@@ -411,5 +430,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setPassword(PasswordUtil.encrypt(dto.getNewPassword()));
         userMapper.updateById(user);
     }
+
+    /*
+    *  发送手机验证码
+    * */
+    @Override
+    public void sendPhoneVerifyCode(String phone) {
+
+        boolean exists = existsPhone(phone);
+
+        if (!exists) {
+            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        }
+
+        if (!PhoneUtil.isValid(phone)) {
+            throw new BizException(CommonErrorCode.PHONE_FORMAT_ERROR);
+        }
+
+        String code = PhoneUtil.generateSixDigit();
+
+        phoneCodeCacheService.saveCode(
+                VerifyCodeSceneEnum.BIND_PHONE,
+                phone,
+                code
+        );
+
+        log.info("【模拟短信】手机号：{}，验证码：{}", phone, code);
+    }
+
+
+
 
 }

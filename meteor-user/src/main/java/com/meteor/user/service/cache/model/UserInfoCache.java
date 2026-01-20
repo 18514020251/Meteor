@@ -21,4 +21,6 @@ public class UserInfoCache implements Serializable {
     private Integer role;
 
     private String avatarObject;
+
+    private String phone;
 }
