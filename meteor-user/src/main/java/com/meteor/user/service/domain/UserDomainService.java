@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
+ *  用户领域服务
+ *
  * @author Programmer
  */
 @Service

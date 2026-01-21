@@ -46,7 +46,7 @@ public enum CommonErrorCode implements IErrorCode {
     IMAGE_PROCESS_ERROR(3003, "图片处理失败", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 商家相关异常
-    OPERATION_NOT_ALLOWED(5001, "操作不允许", HttpStatus.FORBIDDEN);
+    OPERATION_NOT_ALLOWED(5001, "请勿重复提交", HttpStatus.FORBIDDEN);
 
     private final int code;
     private final String message;

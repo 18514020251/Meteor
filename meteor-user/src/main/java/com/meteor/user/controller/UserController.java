@@ -110,7 +110,7 @@ public class UserController {
 
     @Operation(summary = "申请成为商户", description = "用户申请成为商户")
     @PostMapping("/merchant/apply")
-    public Result<Void> applyMerchant(@RequestBody MerchantApplyDTO dto) {
+    public Result<Void> applyMerchant(@RequestBody @Valid MerchantApplyDTO dto) {
 
         Long userId = StpUtil.getLoginIdAsLong();
 

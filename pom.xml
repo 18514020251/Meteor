@@ -26,6 +26,7 @@
 		<module>meteor-gateway</module>
 		<module>meteor-common-starter</module>
 		<module>meteor-minio-starter</module>
+		<module>meteor-mq-starter</module>
 	</modules>
 
 	<properties>
@@ -82,6 +83,12 @@
 			<dependency>
 				<groupId>com.meteor</groupId>
 				<artifactId>meteor-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.meteor</groupId>
+				<artifactId>meteor-mq-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -158,6 +165,12 @@
 				<groupId>io.minio</groupId>
 				<artifactId>minio</artifactId>
 				<version>${minio.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-amqp</artifactId>
+				<version>${spring-boot.version}</version>
 			</dependency>
 
 		</dependencies>

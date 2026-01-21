@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 public class MeteorSaTokenAutoConfiguration {
-
+    // todo:
     @Bean
     @ConditionalOnMissingBean
     public SaTokenConfig saTokenConfig() {

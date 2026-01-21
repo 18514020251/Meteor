@@ -10,11 +10,11 @@ import com.meteor.common.utils.PhoneUtil;
 import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.util.MinioUtil;
+import com.meteor.user.domain.assembler.UserInfoAssembler;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entity.User;
 import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.domain.vo.UserInfoVO;
-import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.common.utils.PasswordUtil;
@@ -61,6 +61,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IPhoneCodeCacheService phoneCodeCacheService;
 
     private final IPhoneCodeLimitCacheService phoneCodeLimitCacheService;
+
+    private final UserInfoAssembler   userInfoAssembler;
 
 
     /*
@@ -118,7 +120,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         UserInfoCache cache = userCacheService.getUserInfo(userId);
         if (cache != null) {
-            return buildUserInfoVOFromCache(cache);
+            return userInfoAssembler.toVO(cache);
         }
 
         User user = userMapper.selectById(userId);
@@ -127,40 +129,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
 
-        UserInfoCache userCache = buildUserInfoCache(user);
-        userCacheService.cacheUserInfo(userId, userCache);
+        UserInfoCache newCache = UserInfoCache.fromUser(user);
+        userCacheService.cacheUserInfo(userId, newCache);
 
-        return buildUserInfoVOFromCache(userCache);
-    }
+        return userInfoAssembler.toVO(newCache);
 
-    /*
-    *  构建用户信息缓存
-    * */
-    private UserInfoCache buildUserInfoCache(User user) {
-        UserInfoCache cache = new UserInfoCache();
-        cache.setUserId(user.getId());
-        cache.setUsername(user.getUsername());
-        cache.setRole(user.getRole());
-        cache.setAvatarObject(user.getAvatar());
-        cache.setPhone(user.getPhone());
-        return cache;
-    }
-
-    /*
-    *  构建用户信息 VO
-    * */
-    private UserInfoVO buildUserInfoVOFromCache(UserInfoCache cache) {
-        UserInfoVO vo = new UserInfoVO();
-        vo.setUserId(cache.getUserId());
-        vo.setUsername(cache.getUsername());
-        vo.setRole(RoleEnum.fromCode(cache.getRole()));
-        vo.setAvatar(minioUtil.buildPresignedUrl(cache.getAvatarObject()));
-        vo.setPhone(cache.getPhone());
-        return vo;
     }
     /*
     *  上传头像
     * */
+    // todo: 除去核心功能外，其余代码过多，而且导致复用性、可读性查，待优化
     @Override
     public String uploadAvatar(MultipartFile file, Long userId) {
 

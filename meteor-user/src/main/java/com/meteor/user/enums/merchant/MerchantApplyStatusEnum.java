@@ -1,4 +1,4 @@
-package com.meteor.user.domain.merchant.enums;
+package com.meteor.user.enums.merchant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

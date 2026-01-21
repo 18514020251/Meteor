@@ -1,5 +1,6 @@
 package com.meteor.user.service.cache.model;
 
+import com.meteor.user.domain.entity.User;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -23,4 +24,17 @@ public class UserInfoCache implements Serializable {
     private String avatarObject;
 
     private String phone;
+
+    /**
+     * 从 User 构建缓存对象
+     */
+    public static UserInfoCache fromUser(User user) {
+        UserInfoCache cache = new UserInfoCache();
+        cache.userId = user.getId();
+        cache.username = user.getUsername();
+        cache.role = user.getRole();
+        cache.avatarObject = user.getAvatar();
+        cache.phone = user.getPhone();
+        return cache;
+    }
 }
