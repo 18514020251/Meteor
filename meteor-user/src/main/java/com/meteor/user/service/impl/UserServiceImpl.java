@@ -3,9 +3,11 @@ package com.meteor.user.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.constants.AvatarConstants;
+import com.meteor.common.enums.DeleteStatus;
 import com.meteor.common.enums.VerifyCodeSceneEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.common.utils.PasswordUtil;
 import com.meteor.common.utils.PhoneUtil;
 import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.enums.MinioPathEnum;
@@ -13,11 +15,9 @@ import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.assembler.UserInfoAssembler;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entity.User;
-import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
-import com.meteor.common.utils.PasswordUtil;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import com.meteor.user.service.cache.IPhoneCodeLimitCacheService;
 import com.meteor.user.service.cache.IUserCacheService;
@@ -25,9 +25,9 @@ import com.meteor.user.service.cache.model.UserInfoCache;
 import com.meteor.user.service.domain.UserDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -348,16 +348,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (exists) {
             throw new BizException(CommonErrorCode.PHONE_EXIST);
         }
-    }
-
-    /*
-    *  检查手机号是否存在
-    * */
-    private boolean existsPhone (String phone) {
-        return lambdaQuery()
-                .eq(User::getPhone, phone)
-                .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
-                .exists();
     }
 
     /*

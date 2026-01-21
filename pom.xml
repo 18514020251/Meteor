@@ -40,6 +40,7 @@
 		<spring-cloud.version>2023.0.1</spring-cloud.version>
 		<spring-cloud-alibaba.version>2023.0.1.2</spring-cloud-alibaba.version>
 		<minio.version>8.5.11</minio.version>
+		<jacoco.version>0.8.11</jacoco.version>
 	</properties>
 
 	<!-- 统一版本管理 -->
@@ -175,4 +176,41 @@
 
 		</dependencies>
 	</dependencyManagement>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${jacoco.version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.11</version>
+				<executions>
+
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
