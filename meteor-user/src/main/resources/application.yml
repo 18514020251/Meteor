@@ -44,6 +44,8 @@ spring:
     virtual-host: /Programmer
     username: Programmer
     password: '07210521'
+    publisher-confirm-type: correlated
+    publisher-returns: true
 
 # MP 配置
 mybatis-plus:

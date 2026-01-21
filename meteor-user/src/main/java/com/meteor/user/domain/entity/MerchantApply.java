@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.meteor.common.enums.DeleteStatus;
-import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.enums.merchant.MerchantApplyStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
