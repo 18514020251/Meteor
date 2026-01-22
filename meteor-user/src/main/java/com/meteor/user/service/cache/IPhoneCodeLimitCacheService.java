@@ -14,4 +14,7 @@ public interface IPhoneCodeLimitCacheService {
      * 是否允许发送验证码
      */
     boolean tryAcquire(VerifyCodeSceneEnum scene, String phone);
+
+    boolean tryAcquireByIp(VerifyCodeSceneEnum scene, String ip);
+
 }

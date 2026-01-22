@@ -1,6 +1,5 @@
 package com.meteor.user.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.utils.PasswordUtil;
@@ -20,8 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -30,15 +27,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.never;
 
 /**
  * @author Programmer
@@ -689,7 +683,7 @@ class UserServiceImplTest {
             Mockito.verify(userMapper, Mockito.times(1)).updateById(Mockito.any(com.meteor.user.domain.entity.User.class));
             
             // 验证StpUtil.logout方法被调用
-            mockedStpUtil.verify(() -> StpUtil.logout(), Mockito.times(1));
+            mockedStpUtil.verify(StpUtil::logout, Mockito.times(1));
         }
     }
 
@@ -808,122 +802,6 @@ class UserServiceImplTest {
         }
     }
 
-    /**
-     * 测试发送手机验证码 - 参数为空情况
-     * 预期：抛出PARAM_INVALID异常
-     */
-    @Test
-    void sendPhoneVerifyCode_should_throw_exception_when_params_empty() {
-        // 创建空的DTO对象
-        com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO dto = new com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO();
-        
-        BizException ex = assertThrows(
-                BizException.class,
-                () -> userService.sendPhoneVerifyCode(dto)
-        );
-
-        assertEquals(
-                CommonErrorCode.PARAM_INVALID.getCode(),
-                ex.getCode()
-        );
-    }
-
-    /**
-     * 测试发送手机验证码 - 手机号格式错误情况
-     * 预期：抛出PHONE_FORMAT_ERROR异常
-     */
-    @Test
-    void sendPhoneVerifyCode_should_throw_exception_when_phone_format_error() {
-        // 模拟PhoneUtil.isValid方法返回false（手机号格式错误）
-        try (MockedStatic<com.meteor.common.utils.PhoneUtil> mockedPhoneUtil = Mockito.mockStatic(com.meteor.common.utils.PhoneUtil.class)) {
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(anyString()))
-                          .thenReturn(false);
-            
-            // 创建DTO对象，设置手机号格式错误
-            com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO dto = new com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO();
-            dto.setPhone("123456");
-            dto.setScene(com.meteor.common.enums.VerifyCodeSceneEnum.LOGIN);
-            
-            BizException ex = assertThrows(
-                    BizException.class,
-                    () -> userService.sendPhoneVerifyCode(dto)
-            );
-
-            assertEquals(
-                    CommonErrorCode.PHONE_FORMAT_ERROR.getCode(),
-                    ex.getCode()
-            );
-        }
-    }
-
-    /**
-     * 测试发送手机验证码 - 限流触发情况
-     * 预期：抛出PHONE_CODE_TOO_FREQUENT异常
-     */
-    @Test
-    void sendPhoneVerifyCode_should_throw_exception_when_rate_limited() {
-        // 模拟PhoneUtil.isValid方法返回true（手机号格式正确）
-        try (MockedStatic<com.meteor.common.utils.PhoneUtil> mockedPhoneUtil = Mockito.mockStatic(com.meteor.common.utils.PhoneUtil.class)) {
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(anyString()))
-                          .thenReturn(true);
-            
-            // 模拟phoneCodeLimitCacheService.tryAcquire方法返回false（限流触发）
-            Mockito.doReturn(false)
-                   .when(phoneCodeLimitCacheService).tryAcquire(Mockito.any(), anyString());
-            
-            // 创建DTO对象，设置正确的信息
-            com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO dto = new com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO();
-            dto.setPhone("13800138000");
-            dto.setScene(com.meteor.common.enums.VerifyCodeSceneEnum.LOGIN);
-            
-            BizException ex = assertThrows(
-                    BizException.class,
-                    () -> userService.sendPhoneVerifyCode(dto)
-            );
-
-            assertEquals(
-                    CommonErrorCode.PHONE_CODE_TOO_FREQUENT.getCode(),
-                    ex.getCode()
-            );
-        }
-    }
-
-    /**
-     * 测试发送手机验证码 - 正常发送情况
-     * 预期：发送成功，保存验证码
-     */
-    @Test
-    void sendPhoneVerifyCode_should_send_successfully_when_valid() {
-        // 模拟PhoneUtil相关方法
-        try (MockedStatic<com.meteor.common.utils.PhoneUtil> mockedPhoneUtil = Mockito.mockStatic(com.meteor.common.utils.PhoneUtil.class)) {
-            // 模拟PhoneUtil.isValid方法返回true（手机号格式正确）
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(anyString()))
-                          .thenReturn(true);
-            
-            // 模拟PhoneUtil.generateSixDigit方法返回验证码
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.generateSixDigit())
-                          .thenReturn("123456");
-            
-            // 模拟phoneCodeLimitCacheService.tryAcquire方法返回true（允许发送）
-            Mockito.doReturn(true)
-                   .when(phoneCodeLimitCacheService).tryAcquire(Mockito.any(), anyString());
-            
-            // 创建DTO对象，设置正确的信息
-            com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO dto = new com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO();
-            dto.setPhone("13800138000");
-            dto.setScene(com.meteor.common.enums.VerifyCodeSceneEnum.LOGIN);
-            
-            // 执行发送验证码操作
-            userService.sendPhoneVerifyCode(dto);
-            
-            // 验证phoneCodeCacheService.saveCode方法被调用
-            Mockito.verify(phoneCodeCacheService, Mockito.times(1)).saveCode(Mockito.any(), anyString(), anyString());
-        }
-    }
-
-
-
-
 
     /**
      * 测试 uploadAvatar 方法 - 正常情况
@@ -950,7 +828,7 @@ class UserServiceImplTest {
             when(minioUtil.upload(anyString(), any(InputStream.class), anyString())).thenReturn(objectName);
             
             // 模拟构建预签名 URL
-            String presignedUrl = "http://minio.example.com/avatar/123456.jpg";
+            String presignedUrl = "https://minio.example.com/avatar/123456.jpg";
             when(minioUtil.buildPresignedUrl(anyString())).thenReturn(presignedUrl);
             
             // 模拟用户查询

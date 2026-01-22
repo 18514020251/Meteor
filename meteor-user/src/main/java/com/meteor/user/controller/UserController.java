@@ -2,12 +2,14 @@ package com.meteor.user.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.common.result.Result;
+import com.meteor.common.utils.IpUtils;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.service.IMerchantApplyService;
 import com.meteor.user.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -103,8 +105,9 @@ public class UserController {
             description = "用户获取手机验证码,用户绑定手机号"
     )
     @PostMapping("/phone/code")
-    public Result<Void> sendPhoneVerifyCode( @RequestBody PhoneVerifyCodeSendDTO dto) {
-        userService.sendPhoneVerifyCode(dto);
+    public Result<Void> sendPhoneVerifyCode( @RequestBody PhoneVerifyCodeSendDTO dto, HttpServletRequest  request) {
+        String clientIp = IpUtils.getClientIp(request);
+        userService.sendPhoneVerifyCode(dto , clientIp);
         return Result.success();
     }
 

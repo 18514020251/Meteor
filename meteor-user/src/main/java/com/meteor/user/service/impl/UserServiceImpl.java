@@ -34,7 +34,6 @@ import java.io.InputStream;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
 import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
-import static com.meteor.common.exception.CommonErrorCode.*;
 
 
 /**
@@ -138,7 +137,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  上传头像
     * */
-    // todo: 除去核心功能外，其余代码过多，而且导致复用性、可读性查，待优化
     @Override
     public String uploadAvatar(MultipartFile file, Long userId) {
 
@@ -423,7 +421,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     * */
     // TODO: 网关层增加 IP 限流，防止恶意刷验证码
     @Override
-    public void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO dto) {
+    public void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO dto , String clientIp) {
 
         if (dto == null
                 || StringUtils.isBlank(dto.getPhone())
@@ -431,8 +429,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
 
-        String phone = dto.getPhone();
+
         VerifyCodeSceneEnum scene = dto.getScene();
+
+        boolean ipAllow = phoneCodeLimitCacheService.tryAcquireByIp(scene, clientIp);
+        if (!ipAllow) {
+            throw new BizException(CommonErrorCode.REQUEST_TOO_FREQUENT);
+        }
+
+        String phone = dto.getPhone();
+
 
         if (!PhoneUtil.isValid(phone)) {
             throw new BizException(CommonErrorCode.PHONE_FORMAT_ERROR);

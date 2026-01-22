@@ -35,7 +35,8 @@ public class SaTokenGatewayConfig {
                         "/user/register",
                         "/error",
                         "/swagger-ui.html",
-                        "/user/password/by-phone"
+                        "/user/password/by-phone",
+                        "/user/phone/code"
                 )
                 .setAuth(obj -> StpUtil.checkLogin())
                 .setError(this::handleSaTokenError);

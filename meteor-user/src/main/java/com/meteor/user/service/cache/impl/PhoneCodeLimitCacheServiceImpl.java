@@ -1,7 +1,10 @@
 package com.meteor.user.service.cache.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.common.enums.VerifyCodeSceneEnum;
+import com.meteor.common.exception.BizException;
+import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.user.service.cache.IPhoneCodeLimitCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,7 +23,7 @@ import static com.meteor.common.cache.RedisKeyConstants.LIMIT_FLAG;
 public class PhoneCodeLimitCacheServiceImpl
         implements IPhoneCodeLimitCacheService {
 
-    private final StringRedisTemplate stringRedisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public boolean tryAcquire(VerifyCodeSceneEnum scene, String phone) {
@@ -30,7 +33,7 @@ public class PhoneCodeLimitCacheServiceImpl
                 phone
         );
 
-        Boolean success = stringRedisTemplate.opsForValue()
+        Boolean success = redisTemplate.opsForValue()
                 .setIfAbsent(
                         key,
                         LIMIT_FLAG,
@@ -39,5 +42,24 @@ public class PhoneCodeLimitCacheServiceImpl
 
         return Boolean.TRUE.equals(success);
     }
+
+
+    @Override
+    public boolean tryAcquireByIp(VerifyCodeSceneEnum scene, String ip) {
+        if (scene == null || StringUtils.isBlank(ip)) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+        String key = RedisKeyConstants.phoneCodeIpLimitKey(scene, ip);
+
+        Long count = redisTemplate.opsForValue().increment(key);
+
+
+        if (count == 1) {
+            redisTemplate.expire(key, RedisKeyConstants.PHONE_CODE_IP_LIMIT_TTL);
+        }
+
+        return count <= RedisKeyConstants.PHONE_CODE_IP_LIMIT_COUNT;
+    }
+
 }
 

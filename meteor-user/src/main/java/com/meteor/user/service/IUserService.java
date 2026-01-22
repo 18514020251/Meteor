@@ -33,5 +33,5 @@ public interface IUserService extends IService<User> {
 
     void updatePasswordByPhone(@Valid UserPasswordResetByPhoneDTO dto);
 
-    void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO phone);
+    void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO phone , String clientIp);
 }

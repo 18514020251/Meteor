@@ -16,14 +16,18 @@ public class RedisKeyConstants {
     public static final String USER_INFO_KEY = "user:info:%d";
     private static final String PHONE_CODE_PREFIX = "sms:code:%s:%s";
     private static final String PHONE_CODE_LIMIT_PREFIX = "sms:limit:%s:%s";
+    private static final String PHONE_CODE_IP_LIMIT_KEY = "sms:ip:limit:%s:%s";
 
     public static final Duration USER_INFO_TTL = Duration.ofHours(1);
     public static final Duration USER_INFO_NULL_TTL = Duration.ofSeconds(60);
     public static final Duration PHONE_CODE_LIMIT_TTL = Duration.ofSeconds(60);
+    public static final Duration PHONE_CODE_IP_LIMIT_TTL = Duration.ofSeconds(60);
 
     public static final String CACHE_NULL_VALUE = "__NULL__";
 
     public static final String LIMIT_FLAG = "1";
+    public static final int PHONE_CODE_IP_LIMIT_COUNT = 5;
+
 
     /*
     *  用户信息缓存 TTL 随机抖动上限（秒）
@@ -31,11 +35,14 @@ public class RedisKeyConstants {
     public static final long USER_INFO_TTL_RANDOM = 20L;
 
     public static String phoneCodeKey(VerifyCodeSceneEnum scene, String phone) {
-        return String.format(PHONE_CODE_PREFIX, scene, phone);
+        return String.format(PHONE_CODE_PREFIX, scene.name(), phone);
     }
 
     public static String phoneCodeLimitKey(VerifyCodeSceneEnum scene, String phone) {
-        return String.format(PHONE_CODE_LIMIT_PREFIX, scene, phone);
+        return String.format(PHONE_CODE_LIMIT_PREFIX, scene.name(), phone);
     }
 
+    public static String phoneCodeIpLimitKey(VerifyCodeSceneEnum scene, String ip) {
+        return String.format(PHONE_CODE_IP_LIMIT_KEY, scene.name(), ip);
+    }
 }
