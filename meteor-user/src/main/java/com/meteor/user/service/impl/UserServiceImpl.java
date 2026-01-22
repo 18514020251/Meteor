@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     private final IPhoneCodeLimitCacheService phoneCodeLimitCacheService;
 
-    private final UserInfoAssembler   userInfoAssembler;
+    private final UserInfoAssembler userInfoAssembler;
 
 
     /*
@@ -76,12 +77,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.PARAM_INVALID);
         }
 
-        boolean exists = lambdaQuery()
-                .eq(User::getUsername, req.getUsername())
-                .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
-                .exists();
-
-        if (exists) {
+        User existingUser = userMapper.selectByUsername(req.getUsername());
+        if (existingUser != null) {
             throw new BizException(CommonErrorCode.USER_EXIST);
         }
 
@@ -242,8 +239,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  更新用户信息
     * */
-
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateProfile(Long userId, UserProfileUpdateDTO dto) {
 
         if (dto == null
@@ -326,16 +323,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
-    /*
-    *  检查手机号唯一
-    * */
-    // TODO:
-    // 当手机号已被其他账号绑定时，目前策略为直接拒绝。
-    // 后续可扩展为：
-    // 1. 提示用户选择是否迁移账号
-    // 2. 原账号二次确认 / 注销后释放手机号
-    // 3. 风控审核流程（高风险操作）
-
+    /**
+     * 校验手机号唯一性
+     * <p>
+     * 当前版本策略：
+     * - 手机号与账号一对一绑定
+     * - 已被其他账号占用时直接拒绝
+     * <p>
+     * 未来可扩展：
+     * - 账号迁移/解绑流程
+     * - 风控审核
+     */
     private void checkPhoneUnique(String phone, Long userId) {
         boolean exists = lambdaQuery()
                 .eq(User::getPhone, phone)
@@ -419,7 +417,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  发送手机验证码
     * */
-    // TODO: 网关层增加 IP 限流，防止恶意刷验证码
     @Override
     public void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO dto , String clientIp) {
 

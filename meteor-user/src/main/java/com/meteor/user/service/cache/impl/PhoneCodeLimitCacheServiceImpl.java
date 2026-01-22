@@ -53,12 +53,12 @@ public class PhoneCodeLimitCacheServiceImpl
 
         Long count = redisTemplate.opsForValue().increment(key);
 
-
-        if (count == 1) {
+        if (count != null && count == 1) {
             redisTemplate.expire(key, RedisKeyConstants.PHONE_CODE_IP_LIMIT_TTL);
         }
 
-        return count <= RedisKeyConstants.PHONE_CODE_IP_LIMIT_COUNT;
+        return count != null && count <= RedisKeyConstants.PHONE_CODE_IP_LIMIT_COUNT;
+
     }
 
 }

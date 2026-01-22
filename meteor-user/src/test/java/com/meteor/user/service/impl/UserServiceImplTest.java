@@ -193,7 +193,56 @@ class UserServiceImplTest {
         );
     }
 
+    /**
+     * 测试当用户名已存在时的注册情况
+     * 预期：抛出USER_EXIST异常
+     */
+    @Test
+    void register_should_throw_user_exist_exception_when_username_already_exists() {
+        // 准备测试数据
+        UserRegisterReq req = new UserRegisterReq();
+        req.setUsername("existing_user");
+        req.setPassword("password123");
 
+        // 模拟用户已存在
+        User existingUser = new User();
+        existingUser.setUsername("existing_user");
+        existingUser.setIsDeleted(0);
+        when(userMapper.selectByUsername("existing_user")).thenReturn(existingUser);
+
+        // 执行测试
+        BizException ex = assertThrows(
+                BizException.class,
+                () -> userService.register(req)
+        );
+
+        // 验证结果
+        assertEquals(
+                CommonErrorCode.USER_EXIST.getCode(),
+                ex.getCode()
+        );
+    }
+
+    /**
+     * 测试当所有参数都有效时的注册情况
+     * 预期：成功注册用户
+     */
+    @Test
+    void register_should_successfully_register_user_when_all_parameters_are_valid() {
+        // 准备测试数据
+        UserRegisterReq req = new UserRegisterReq();
+        req.setUsername("new_user");
+        req.setPassword("password123");
+
+        // 模拟用户不存在
+        when(userMapper.selectByUsername("new_user")).thenReturn(null);
+
+        // 执行测试
+        assertDoesNotThrow(
+                () -> userService.register(req),
+                "注册过程不应该抛出异常"
+        );
+    }
 
     /**
      * 测试登录时用户不存在的情况
