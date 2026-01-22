@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.utils.PasswordUtil;
+import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.domain.assembler.UserInfoAssembler;
 import com.meteor.user.domain.dto.UserLoginReq;
 import com.meteor.user.domain.dto.UserRegisterReq;
+import com.meteor.user.domain.entity.User;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import com.meteor.user.service.cache.IPhoneCodeLimitCacheService;
@@ -15,17 +17,28 @@ import com.meteor.user.service.cache.IUserCacheService;
 import com.meteor.user.service.domain.UserDomainService;
 import cn.dev33.satoken.stp.StpUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
 
 /**
  * @author Programmer
@@ -69,64 +82,100 @@ class UserServiceImplTest {
                 userInfoAssembler
         );
     }
-
     /**
-     * 测试当注册请求为null时的情况
-     * 预期：抛出PARAM_INVALID异常
+     * 测试注册时请求对象为null的情况
      */
     @Test
-    void register_should_throw_exception_when_req_is_null() {
-        BizException ex = assertThrows(
+    @DisplayName("当注册请求为null时，应该抛出PARAM_INVALID异常")
+    void register_shouldThrowParamInvalidException_whenRequestIsNull() {
+
+        BizException exception = assertThrows(
                 BizException.class,
                 () -> userService.register(null)
         );
 
-        assertEquals(
-                CommonErrorCode.PARAM_INVALID.getCode(),
-                ex.getCode()
+        assertAll("验证异常信息",
+                () -> assertEquals(
+                        CommonErrorCode.PARAM_INVALID.getCode(),
+                        exception.getCode(),
+                        "异常代码应该匹配PARAM_INVALID"
+                ),
+                () -> assertNotNull(
+                        exception.getMessage(),
+                        "异常消息不应该为null"
+                ),
+                () -> assertTrue(
+                        exception.getMessage().contains("参数") ||
+                                exception.getMessage().contains("invalid"),
+                        "异常消息应该包含相关描述"
+                )
         );
     }
 
-    /**
-     * 测试当用户名为空时的注册情况
-     * 预期：抛出PARAM_INVALID异常
-     */
     @Test
-    void register_should_throw_exception_when_username_is_blank() {
+    @DisplayName("当用户名为空字符串时，应该抛出PARAM_INVALID异常")
+    void register_WhenUsernameIsEmpty_ShouldThrowParamInvalidException() {
+        // Given - 准备测试数据：用户名为空
         UserRegisterReq req = new UserRegisterReq();
-        req.setUsername("");
+        req.setUsername("");  // 空字符串
         req.setPassword("password123");
 
-        BizException ex = assertThrows(
+        verifyNoInteractions(userMapper);
+
+        BizException exception = assertThrows(
                 BizException.class,
-                () -> userService.register(req)
+                () -> userService.register(req),
+                "应该抛出BizException"
         );
 
-        assertEquals(
-                CommonErrorCode.PARAM_INVALID.getCode(),
-                ex.getCode()
+        assertAll("验证异常详细信息",
+                () -> assertEquals(
+                        CommonErrorCode.PARAM_INVALID.getCode(),
+                        exception.getCode(),
+                        "异常代码应该匹配PARAM_INVALID"
+                ),
+                () -> assertNotNull(
+                        exception.getMessage(),
+                        "异常消息不应该为null"
+                )
         );
+
+        // 验证没有进行数据库操作
+        verifyNoInteractions(userMapper);
     }
 
-    /**
-     * 测试当密码为空时的注册情况
-     * 预期：抛出PARAM_INVALID异常
-     */
     @Test
-    void register_should_throw_exception_when_password_is_blank() {
+    @DisplayName("当密码为空字符串时，应该抛出PARAM_INVALID异常")
+    void register_WhenPasswordIsEmpty_ShouldThrowParamInvalidException() {
+        // Given - 准备测试数据：密码为空
         UserRegisterReq req = new UserRegisterReq();
         req.setUsername("testuser");
-        req.setPassword("");
+        req.setPassword("");  // 空密码
 
-        BizException ex = assertThrows(
+        // 确保测试前没有与数据库交互
+        verifyNoInteractions(userMapper);
+
+        // When - 执行被测试方法
+        BizException exception = assertThrows(
                 BizException.class,
-                () -> userService.register(req)
+                () -> userService.register(req),
+                "密码为空时应该抛出BizException"
         );
 
-        assertEquals(
-                CommonErrorCode.PARAM_INVALID.getCode(),
-                ex.getCode()
+        // Then - 验证结果
+        assertAll("验证异常详细信息",
+                () -> assertEquals(
+                        CommonErrorCode.PARAM_INVALID.getCode(),
+                        exception.getCode(),
+                        "异常代码应该匹配PARAM_INVALID"
+                ),
+                () -> assertNotNull(
+                        exception.getMessage(),
+                        "异常消息不应该为null"
+                )
         );
+
+        verifyNoInteractions(userMapper);
     }
 
     /**
@@ -150,99 +199,7 @@ class UserServiceImplTest {
         );
     }
 
-    /**
-     * 测试当用户名已存在时的注册情况
-     * 预期：抛出USER_EXIST异常
-     */
-    @Test
-    void register_should_throw_exception_when_username_already_exists() {
-        // 创建一个测试子类，直接在register方法中抛出USER_EXIST异常
-        UserServiceImpl testUserService = new UserServiceImpl(
-                userMapper,
-                minioUtil,
-                userDomainService,
-                userCacheService,
-                phoneCodeCacheService,
-                phoneCodeLimitCacheService,
-                userInfoAssembler
-        ) {
-            @Override
-            public void register(UserRegisterReq req) {
-                // 首先验证参数
-                if (req == null
-                        || req.getUsername() == null
-                        || req.getPassword() == null) {
-                    throw new BizException(CommonErrorCode.PARAM_INVALID);
-                }
-                
-                // 直接抛出USER_EXIST异常，模拟用户名已存在的情况
-                throw new BizException(CommonErrorCode.USER_EXIST);
-            }
-        };
-        
-        UserRegisterReq req = new UserRegisterReq();
-        req.setUsername("existinguser");
-        req.setPassword("password123");
 
-        BizException ex = assertThrows(
-                BizException.class,
-                () -> testUserService.register(req)
-        );
-
-        assertEquals(
-                CommonErrorCode.USER_EXIST.getCode(),
-                ex.getCode()
-        );
-    }
-
-    /**
-     * 测试当所有参数都有效时的正常注册情况
-     * 预期：注册成功，调用userMapper.insert方法
-     */
-    @Test
-    void register_should_success_when_all_parameters_are_valid() {
-        // 模拟userMapper.insert方法，返回1表示插入成功
-        Mockito.doReturn(1).when(userMapper).insert(Mockito.any(com.meteor.user.domain.entity.User.class));
-        
-        // 创建一个测试子类，重写register方法以跳过用户名存在检查
-        UserServiceImpl testUserService = new UserServiceImpl(
-                userMapper,
-                minioUtil,
-                userDomainService,
-                userCacheService,
-                phoneCodeCacheService,
-                phoneCodeLimitCacheService,
-                userInfoAssembler
-        ) {
-            @Override
-            public void register(UserRegisterReq req) {
-                // 首先验证参数
-                if (req == null
-                        || req.getUsername() == null
-                        || req.getPassword() == null) {
-                    throw new BizException(CommonErrorCode.PARAM_INVALID);
-                }
-                
-                // 跳过用户名存在检查，直接创建用户并插入
-                com.meteor.user.domain.entity.User user = com.meteor.user.domain.entity.User.createRegisterUser(
-                        req.getUsername(),
-                        req.getPassword()
-                );
-
-                userMapper.insert(user);
-            }
-        };
-        
-        UserRegisterReq req = new UserRegisterReq();
-        req.setUsername("newuser");
-        req.setPassword("password123");
-
-        // 执行注册操作，应该不会抛出异常
-        testUserService.register(req);
-        
-        // 验证userMapper.insert方法被调用
-        Mockito.verify(userMapper, Mockito.times(1)).insert(Mockito.any(com.meteor.user.domain.entity.User.class));
-    }
 
     /**
      * 测试登录时用户不存在的情况
@@ -252,7 +209,7 @@ class UserServiceImplTest {
     void login_should_throw_exception_when_user_not_exists() {
         // 模拟userDomainService.getNormalUserByUsername方法抛出USER_OR_PASSWORD_ERROR异常
         Mockito.doThrow(new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR))
-               .when(userDomainService).getNormalUserByUsername(Mockito.anyString());
+               .when(userDomainService).getNormalUserByUsername(anyString());
         
         UserLoginReq req = new UserLoginReq();
         req.setUsername("nonuser");
@@ -282,11 +239,11 @@ class UserServiceImplTest {
         
         // 模拟userDomainService.getNormalUserByUsername方法返回模拟用户
         Mockito.doReturn(mockUser)
-               .when(userDomainService).getNormalUserByUsername(Mockito.anyString());
+               .when(userDomainService).getNormalUserByUsername(anyString());
         
         // 模拟PasswordUtil.matches方法返回false
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = Mockito.mockStatic(PasswordUtil.class)) {
-            mockedPasswordUtil.when(() -> PasswordUtil.matches(Mockito.anyString(), Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.matches(anyString(), anyString()))
                              .thenReturn(false);
             
             UserLoginReq req = new UserLoginReq();
@@ -319,11 +276,11 @@ class UserServiceImplTest {
         
         // 模拟userDomainService.getNormalUserByUsername方法返回模拟用户
         Mockito.doReturn(mockUser)
-               .when(userDomainService).getNormalUserByUsername(Mockito.anyString());
+               .when(userDomainService).getNormalUserByUsername(anyString());
         
         // 模拟PasswordUtil.matches方法返回true
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = Mockito.mockStatic(PasswordUtil.class)) {
-            mockedPasswordUtil.when(() -> PasswordUtil.matches(Mockito.anyString(), Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.matches(anyString(), anyString()))
                              .thenReturn(true);
             
             // 模拟StpUtil.login和StpUtil.getTokenValue方法
@@ -627,7 +584,7 @@ class UserServiceImplTest {
         
         // 模拟PasswordUtil.matches方法返回false（旧密码错误）
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = Mockito.mockStatic(PasswordUtil.class)) {
-            mockedPasswordUtil.when(() -> PasswordUtil.matches(Mockito.anyString(), Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.matches(anyString(), anyString()))
                              .thenReturn(false);
             
             // 创建DTO对象，设置旧密码错误
@@ -667,7 +624,7 @@ class UserServiceImplTest {
         
         // 模拟PasswordUtil.matches方法返回true（旧密码正确）
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = Mockito.mockStatic(PasswordUtil.class)) {
-            mockedPasswordUtil.when(() -> PasswordUtil.matches(Mockito.anyString(), Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.matches(anyString(), anyString()))
                              .thenReturn(true);
             
             // 创建DTO对象，设置新密码和确认密码不一致
@@ -710,11 +667,11 @@ class UserServiceImplTest {
              MockedStatic<StpUtil> mockedStpUtil = Mockito.mockStatic(StpUtil.class)) {
             
             // 模拟PasswordUtil.matches方法返回true（旧密码正确）
-            mockedPasswordUtil.when(() -> PasswordUtil.matches(Mockito.anyString(), Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.matches(anyString(), anyString()))
                              .thenReturn(true);
             
             // 模拟PasswordUtil.encrypt方法返回加密后的密码
-            mockedPasswordUtil.when(() -> PasswordUtil.encrypt(Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.encrypt(anyString()))
                              .thenReturn("newencryptedpassword");
             
             // 创建DTO对象，设置正确的密码信息
@@ -764,7 +721,7 @@ class UserServiceImplTest {
     void updatePasswordByPhone_should_throw_exception_when_phone_code_incorrect() {
         // 模拟phoneCodeCacheService.verifyAndDelete方法返回false（验证码错误）
         Mockito.doReturn(false)
-               .when(phoneCodeCacheService).verifyAndDelete(Mockito.any(), Mockito.anyString(), Mockito.anyString());
+               .when(phoneCodeCacheService).verifyAndDelete(Mockito.any(), anyString(), anyString());
         
         // 创建DTO对象，设置验证码错误
         com.meteor.user.domain.dto.UserPasswordResetByPhoneDTO dto = new com.meteor.user.domain.dto.UserPasswordResetByPhoneDTO();
@@ -792,7 +749,7 @@ class UserServiceImplTest {
     void updatePasswordByPhone_should_throw_exception_when_passwords_not_match() {
         // 模拟phoneCodeCacheService.verifyAndDelete方法返回true（验证码正确）
         Mockito.doReturn(true)
-               .when(phoneCodeCacheService).verifyAndDelete(Mockito.any(), Mockito.anyString(), Mockito.anyString());
+               .when(phoneCodeCacheService).verifyAndDelete(Mockito.any(), anyString(), anyString());
         
         // 创建DTO对象，设置密码确认不一致
         com.meteor.user.domain.dto.UserPasswordResetByPhoneDTO dto = new com.meteor.user.domain.dto.UserPasswordResetByPhoneDTO();
@@ -825,15 +782,15 @@ class UserServiceImplTest {
         
         // 模拟phoneCodeCacheService.verifyAndDelete方法返回true（验证码正确）
         Mockito.doReturn(true)
-               .when(phoneCodeCacheService).verifyAndDelete(Mockito.any(), Mockito.anyString(), Mockito.anyString());
+               .when(phoneCodeCacheService).verifyAndDelete(Mockito.any(), anyString(), anyString());
         
         // 模拟userDomainService.getValidUserByPhone方法返回模拟用户
         Mockito.doReturn(mockUser)
-               .when(userDomainService).getValidUserByPhone(Mockito.anyString());
+               .when(userDomainService).getValidUserByPhone(anyString());
         
         // 模拟PasswordUtil.encrypt方法返回加密后的密码
         try (MockedStatic<PasswordUtil> mockedPasswordUtil = Mockito.mockStatic(PasswordUtil.class)) {
-            mockedPasswordUtil.when(() -> PasswordUtil.encrypt(Mockito.anyString()))
+            mockedPasswordUtil.when(() -> PasswordUtil.encrypt(anyString()))
                              .thenReturn("newencryptedpassword");
             
             // 创建DTO对象，设置正确的信息
@@ -879,7 +836,7 @@ class UserServiceImplTest {
     void sendPhoneVerifyCode_should_throw_exception_when_phone_format_error() {
         // 模拟PhoneUtil.isValid方法返回false（手机号格式错误）
         try (MockedStatic<com.meteor.common.utils.PhoneUtil> mockedPhoneUtil = Mockito.mockStatic(com.meteor.common.utils.PhoneUtil.class)) {
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(Mockito.anyString()))
+            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(anyString()))
                           .thenReturn(false);
             
             // 创建DTO对象，设置手机号格式错误
@@ -907,12 +864,12 @@ class UserServiceImplTest {
     void sendPhoneVerifyCode_should_throw_exception_when_rate_limited() {
         // 模拟PhoneUtil.isValid方法返回true（手机号格式正确）
         try (MockedStatic<com.meteor.common.utils.PhoneUtil> mockedPhoneUtil = Mockito.mockStatic(com.meteor.common.utils.PhoneUtil.class)) {
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(Mockito.anyString()))
+            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(anyString()))
                           .thenReturn(true);
             
             // 模拟phoneCodeLimitCacheService.tryAcquire方法返回false（限流触发）
             Mockito.doReturn(false)
-                   .when(phoneCodeLimitCacheService).tryAcquire(Mockito.any(), Mockito.anyString());
+                   .when(phoneCodeLimitCacheService).tryAcquire(Mockito.any(), anyString());
             
             // 创建DTO对象，设置正确的信息
             com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO dto = new com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO();
@@ -940,7 +897,7 @@ class UserServiceImplTest {
         // 模拟PhoneUtil相关方法
         try (MockedStatic<com.meteor.common.utils.PhoneUtil> mockedPhoneUtil = Mockito.mockStatic(com.meteor.common.utils.PhoneUtil.class)) {
             // 模拟PhoneUtil.isValid方法返回true（手机号格式正确）
-            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(Mockito.anyString()))
+            mockedPhoneUtil.when(() -> com.meteor.common.utils.PhoneUtil.isValid(anyString()))
                           .thenReturn(true);
             
             // 模拟PhoneUtil.generateSixDigit方法返回验证码
@@ -949,7 +906,7 @@ class UserServiceImplTest {
             
             // 模拟phoneCodeLimitCacheService.tryAcquire方法返回true（允许发送）
             Mockito.doReturn(true)
-                   .when(phoneCodeLimitCacheService).tryAcquire(Mockito.any(), Mockito.anyString());
+                   .when(phoneCodeLimitCacheService).tryAcquire(Mockito.any(), anyString());
             
             // 创建DTO对象，设置正确的信息
             com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO dto = new com.meteor.user.domain.dto.PhoneVerifyCodeSendDTO();
@@ -960,8 +917,85 @@ class UserServiceImplTest {
             userService.sendPhoneVerifyCode(dto);
             
             // 验证phoneCodeCacheService.saveCode方法被调用
-            Mockito.verify(phoneCodeCacheService, Mockito.times(1)).saveCode(Mockito.any(), Mockito.anyString(), Mockito.anyString());
+            Mockito.verify(phoneCodeCacheService, Mockito.times(1)).saveCode(Mockito.any(), anyString(), anyString());
         }
+    }
+
+
+
+
+
+    /**
+     * 测试 uploadAvatar 方法 - 正常情况
+     */
+    @Test
+    void uploadAvatar_ShouldReturnAvatarUrl_WhenValidFile() throws Exception {
+        // 准备测试数据
+        Long userId = 1L;
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getContentType()).thenReturn("image/jpeg");
+        when(file.getSize()).thenReturn(1024L);
+        
+        // 模拟文件输入流
+        InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+        when(file.getInputStream()).thenReturn(inputStream);
+        
+        // 模拟图片裁剪
+        InputStream processedStream = new ByteArrayInputStream(new byte[0]);
+        try (MockedStatic<ImageCropUtil> mockedImageCropUtil = Mockito.mockStatic(ImageCropUtil.class)) {
+            mockedImageCropUtil.when(() -> ImageCropUtil.cropToSquare(any(InputStream.class), anyString())).thenReturn(processedStream);
+            
+            // 模拟 MinIO 上传
+            String objectName = "avatar/123456.jpg";
+            when(minioUtil.upload(anyString(), any(InputStream.class), anyString())).thenReturn(objectName);
+            
+            // 模拟构建预签名 URL
+            String presignedUrl = "http://minio.example.com/avatar/123456.jpg";
+            when(minioUtil.buildPresignedUrl(anyString())).thenReturn(presignedUrl);
+            
+            // 模拟用户查询
+            User user = new User();
+            user.setId(userId);
+            user.setAvatar(null);
+            when(userMapper.selectById(userId)).thenReturn(user);
+            
+            // 执行测试
+            String result = userService.uploadAvatar(file, userId);
+            
+            // 验证结果
+            assertEquals(presignedUrl, result, "返回的头像 URL 应该匹配预签名 URL");
+            
+            // 验证方法调用
+            verify(minioUtil).upload(anyString(), any(InputStream.class), anyString());
+            verify(userMapper).selectById(userId);
+            verify(userMapper).updateById(any(User.class));
+            verify(userCacheService).evictUserInfo(userId);
+        }
+    }
+
+    /**
+     * 测试 uploadAvatar 方法 - IOException 异常情况
+     */
+    @Test
+    void uploadAvatar_ShouldThrowImageProcessException_WhenIOException() throws Exception {
+        // 准备测试数据
+        Long userId = 1L;
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getContentType()).thenReturn("image/jpeg");
+        when(file.getSize()).thenReturn(1024L);
+        
+        // 模拟文件输入流抛出 IOException
+        when(file.getInputStream()).thenThrow(new IOException("Test IOException"));
+        
+        // 执行测试并验证异常
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> userService.uploadAvatar(file, userId),
+                "应该抛出 BizException"
+        );
+        
+        // 验证异常代码
+        assertEquals(CommonErrorCode.IMAGE_PROCESS_ERROR.getCode(), exception.getCode(), "异常代码应该匹配 IMAGE_PROCESS_ERROR");
     }
 }
 

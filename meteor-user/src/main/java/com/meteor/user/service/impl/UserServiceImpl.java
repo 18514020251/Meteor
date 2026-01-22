@@ -296,7 +296,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             String code
     ) {
         if (StringUtils.isBlank(code)) {
-            throw new BizException(PHONE_CODE_REQUIRED);
+            throw new BizException(CommonErrorCode.PHONE_CODE_REQUIRED);
         }
 
         boolean valid = phoneCodeCacheService.verifyAndDelete(
@@ -306,7 +306,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         );
 
         if (!valid) {
-            throw new BizException(PHONE_CODE_ERROR);
+            throw new BizException(CommonErrorCode.PHONE_CODE_ERROR);
         }
     }
 
@@ -440,7 +440,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         boolean allow = phoneCodeLimitCacheService.tryAcquire(scene, phone);
         if (!allow) {
-            throw new BizException(PHONE_CODE_TOO_FREQUENT);
+            throw new BizException(CommonErrorCode.PHONE_CODE_TOO_FREQUENT);
         }
 
         String code = PhoneUtil.generateSixDigit();
