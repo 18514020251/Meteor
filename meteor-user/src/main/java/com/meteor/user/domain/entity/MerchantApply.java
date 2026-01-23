@@ -2,9 +2,7 @@ package com.meteor.user.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.meteor.common.enums.DeleteStatus;
 import com.meteor.user.enums.merchant.MerchantApplyStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -51,24 +49,12 @@ public class MerchantApply implements Serializable {
     @Schema(description = "申请状态：0-待审核，1-已通过，2-已拒绝", example = "0")
     private Integer status;
 
-    @Schema(description = "管理员审核备注", example = "资料不完整")
-    private String auditRemark;
-
-    @Schema(description = "审核人 ID", example = "20001")
-    private Long auditBy;
-
-    @Schema(description = "审核时间", example = "2026-01-20 18:30:00")
-    private LocalDateTime auditTime;
 
     @Schema(description = "创建时间", example = "2026-01-20 17:30:00")
     private LocalDateTime createTime;
 
     @Schema(description = "更新时间", example = "2026-01-20 18:30:00")
     private LocalDateTime updateTime;
-
-    @Schema(description = "是否删除：0-未删除，1-已删除")
-    @TableLogic
-    private Integer isDeleted;
 
 
     /**
@@ -92,12 +78,6 @@ public class MerchantApply implements Serializable {
         return MerchantApplyStatusEnum.REJECTED.getCode().equals(this.status);
     }
 
-    /**
-     * 是否已删除
-     */
-    public boolean deleted() {
-        return DeleteStatus.DELETED.getCode().equals(this.isDeleted);
-    }
 
     /*
     *  创建待审核申请

@@ -12,6 +12,9 @@ import java.time.Duration;
  */
 public class RedisKeyConstants {
 
+    private RedisKeyConstants() {
+    }
+
     // 用户模块
     public static final String USER_INFO_KEY = "user:info:%d";
     private static final String PHONE_CODE_PREFIX = "sms:code:%s:%s";

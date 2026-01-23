@@ -27,7 +27,8 @@
 		<module>meteor-common-starter</module>
 		<module>meteor-minio-starter</module>
 		<module>meteor-mq-starter</module>
-	</modules>
+        <module>meteor-admin</module>
+    </modules>
 
 	<properties>
 		<java.version>17</java.version>

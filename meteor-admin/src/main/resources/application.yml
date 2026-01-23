@@ -4,7 +4,7 @@ application:
 spring:
   # 数据库配置
   datasource:
-    url: jdbc:mysql://${programmer.mysql.host}:3306/meteor_user?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${programmer.mysql.host}:3306/meteor_admin?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${programmer.mysql.username}
     password: ${programmer.mysql.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -18,7 +18,7 @@ spring:
     static-path-pattern: /static/**
   # 程序名称
   application:
-    name: meteor-user
+    name: meteor-admin
   # 开发环境
   profiles:
     active: local
@@ -43,7 +43,7 @@ spring:
     port: 5672
     virtual-host: /Programmer
     username: Programmer
-    password: ${programmer.rabbitmq.password}
+    password: ${meteor.rabbitmq.password}
     publisher-confirm-type: correlated
     publisher-returns: true
 
@@ -74,17 +74,7 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: alpha
 server:
-  port: 8081
-# sa-token
-sa-token:
-  token-name: Authorization
-  timeout: 86400
-  active-timeout: -1
-  is-concurrent: false
-  is-share: false
-  token-style: uuid
-  is-log: true
-  token-prefix: Bearer
+  port: 8082
 
 meteor:
   minio:

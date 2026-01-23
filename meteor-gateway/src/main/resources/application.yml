@@ -33,6 +33,11 @@ spring:
           predicates:
             - Path=/user/**
 
+        - id: meteor-admin
+          uri: lb://meteor-admin
+          predicates:
+            - Path=/admin/**
+
 
 # 日志级别
 logging:
