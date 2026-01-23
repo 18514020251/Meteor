@@ -13,12 +13,15 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 public class MeteorSaTokenAutoConfiguration {
+
+    private static final long TOKEN_TIMEOUT_ONE_DAY = 60L * 60 * 24;
+
     @Bean
     @ConditionalOnMissingBean
     public SaTokenConfig saTokenConfig() {
         SaTokenConfig config = new SaTokenConfig();
         config.setTokenName("Authorization");
-        config.setTimeout(60L * 60 * 24);
+        config.setTimeout(TOKEN_TIMEOUT_ONE_DAY);
         config.setIsConcurrent(true);
         config.setIsShare(true);
         config.setTokenStyle("uuid");

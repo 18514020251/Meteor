@@ -1,6 +1,13 @@
 package com.meteor.admin.controller;
 
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import com.meteor.admin.domain.dto.MerchantApplyDTO;
+import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
+import com.meteor.admin.service.IMerchantApplyService;
+import lombok.RequiredArgsConstructor;
+import com.meteor.common.domain.PageResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +22,15 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class MerchantApplyController {
+
+    private final IMerchantApplyService merchantApplyService;
+
+    @GetMapping("/list")
+    @SaCheckRole("admin")
+    public PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query) {
+        return merchantApplyService.list(query);
+    }
 
 }

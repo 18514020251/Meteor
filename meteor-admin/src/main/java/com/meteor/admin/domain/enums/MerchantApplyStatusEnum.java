@@ -1,5 +1,7 @@
 package com.meteor.admin.domain.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -15,11 +17,27 @@ public enum MerchantApplyStatusEnum {
     APPROVED(1, "通过"),
     REJECTED(2, "拒绝");
 
-    private final int code;
+    @EnumValue
+    private final Integer code;
+    @JsonValue
     private final String desc;
 
-    MerchantApplyStatusEnum(int code, String desc) {
+
+    MerchantApplyStatusEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }
+
+    public static MerchantApplyStatusEnum fromCode(Integer status) {
+        if (status == null) {
+            return null;
+        }
+        for (MerchantApplyStatusEnum value : values()) {
+            if (value.getCode().equals(status)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
 }

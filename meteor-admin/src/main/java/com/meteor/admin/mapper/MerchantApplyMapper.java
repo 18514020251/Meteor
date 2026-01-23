@@ -16,4 +16,5 @@ public interface MerchantApplyMapper extends BaseMapper<MerchantApply> {
 
     @Select("select exists(select 1 from merchant_apply where apply_id = #{applyId})")
     boolean existsByApplyId(Long applyId);
+
 }

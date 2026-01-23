@@ -19,7 +19,6 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>com.meteor</groupId>
             <artifactId>meteor-common-starter</artifactId>
