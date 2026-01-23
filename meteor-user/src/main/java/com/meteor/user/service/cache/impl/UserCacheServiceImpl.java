@@ -52,6 +52,20 @@ public class UserCacheServiceImpl implements IUserCacheService {
     }
 
     @Override
+    public void cacheUserRole(Long userId, String role) {
+        String key = buildUserRoleKey(userId);
+        try {
+            redisTemplate.opsForValue().set(
+                    key,
+                    role,
+                    USER_ROLE_TTL
+            );
+        } catch (Exception e) {
+            log.warn("写入用户缓存失败, userId={}", userId, e);
+        }
+    }
+
+    @Override
     public void cacheUserInfo(Long userId, UserInfoCache cache) {
         String key = buildUserInfoKey(userId);
         try {
@@ -65,6 +79,7 @@ public class UserCacheServiceImpl implements IUserCacheService {
             log.warn("写入用户缓存失败, userId={}", userId, e);
         }
     }
+
 
     @Override
     public void cacheNull(Long userId) {
@@ -87,9 +102,6 @@ public class UserCacheServiceImpl implements IUserCacheService {
         redisTemplate.delete(key);
     }
 
-    private String buildUserInfoKey(Long userId) {
-        return String.format(USER_INFO_KEY, userId);
-    }
 }
 
 

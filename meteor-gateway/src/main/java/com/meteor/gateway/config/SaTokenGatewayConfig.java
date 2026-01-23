@@ -33,12 +33,16 @@ public class SaTokenGatewayConfig {
                 .addExclude(
                         "/user/login",
                         "/user/register",
-                        "/error",
-                        "/swagger-ui.html",
-                        "/user/password/by-phone",
-                        "/user/phone/code"
+                        "/error"
                 )
-                .setAuth(obj -> StpUtil.checkLogin())
+                .setAuth(obj -> {
+                    StpUtil.checkLogin();
+
+                    String path = SaHolder.getRequest().getRequestPath();
+                    if (path.startsWith("/admin")) {
+                        StpUtil.checkRole("admin");
+                    }
+                })
                 .setError(this::handleSaTokenError);
     }
 

@@ -47,6 +47,9 @@ spring:
     publisher-confirm-type: correlated
     publisher-returns: true
 
+server:
+  port: 8082
+
 # MP 配置
 mybatis-plus:
   type-aliases-package: com.meteor.domain
@@ -66,15 +69,16 @@ logging:
   file:
     path: logs
 
-# swagger
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: alpha
-server:
-  port: 8082
+# sa-token
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: false
+  is-share: false
+  token-style: uuid
+  is-log: true
+  token-prefix: Bearer
 
 meteor:
   minio:

@@ -24,6 +24,8 @@ public interface IUserCacheService {
      */
     void cacheUserInfo(Long userId, UserInfoCache cache);
 
+    void cacheUserRole(Long userId , String role);
+
     /**
      * 缓存空值（防穿透）
      */

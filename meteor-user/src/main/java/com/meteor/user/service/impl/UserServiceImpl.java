@@ -16,6 +16,7 @@ import com.meteor.user.domain.assembler.UserInfoAssembler;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.domain.vo.UserInfoVO;
+import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.IUserService;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
@@ -103,7 +104,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 
-        StpUtil.login(user.getId());
+        String loginType = switch (user.getRole()) {
+            case 2 -> RoleEnum.ADMIN.getDesc();
+            case 1 -> RoleEnum.MERCHANT.getDesc();
+            default -> RoleEnum.USER.getDesc();
+        };
+
+        userCacheService.cacheUserRole(user.getId() , loginType);
+
+        StpUtil.login(user.getId(), loginType);
         return StpUtil.getTokenValue();
     }
 

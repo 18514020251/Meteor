@@ -15,9 +15,9 @@ import lombok.Getter;
 @Getter
 public enum RoleEnum {
 
-    USER(0, "普通用户"),
-    MERCHANT(1, "商家"),
-    ADMIN(2, "管理");
+    USER(0, "user"),
+    MERCHANT(1, "mdrchant"),
+    ADMIN(2, "admin");
 
     @EnumValue
     private final Integer code;

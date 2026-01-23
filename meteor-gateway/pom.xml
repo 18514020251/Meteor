@@ -18,6 +18,11 @@
 
         <dependency>
             <groupId>com.meteor</groupId>
+            <artifactId>meteor-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.meteor</groupId>
             <artifactId>meteor-satoken-starter</artifactId>
             <exclusions>
                 <exclusion>
