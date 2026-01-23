@@ -3,7 +3,7 @@
 
     <!-- ================== 系统级名称（统一日志目录） ================== -->
     <property name="LOG_APP_NAME" value="meteor"/>
-    <property name="LOG_HOME" value="logs"/>
+    <property name="LOG_HOME" value="${LOG_HOME:-./logs}"/>
 
     <property name="LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>

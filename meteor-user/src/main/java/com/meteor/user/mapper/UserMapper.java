@@ -2,6 +2,7 @@ package com.meteor.user.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.meteor.user.domain.entity.User;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 /**
@@ -12,6 +13,7 @@ import org.apache.ibatis.annotations.Select;
  * @author Programmer
  * @since 2026-01-13
  */
+@Mapper
 public interface UserMapper extends BaseMapper<User> {
 
     @Select("""

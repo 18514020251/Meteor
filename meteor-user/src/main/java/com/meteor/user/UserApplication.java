@@ -1,6 +1,7 @@
 package com.meteor.user;
 
 import com.meteor.common.utils.PrintMeteor;
+import com.meteor.mp.annotation.EnableMeteorMyBatisPlus;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -11,6 +12,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * @author Programmer
  * @date 2026-01-16 12:35
  */
+@EnableMeteorMyBatisPlus
 @EnableDiscoveryClient
 @SpringBootApplication
 public class UserApplication {

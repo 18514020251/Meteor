@@ -1,8 +1,9 @@
 package com.meteor.admin.mq.consumer;
 
-import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.mapper.MerchantApplyMapper;
+import com.meteor.admin.mq.assembler.MerchantApplyAssembler;
 import com.meteor.common.mq.merchant.MerchantApplyCreatedMessage;
+import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -18,24 +19,15 @@ import org.springframework.stereotype.Component;
 public class MerchantApplyCreatedConsumer {
 
     private final MerchantApplyMapper mapper;
+    private final MerchantApplyAssembler assembler;
 
-    @RabbitListener(queues = "merchant.apply.created.queue")
+    @RabbitListener(queues = MerchantApplyEvent.Queue.MERCHANT_APPLY_CREATED)
     public void handle(MerchantApplyCreatedMessage message) {
 
         if (mapper.existsByApplyId(message.getApplyId())) {
             return;
         }
 
-        MerchantApply entity = new MerchantApply();
-        entity.setApplyId(message.getApplyId());
-        entity.setUserId(message.getUserId());
-        entity.setShopName(message.getShopName());
-        entity.setApplyReason(message.getApplyReason());
-        entity.setStatus(0);
-        entity.setCreateTime(message.getApplyTime());
-        entity.setReviewedBy(null);
-        entity.setReviewedTime(null);
-
-        mapper.insert(entity);
+        mapper.insert(assembler.from(message));
     }
 }

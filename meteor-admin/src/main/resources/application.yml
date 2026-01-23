@@ -43,7 +43,7 @@ spring:
     port: 5672
     virtual-host: /Programmer
     username: Programmer
-    password: ${meteor.rabbitmq.password}
+    password: ${programmer.rabbitmq.password}
     publisher-confirm-type: correlated
     publisher-returns: true
 

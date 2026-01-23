@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.meteor.admin.domain.enums.MerchantApplyStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -61,5 +63,8 @@ public class MerchantApply implements Serializable {
     @Schema(description = "记录创建时间")
     private LocalDateTime createTime;
 
+    public void setStatus(MerchantApplyStatusEnum status) {
+        this.status = status.getCode();
+    }
 
 }

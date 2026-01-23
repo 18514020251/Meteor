@@ -18,6 +18,8 @@
             <artifactId>meteor-redis-starter</artifactId>
         </dependency>
 
+
+
         <dependency>
             <groupId>com.meteor</groupId>
             <artifactId>meteor-common-starter</artifactId>
@@ -39,12 +41,6 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-        </dependency>
-
-
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -56,10 +52,6 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -83,10 +75,6 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.meteor</groupId>
-            <artifactId>meteor-minio-starter</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -95,7 +83,14 @@
 
         <dependency>
             <groupId>com.meteor</groupId>
-            <artifactId>meteor-mq-starter</artifactId>
+            <artifactId>meteor-mp-starter</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+        </dependency>
+
+
     </dependencies>
 </project>
