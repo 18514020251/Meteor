@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.meteor.common.cache.RedisKeyConstants.*;
@@ -29,27 +30,53 @@ public class UserCacheServiceImpl implements IUserCacheService {
 
     @Override
     public UserInfoCache getUserInfo(Long userId) {
+        String infoKey = buildUserInfoKey(userId);
+        String roleKey = buildUserRoleKey(userId);
+
+        String infoValue;
+        String roleValue;
+
+        try {
+            infoValue = redisTemplate.opsForValue().get(infoKey);
+            roleValue = redisTemplate.opsForValue().get(roleKey);
+        } catch (Exception e) {
+            log.warn("读取用户缓存失败, userId={}", userId, e);
+            return null;
+        }
+
+        if (infoValue == null || roleValue == null){
+            return null;
+        }
+
+        try {
+            return objectMapper.readValue(infoValue, UserInfoCache.class);
+        } catch (Exception e) {
+            log.warn("反序列化用户缓存失败, userId={}", userId, e);
+            return null;
+        }
+    }
+
+
+    @Override
+    public boolean isNullCached(Long userId) {
         String key = buildUserInfoKey(userId);
 
         String value;
         try {
             value = redisTemplate.opsForValue().get(key);
         } catch (Exception e) {
-            log.warn("读取用户缓存失败, userId={}", userId, e);
-            return null;
+            log.warn("读取用户空缓存失败, userId={}", userId, e);
+            return false;
         }
-
-        if (value == null || CACHE_NULL_VALUE.equals(value)) {
-            return null;
-        }
-
-        try {
-            return objectMapper.readValue(value, UserInfoCache.class);
-        } catch (Exception e) {
-            log.warn("反序列化用户缓存失败, userId={}", userId, e);
-            return null;
-        }
+        return CACHE_NULL_VALUE.equals(value);
     }
+
+    @Override
+    public void cacheUserAll(Long userId, String role , UserInfoCache cache) {
+        cacheUserRole(userId , role);
+        cacheUserInfo(userId, cache);
+    }
+
 
     @Override
     public void cacheUserRole(Long userId, String role) {
@@ -65,7 +92,6 @@ public class UserCacheServiceImpl implements IUserCacheService {
         }
     }
 
-    @Override
     public void cacheUserInfo(Long userId, UserInfoCache cache) {
         String key = buildUserInfoKey(userId);
         try {
@@ -100,6 +126,18 @@ public class UserCacheServiceImpl implements IUserCacheService {
     public void evictUserInfo(Long userId) {
         String key = buildUserInfoKey(userId);
         redisTemplate.delete(key);
+    }
+
+    @Override
+    public void evictUserRole(Long userId) {
+        String kry = buildUserRoleKey(userId);
+        redisTemplate.delete(kry);
+    }
+
+    @Override
+    public void evictUserAll(Long userId) {
+        evictUserInfo(userId);
+        evictUserRole(userId);
     }
 
 }

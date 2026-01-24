@@ -6,7 +6,11 @@ package com.meteor.common.utils;
  * @author Programmer
  * @date 2026-01-17 10:02
  */
+@SuppressWarnings("squid:S106")
 public class PrintMeteor {
+
+    private PrintMeteor() {
+    }
 
     private static final int WELCOME_BANNER_DELAY = 500;
     private static final int BANNER_LINE_DELAY = 50;

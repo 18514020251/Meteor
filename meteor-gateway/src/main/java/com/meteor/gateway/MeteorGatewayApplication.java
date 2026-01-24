@@ -1,5 +1,6 @@
 package com.meteor.gateway;
 
+import com.meteor.common.utils.PrintMeteor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -19,6 +20,7 @@ public class MeteorGatewayApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MeteorGatewayApplication.class, args);
+        PrintMeteor.printWelcomeBanner();
     }
 }
 

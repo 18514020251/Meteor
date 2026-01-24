@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
 import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
@@ -124,6 +125,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public UserInfoVO getCurrentUserInfo(Long userId) {
 
+        if (userCacheService.isNullCached(userId)) {
+            throw new BizException(CommonErrorCode.USER_NOT_EXIST);
+        }
+
         UserInfoCache cache = userCacheService.getUserInfo(userId);
         if (cache != null) {
             return userInfoAssembler.toVO(cache);
@@ -136,7 +141,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         UserInfoCache newCache = UserInfoCache.fromUser(user);
-        userCacheService.cacheUserInfo(userId, newCache);
+
+        userCacheService.cacheUserAll(userId , Objects.requireNonNull(RoleEnum.fromCode(user.getRole())).toString() , newCache);
 
         return userInfoAssembler.toVO(newCache);
 
@@ -167,7 +173,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         );
 
         updateUserAvatar(userId, objectName);
-        userCacheService.evictUserInfo(userId);
+        userCacheService.evictUserAll(userId);
 
         return minioUtil.buildPresignedUrl(objectName);
     }
@@ -230,7 +236,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User user = userMapper.selectById(userId);
 
         StpUtil.logout();
-        userCacheService.evictUserInfo(userId);
+        userCacheService.evictUserAll(userId);
 
         userMapper.deleteById(userId);
         deleteUserAvatar(user);
@@ -290,7 +296,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         userMapper.updateById(user);
-        userCacheService.evictUserInfo(userId);
+        userCacheService.evictUserAll(userId);
     }
 
     /*

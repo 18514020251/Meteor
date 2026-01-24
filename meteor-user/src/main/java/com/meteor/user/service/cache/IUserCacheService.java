@@ -19,12 +19,11 @@ public interface IUserCacheService {
      */
     UserInfoCache getUserInfo(Long userId);
 
-    /**
-     * 缓存用户信息
-     */
-    void cacheUserInfo(Long userId, UserInfoCache cache);
+    boolean isNullCached(Long userId);
 
-    void cacheUserRole(Long userId , String role);
+    void cacheUserRole(Long userId, String role);
+
+    void cacheUserAll(Long userId , String role , UserInfoCache cache);
 
     /**
      * 缓存空值（防穿透）
@@ -32,8 +31,18 @@ public interface IUserCacheService {
     void cacheNull(Long userId);
 
     /**
-     * 删除用户信息缓存（头像 / 信息更新时）
+     * 删除用户信息缓存
      */
     void evictUserInfo(Long userId);
+
+    /*
+    *  删除用户角色缓存
+    * */
+    void evictUserRole(Long userId);
+
+    /*
+    *  删除用户所有缓存
+    * */
+    void evictUserAll(Long userId);
     }
 

@@ -585,7 +585,7 @@ class UserServiceImplTest {
         // 验证userMapper.updateById方法未被调用（无改动，不需要更新）
         Mockito.verify(userMapper, Mockito.never()).updateById(Mockito.any(com.meteor.user.domain.entity.User.class));
         // 验证userCacheService.evictUserInfo方法未被调用（无改动，不需要清除缓存）
-        Mockito.verify(userCacheService, Mockito.never()).evictUserInfo(Mockito.anyLong());
+        Mockito.verify(userCacheService, Mockito.never()).evictUserAll(Mockito.anyLong());
     }
 
     /**
@@ -896,7 +896,7 @@ class UserServiceImplTest {
             verify(minioUtil).upload(anyString(), any(InputStream.class), anyString());
             verify(userMapper).selectById(userId);
             verify(userMapper).updateById(any(User.class));
-            verify(userCacheService).evictUserInfo(userId);
+            verify(userCacheService).evictUserAll(userId);
         }
     }
 

@@ -16,7 +16,7 @@ public final class AvatarConstants {
     public static final String DEFAULT_AVATAR = "avatar/default.png";
 
     /** 头像最大大小：2MB */
-    public static final long MAX_SIZE = 2 * 1024 * 1024;
+    public static final long MAX_SIZE = 2L * 1024 * 1024;
 
     /** 允许的 MIME 类型 */
     public static final Set<String> ALLOWED_TYPES = Set.of(
