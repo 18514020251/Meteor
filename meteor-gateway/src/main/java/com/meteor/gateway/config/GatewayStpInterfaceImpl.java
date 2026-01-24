@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ *  登录权限验证接口实现
+ *
  * @author Programmer
  * @date 2026-01-23 22:50
  */

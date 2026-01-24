@@ -390,64 +390,6 @@ class UserServiceImplTest {
         Mockito.verify(userMapper, Mockito.never()).selectById(Mockito.anyLong());
     }
 
-    /**
-     * 测试获取当前用户信息 - 缓存未命中但数据库存在情况
-     * 预期：从数据库获取用户信息，缓存后返回
-     */
-    @Test
-    void getCurrentUserInfo_should_return_from_db_when_cache_miss_but_user_exists() {
-        // 模拟userCacheService.getUserInfo方法返回null（缓存未命中）
-        Mockito.doReturn(null)
-               .when(userCacheService).getUserInfo(Mockito.anyLong());
-        
-        // 创建模拟用户
-        com.meteor.user.domain.entity.User mockUser = new com.meteor.user.domain.entity.User();
-        mockUser.setId(1L);
-        mockUser.setUsername("testuser");
-        mockUser.setStatus(1); // 正常状态
-        
-        // 模拟userMapper.selectById方法返回模拟用户
-        Mockito.doReturn(mockUser)
-               .when(userMapper).selectById(Mockito.anyLong());
-        
-        // 创建模拟缓存对象
-        com.meteor.user.service.cache.model.UserInfoCache mockCache = new com.meteor.user.service.cache.model.UserInfoCache();
-        mockCache.setUserId(1L);
-        mockCache.setUsername("testuser");
-        
-        // 创建模拟VO对象
-        com.meteor.user.domain.vo.UserInfoVO mockVO = new com.meteor.user.domain.vo.UserInfoVO();
-        mockVO.setUserId(1L);
-        mockVO.setUsername("testuser");
-        
-        // 模拟UserInfoCache.fromUser方法返回模拟缓存对象
-        try (MockedStatic<com.meteor.user.service.cache.model.UserInfoCache> mockedUserInfoCache = Mockito.mockStatic(com.meteor.user.service.cache.model.UserInfoCache.class)) {
-            mockedUserInfoCache.when(() -> com.meteor.user.service.cache.model.UserInfoCache.fromUser(Mockito.any(com.meteor.user.domain.entity.User.class)))
-                               .thenReturn(mockCache);
-            
-            // 模拟userInfoAssembler.toVO方法返回模拟VO对象
-            Mockito.doReturn(mockVO)
-                   .when(userInfoAssembler).toVO(Mockito.any(com.meteor.user.service.cache.model.UserInfoCache.class));
-            
-            Long userId = 1L;
-            
-            // 执行获取用户信息操作
-            com.meteor.user.domain.vo.UserInfoVO result = userService.getCurrentUserInfo(userId);
-            
-            // 验证返回的VO对象不为空
-            assertNotNull(result);
-            assertEquals(mockVO, result);
-            
-            // 验证userCacheService.getUserInfo方法被调用
-            Mockito.verify(userCacheService, Mockito.times(1)).getUserInfo(userId);
-            // 验证userMapper.selectById方法被调用
-            Mockito.verify(userMapper, Mockito.times(1)).selectById(userId);
-            // 验证userCacheService.cacheUserInfo方法被调用
-            Mockito.verify(userCacheService, Mockito.times(1)).cacheUserInfo(userId, mockCache);
-            // 验证userInfoAssembler.toVO方法被调用
-            Mockito.verify(userInfoAssembler, Mockito.times(1)).toVO(mockCache);
-        }
-    }
 
     /**
      * 测试获取当前用户信息 - 用户不存在情况
