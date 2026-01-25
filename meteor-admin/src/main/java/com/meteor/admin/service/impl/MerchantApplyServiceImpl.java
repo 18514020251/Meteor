@@ -4,14 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.meteor.admin.domain.dto.MerchantApplyDTO;
 import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
+import com.meteor.admin.domain.es.MerchantApplyES;
 import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.service.IMerchantApplyService;
+import com.meteor.admin.service.es.MerchantApplyESService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.domain.PageResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -23,15 +27,42 @@ import java.util.List;
  * @author Programmer
  * @since 2026-01-23
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, MerchantApply> implements IMerchantApplyService {
 
     private final MerchantApplyMapper merchantApplyMapper;
+    private final MerchantApplyESService merchantApplyESService;
 
 
     @Override
     public PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query) {
+        try {
+            merchantApplyESService.initIndex();
+            PageResult<MerchantApplyES> esPage = merchantApplyESService.searchPage(query);
+
+            List<MerchantApplyDTO> dtoList = esPage.getRecords().stream()
+                    .map(merchantApplyESService::toDTO)
+                    .toList();
+
+            return PageResult.of(
+                    dtoList,
+                    esPage.getTotal(),
+                    query.getPageNum(),
+                    query.getPageSize()
+            );
+        } catch (IOException e) {
+            log.error("ES查询失败", e);
+            return fallbackToList(query);
+        }
+    }
+
+
+    /**
+     * 降级到数据库查询
+     */
+    private PageResult<MerchantApplyDTO> fallbackToList(MerchantApplyQueryDTO query) {
         Page<MerchantApply> page = new Page<>(query.getPageNum() , query.getPageSize());
 
         LambdaQueryWrapper<MerchantApply> wrapper = buildWrapper(query);

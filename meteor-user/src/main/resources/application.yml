@@ -46,6 +46,10 @@ spring:
     password: ${programmer.rabbitmq.password}
     publisher-confirm-type: correlated
     publisher-returns: true
+  elasticsearch:
+    username: elastic
+    password: ${programmer.es.password}
+    uris: http://localhost:9201
 
 # MP 配置
 mybatis-plus:
