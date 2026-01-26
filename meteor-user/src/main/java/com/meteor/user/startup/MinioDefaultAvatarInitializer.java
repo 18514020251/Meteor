@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import java.io.InputStream;
 
 /**
+ *  MinIO 默认头像初始化器
+ *
  * @author Programmer
  * @date 2026-01-26 21:50
  */

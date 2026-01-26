@@ -42,8 +42,29 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "Programmer"
+      RABBITMQ_DEFAULT_PASS: "07210521"
+      RABBITMQ_DEFAULT_VHOST: "/Programmer"
     volumes:
       - ./rabbitmq/data:/var/lib/rabbitmq
+  rabbitmq-init:
+    image: rabbitmq:3.8-management
+    depends_on:
+      - rabbitmq
+    entrypoint: [ "/bin/bash","-lc" ]
+    command: >
+      "
+      rabbitmqctl await_startup -t 60 &&
+      rabbitmqctl add_vhost /Programmer || true &&
+      rabbitmqctl add_user Programmer 07210521 || true &&
+      rabbitmqctl change_password Programmer 07210521 &&
+      rabbitmqctl set_user_tags Programmer administrator || true &&
+      rabbitmqctl set_permissions -p /Programmer Programmer '.*' '.*' '.*' || true &&
+      rabbitmqctl authenticate_user Programmer 07210521
+      "
+    network_mode: "service:rabbitmq"
+
 
 
   nacos:

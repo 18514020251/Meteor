@@ -10,6 +10,8 @@ import org.springframework.core.env.Environment;
 import static com.meteor.common.constants.SpringPropertyKeys.*;
 
 /**
+ *  Redis 连接测试
+ *
  * @author Programmer
  * @date 2026-01-26 21:32
  */

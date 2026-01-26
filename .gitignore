@@ -24,6 +24,10 @@ error.log
 app.log
 spring.log
 
+.env
+.env.*
+!.env.example
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -36,3 +40,4 @@ build/
 
 ### VS Code ###
 .vscode/
+

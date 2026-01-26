@@ -1,18 +1,24 @@
-# 本地配置
 programmer:
   mysql:
-    host: 127.0.0.1
+    host: ${MYSQL_HOST:127.0.0.1}
+    database: ${MYSQL_DB:meteor_db}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:}
 
   redis:
-    host: 127.0.0.1
-    port: 6379
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
     password: ${REDIS_PASSWORD:}
 
-# mybatis-plus 配置
+  nacos:
+    addr: ${NACOS_ADDR:127.0.0.1:8848}
+
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+    bucket: ${MINIO_BUCKET:meteor}
+
 mybatis-plus:
   configuration:
-    # 打印 sql
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
