@@ -25,6 +25,17 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+        group: DEFAULT_GROUP
+        # 禁用 gRPC 相关功能
+        grpc-enabled: false
+        # 添加连接相关配置
+        metadata:
+          preserved.register.source: SPRING_CLOUD
+        register-enabled: true
+        instance-enabled: true
+    inetutils:
+      preferred-networks:
+        - 127.0.0.1
 
     gateway:
       routes:

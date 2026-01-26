@@ -38,11 +38,6 @@ spring:
     port: ${programmer.redis.port}
     password: ${programmer.redis.password}
     timeout: 5000ms
-  # Elasticsearch 配置
-  elasticsearch:
-    uris: http://localhost:9201
-    connection-timeout: 10000
-    socket-timeout: 30000
   rabbitmq:
     host: localhost
     port: 5672
@@ -89,7 +84,7 @@ meteor:
   minio:
     endpoint: http://127.0.0.1:9000
     access-key: minioadmin
-    secret-key: minioadmin
+    secret-key: minioadmin123
     bucket: meteor
     path-style: true
     presigned-url-expire-minutes: 5

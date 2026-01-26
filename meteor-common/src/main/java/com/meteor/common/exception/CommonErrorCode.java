@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 public enum CommonErrorCode implements IErrorCode {
 
     // 通用
-    SUCCESS(0, "成功", HttpStatus.OK),
+    SUCCESS(200, "成功", HttpStatus.OK),
     PARAM_INVALID(400, "参数不合法", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "未登录或登录失效", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(403, "无权限访问", HttpStatus.FORBIDDEN),

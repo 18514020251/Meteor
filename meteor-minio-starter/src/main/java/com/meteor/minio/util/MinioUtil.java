@@ -9,6 +9,7 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -23,7 +24,9 @@ import static com.meteor.common.constants.MinioConstants.MIN_PART_SIZE;
  * @author Programmer
  * @date 2026-01-17 20:44
  */
+@Slf4j
 @RequiredArgsConstructor
+
 public class MinioUtil {
 
     private final MinioClient minioClient;
@@ -88,19 +91,6 @@ public class MinioUtil {
         }
     }
 
-    /*
-     *  构建用户头像 URL
-     * */
-    @Deprecated
-    public String buildObjectUrl(String objectName) {
-        if (properties.isPathStyle()) {
-            return properties.getEndpoint()
-                    + "/" + properties.getBucket()
-                    + "/" + objectName;
-        }
-        return properties.getEndpoint()
-                + "/" + objectName;
-    }
 
     /**
      * 生成对象的临时访问 URL（Presigned URL）
@@ -126,7 +116,7 @@ public class MinioUtil {
                             .build()
             );
         } catch (Exception e) {
-            throw new RuntimeException(CommonErrorCode.FILE_URL_GENERATE_FAILED.getMessage(), e);
+            throw new BizException(CommonErrorCode.FILE_URL_GENERATE_FAILED);
         }
     }
 
@@ -169,6 +159,7 @@ public class MinioUtil {
 
             return objectName;
         } catch (Exception e) {
+            log.error("上传文件失败", e);
             throw new BizException(CommonErrorCode.FILE_UPLOAD_FAILED);
         }
     }

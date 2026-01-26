@@ -248,7 +248,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private void deleteUserAvatar(User user){
         if (user.getAvatar() != null && !user.getAvatar().equals(AvatarConstants.DEFAULT_AVATAR)) {
             minioUtil.delete(user.getAvatar());
-            log.info("删除用户头像：用户ID{}", user.getId());
         }
     }
 
