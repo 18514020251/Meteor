@@ -1,57 +1,72 @@
-# 开发环境配置
 application:
-  version: 1.0.0
+  version: ${APP_VERSION:1.0.0}
+
 spring:
-  # 数据库配置
+  application:
+    name: meteor-admin
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
   datasource:
-    url: jdbc:mysql://${programmer.mysql.host}:3306/meteor_admin?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_ADMIN_DB}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${programmer.mysql.username}
     password: ${programmer.mysql.password}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # 连接池
     hikari:
       connection-timeout: 30000
       maximum-pool-size: 10
-  # MVC配置
+
   mvc:
     throw-exception-if-no-handler-found: true
     static-path-pattern: /static/**
-  # 程序名称
-  application:
-    name: meteor-admin
-  # 开发环境
-  profiles:
-    active: local
-  cloud:
-    # nacos
-    nacos:
-      discovery:
-        server-addr: 127.0.0.1:8848
-  # 上传文件限制
+
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
-  # redis 配置
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${programmer.nacos.addr}
+        group: ${programmer.nacos.group:DEFAULT_GROUP}
+
   data:
     redis:
       host: ${programmer.redis.host}
       port: ${programmer.redis.port}
       password: ${programmer.redis.password}
       timeout: 5000ms
+
   rabbitmq:
-    host: localhost
-    port: 5672
-    virtual-host: /Programmer
-    username: Programmer
+    host: ${programmer.rabbitmq.host}
+    port: ${programmer.rabbitmq.port}
+    virtual-host: ${programmer.rabbitmq.vhost}
+    username: ${programmer.rabbitmq.username}
     password: ${programmer.rabbitmq.password}
     publisher-confirm-type: correlated
     publisher-returns: true
 
 server:
-  port: 8082
+  port: ${ADMIN_PORT:8082}
 
-# MP 配置
+logging:
+  level:
+    com.meteor: ${LOG_LEVEL:debug}
+  file:
+    path: logs
+
+sa-token:
+  token-name: Authorization
+  timeout: 86400
+  active-timeout: -1
+  is-concurrent: false
+  is-share: false
+  token-style: uuid
+  is-log: true
+  token-prefix: Bearer
+
 mybatis-plus:
   type-aliases-package: com.meteor.domain
   configuration:
@@ -63,30 +78,11 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# 日志级别
-logging:
-  level:
-    com.meteor: debug
-  file:
-    path: logs
-
-# sa-token
-sa-token:
-  token-name: Authorization
-  timeout: 86400
-  active-timeout: -1
-  is-concurrent: false
-  is-share: false
-  token-style: uuid
-  is-log: true
-  token-prefix: Bearer
-
 meteor:
   minio:
-    endpoint: http://127.0.0.1:9000
-    access-key: minioadmin
-    secret-key: minioadmin123
-    bucket: meteor
+    endpoint: ${programmer.minio.endpoint}
+    access-key: ${programmer.minio.access-key}
+    secret-key: ${programmer.minio.secret-key}
+    bucket: ${programmer.minio.bucket}
     path-style: true
     presigned-url-expire-minutes: 5
-

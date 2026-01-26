@@ -1,23 +1,36 @@
-# 本地配置
 programmer:
   mysql:
-    host: 127.0.0.1
+    host: ${MYSQL_HOST:127.0.0.1}
+    db: ${MYSQL_ADMIN_DB:meteor_admin}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:}
 
   redis:
-    host: 127.0.0.1
-    port: 6379
+    host: ${REDIS_HOST:127.0.0.1}
+    port: ${REDIS_PORT:6379}
     password: ${REDIS_PASSWORD:}
-  rabbitmq:
-    password: '07210521'
 
-# mybatis-plus 配置
-mybatis-plus:
-  configuration:
-    # 打印 sql
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  nacos:
+    addr: ${NACOS_ADDR:127.0.0.1:8848}
+    group: ${NACOS_GROUP:DEFAULT_GROUP}
+
+  rabbitmq:
+    host: ${RABBIT_HOST:127.0.0.1}
+    port: ${RABBIT_PORT:5672}
+    vhost: ${RABBIT_VHOST:/Programmer}
+    username: ${RABBIT_USERNAME:Programmer}
+    password: ${RABBIT_PASSWORD:07210521}
+
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+    bucket: ${MINIO_BUCKET:meteor}
 
 springdoc:
   swagger-ui:
-    path: swagger-ui.html
+    path: /swagger-ui.html
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
