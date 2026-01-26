@@ -46,6 +46,14 @@ spring:
           predicates:
             - Path=/admin/**
 
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 4
+            redis-rate-limiter.burstCapacity: 4
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@ipKeyResolver}"
+
 server:
   port: ${GATEWAY_PORT:8080}
 
