@@ -10,6 +10,11 @@ public final class MinioConstants {
 
     private MinioConstants() {}
 
+    public static final String BUCKET_METEOR = "meteor";
+
+    /** 默认用户头像本地资源路径（classpath） */
+    public static final String DEFAULT_AVATAR_CLASSPATH = "static/avatar/default.png";
+
     /** MinIO 分片上传最小 Part Size（5MB） */
     public static final long MIN_PART_SIZE = 5L * 1024 * 1024;
 }

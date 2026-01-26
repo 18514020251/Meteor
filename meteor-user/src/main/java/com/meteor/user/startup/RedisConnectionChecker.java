@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.core.env.Environment;
+import static com.meteor.common.constants.SpringPropertyKeys.*;
 
 /**
  * @author Programmer
@@ -22,9 +23,13 @@ public class RedisConnectionChecker implements ApplicationListener<ApplicationRe
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        String host = env.getProperty("spring.redis.host");
-        String port = env.getProperty("spring.redis.port");
-        String db   = env.getProperty("spring.redis.database", "0");
+        String host = env.getProperty(REDIS_HOST);
+        String port = env.getProperty(REDIS_PORT);
+        String db = env.getProperty(REDIS_DB);
+        if (db == null) {
+            db = REDIS_DEFAULT_DB;
+        }
+
 
         try {
             assert stringRedisTemplate.getConnectionFactory() != null;
