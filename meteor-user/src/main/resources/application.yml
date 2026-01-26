@@ -38,6 +38,7 @@ spring:
     port: ${programmer.redis.port}
     password: ${programmer.redis.password}
     timeout: 5000ms
+
   rabbitmq:
     host: localhost
     port: 5672

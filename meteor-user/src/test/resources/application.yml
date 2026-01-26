@@ -22,11 +22,13 @@ spring:
       max-file-size: 10MB
       # 请求限制
       max-request-size: 100MB
-  redis:
-    host: ${programmer.redis.host}
-    port: ${programmer.redis.port}
-    password: ${programmer.redis.password}
-    timeout: 5000ms
+  data:
+    redis:
+      host: ${programmer.redis.host}
+      port: ${programmer.redis.port}
+      password: ${programmer.redis.password}
+      timeout: 5000ms
+
   cloud:
     nacos:
       discovery:
