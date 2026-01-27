@@ -14,6 +14,12 @@ import org.apache.ibatis.annotations.Select;
  */
 public interface MerchantApplyMapper extends BaseMapper<MerchantApply> {
 
+    /**
+     * 判断指定申请ID是否已存在于管理端审核表
+     *
+     * @param applyId 用户模块的申请ID
+     * @return true 已存在，false 不存在
+     */
     @Select("select exists(select 1 from merchant_apply where apply_id = #{applyId})")
     boolean existsByApplyId(Long applyId);
 

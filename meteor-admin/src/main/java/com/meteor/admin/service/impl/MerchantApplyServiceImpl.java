@@ -27,6 +27,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1172")
 public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, MerchantApply>
         implements IMerchantApplyService {
 
@@ -47,21 +48,25 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         return PageResult.of(dtoList, page.getTotal(), query.getPageNum(), query.getPageSize());
     }
 
+    /*
+    *  审批通过
+    * */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void approve(Long id) {
         MerchantApply apply = getByIdOrThrow(id);
 
-        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
-            throw new BizException(CommonErrorCode.MERCHANT_APPLY_ALREADY_REVIEWED);
-        }
-
-        apply.setStatus(MerchantApplyStatusEnum.APPROVED);
-        apply.setRejectReason(null);
-        apply.setReviewedBy(getReviewerId());
-        apply.setReviewedTime(LocalDateTime.now());
+        apply.approve(getReviewerId(), LocalDateTime.now());
 
         merchantApplyMapper.updateById(apply);
+
+        // 后续扩展点：审批通过后的副作用
+        afterApproved(apply);
+    }
+
+    private void afterApproved(MerchantApply apply) {
+        // 1) 清理 token/身份缓存（跨服务：需要发 MQ 给 user 或调用 user 服务）
+        // 2) 发送消息提醒用户（跨服务：同样走 MQ）
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -93,10 +98,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         return apply;
     }
 
-    /**
-     * 你后面会接 Sa-Token admin loginType，这里先留钩子。
-     * 现在先用一个最安全的方式：没有登录信息就报错。
-     */
+
     private Long getReviewerId() {
         return StpUtil.getLoginIdAsLong();
     }

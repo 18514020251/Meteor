@@ -16,6 +16,7 @@ public class RedisKeyConstants {
     }
 
     // 用户模块
+
     private static final String USER_INFO_KEY = "user:info:%d";
     private static final String PHONE_CODE_PREFIX = "sms:code:%s:%s";
     private static final String PHONE_CODE_LIMIT_PREFIX = "sms:limit:%s:%s";

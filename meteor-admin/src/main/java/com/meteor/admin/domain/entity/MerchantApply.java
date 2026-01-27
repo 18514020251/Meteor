@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.io.Serializable;
 
 import com.meteor.admin.domain.enums.MerchantApplyStatusEnum;
+import com.meteor.common.exception.BizException;
+import com.meteor.common.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -67,4 +69,26 @@ public class MerchantApply implements Serializable {
         this.status = status.getCode();
     }
 
+    public void approve(Long reviewerId, LocalDateTime reviewedTime) {
+        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(this.status)) {
+            throw new BizException(CommonErrorCode.MERCHANT_APPLY_ALREADY_REVIEWED);
+        }
+        this.setStatus(MerchantApplyStatusEnum.APPROVED);
+        this.rejectReason = null;
+        this.reviewedBy = reviewerId;
+        this.reviewedTime = reviewedTime;
+    }
+
+    public void reject(Long reviewerId, LocalDateTime reviewedTime, String rejectReason) {
+        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(this.status)) {
+            throw new BizException(CommonErrorCode.MERCHANT_APPLY_ALREADY_REVIEWED);
+        }
+        if (rejectReason == null || rejectReason.isBlank()) {
+            throw new BizException(CommonErrorCode.MERCHANT_APPLY_REJECT_REASON_REQUIRED);
+        }
+        this.setStatus(MerchantApplyStatusEnum.REJECTED);
+        this.rejectReason = rejectReason.trim();
+        this.reviewedBy = reviewerId;
+        this.reviewedTime = reviewedTime;
+    }
 }

@@ -18,9 +18,17 @@ public final class AvatarConstants {
     /** 头像最大大小：2MB */
     public static final long MAX_SIZE = 2L * 1024 * 1024;
 
+    public static final String IMAGE_PNG = "image/png";
+    public static final String IMAGE_JPEG = "image/jpeg";
+    public static final String IMAGE_JPG = "image/jpg";
+
+    public static final String FORMAT_PNG = "png";
+    public static final String FORMAT_JPG = "jpg";
+
     /** 允许的 MIME 类型 */
     public static final Set<String> ALLOWED_TYPES = Set.of(
-            "image/jpeg",
-            "image/png"
+            IMAGE_JPEG,
+            IMAGE_PNG,
+            IMAGE_JPG
     );
 }

@@ -36,14 +36,14 @@ public class MerchantApplyController {
 
     @Operation(summary = "审核通过")
     @PostMapping("/merchant-apply/{id}/approve")
-    public Result<Void> approve(@PathVariable("id") Long id) {
+    public Result<Void> approve(@PathVariable Long id) {
         merchantApplyService.approve(id);
         return Result.success();
     }
 
     @Operation(summary = "审核拒绝")
     @PostMapping("/merchant-apply/{id}/reject")
-    public Result<Void> reject(@PathVariable("id") Long id, @Valid @RequestBody RejectReq req) {
+    public Result<Void> reject(@PathVariable Long id, @Valid @RequestBody RejectReq req) {
         merchantApplyService.reject(id, req.getRejectReason());
         return Result.success();
     }
