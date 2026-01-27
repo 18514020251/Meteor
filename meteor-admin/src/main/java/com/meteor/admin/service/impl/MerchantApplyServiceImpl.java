@@ -48,9 +48,13 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         return PageResult.of(dtoList, page.getTotal(), query.getPageNum(), query.getPageSize());
     }
 
-    /*
-    *  审批通过
-    * */
+
+    /**
+     * <p>
+     *      审批通过
+     * </p>
+     * @param id 商家申请 ID
+     * */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void approve(Long id) {
@@ -69,6 +73,13 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         // 2) 发送消息提醒用户（跨服务：同样走 MQ）
     }
 
+    /**
+     * <p>
+     *     拒绝策略
+     * </p>
+     * @param id 商家申请 ID
+     * @param rejectReason 拒绝理由
+     * */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void reject(Long id, String rejectReason) {
@@ -103,9 +114,11 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         return StpUtil.getLoginIdAsLong();
     }
 
-    /*
-     * 构建查询条件
-     */
+    /**
+     * <p>
+     *     构建查询条件
+     * </p>
+     * */
     private LambdaQueryWrapper<MerchantApply> buildWrapper(MerchantApplyQueryDTO query) {
         LambdaQueryWrapper<MerchantApply> wrapper = new LambdaQueryWrapper<>();
         if (query.getUserId() != null) {

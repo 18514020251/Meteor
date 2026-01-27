@@ -34,6 +34,16 @@ spring:
       discovery:
         server-addr: ${programmer.nacos.addr}
 
+  rabbitmq:
+    host: ${programmer.rabbitmq.host}
+    port: ${programmer.rabbitmq.port}
+    virtual-host: ${programmer.rabbitmq.vhost}
+    username: ${programmer.rabbitmq.username}
+    password: ${programmer.rabbitmq.password}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+
+
 server:
   port: ${USER_PORT:8081}
 
@@ -71,6 +81,7 @@ sa-token:
   is-share: true
   token-style: uuid
   is-log: true
+  token-prefix: Bearer
 
 meteor:
   minio:

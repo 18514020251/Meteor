@@ -21,6 +21,13 @@ programmer:
     secret-key: ${MINIO_SECRET_KEY:minioadmin123}
     bucket: ${MINIO_BUCKET:meteor}
 
+  rabbitmq:
+    host: ${RABBIT_HOST:127.0.0.1}
+    port: ${RABBIT_PORT:5672}
+    vhost: ${RABBIT_VHOST:/Programmer}
+    username: ${RABBIT_USERNAME:Programmer}
+    password: ${RABBIT_PASSWORD:07210521}
+
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

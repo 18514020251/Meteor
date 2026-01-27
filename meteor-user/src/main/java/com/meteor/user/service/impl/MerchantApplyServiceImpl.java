@@ -10,6 +10,7 @@ import com.meteor.user.mq.publisher.MerchantApplyEventPublisher;
 import com.meteor.user.service.IMerchantApplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.meteor.common.exception.CommonErrorCode.OPERATION_NOT_ALLOWED;
 
@@ -27,6 +28,7 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
     private final MerchantApplyEventPublisher eventPublisher;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void apply(Long userId, MerchantApplyDTO applyReason) {
 
         boolean exists = merchantApplyMapper.exists(
@@ -49,7 +51,7 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
 
         merchantApplyMapper.insert(apply);
 
-        eventPublisher.publishCreated(apply);
+        eventPublisher.publishCreatedOrThrow(apply);
     }
 
 }

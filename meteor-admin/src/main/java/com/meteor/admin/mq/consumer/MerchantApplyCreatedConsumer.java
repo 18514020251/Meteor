@@ -7,6 +7,7 @@ import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *  商家申请消息队列消费者
@@ -22,6 +23,7 @@ public class MerchantApplyCreatedConsumer {
     private final MerchantApplyAssembler assembler;
 
     @RabbitListener(queues = MerchantApplyEvent.Queue.MERCHANT_APPLY_CREATED)
+    @Transactional(rollbackFor = Exception.class)
     public void handle(MerchantApplyCreatedMessage message) {
 
         if (mapper.existsByApplyId(message.getApplyId())) {

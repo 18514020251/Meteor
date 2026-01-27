@@ -1,6 +1,7 @@
 package com.meteor.mq.autoconfigure;
 
 import com.meteor.mq.core.MqSender;
+import com.meteor.mq.core.ReturnRecorder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -22,6 +23,12 @@ import org.springframework.context.annotation.Bean;
 public class MeteorMqAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean
+    public ReturnRecorder returnRecorder() {
+        return new ReturnRecorder();
+    }
+
+    @Bean
     @ConditionalOnMissingBean(MessageConverter.class)
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -29,28 +36,36 @@ public class MeteorMqAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MqSender mqSender(RabbitTemplate rabbitTemplate) {
-        return new MqSender(rabbitTemplate);
+    public MqSender mqSender(RabbitTemplate rabbitTemplate,
+                             ReturnRecorder returnRecorder) {
+        return new MqSender(rabbitTemplate, returnRecorder);
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public RabbitTemplateCustomizer rabbitTemplateCustomizer() {
+    public RabbitTemplateCustomizer rabbitTemplateCustomizer(ReturnRecorder returnRecorder,
+                                                             MessageConverter messageConverter) {
         return rabbitTemplate -> {
 
+            rabbitTemplate.setMessageConverter(messageConverter);
+
+            rabbitTemplate.setMandatory(true);
+
             rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+                String cid = correlationData == null ? null : correlationData.getId();
                 if (!ack) {
-                    log.error("MQ 消息发送失败，cause={}", cause);
+                    log.error("MQ confirm failed cid={}, cause={}", cid, cause);
+                } else {
+                    log.debug("MQ confirm ok cid={}", cid);
                 }
             });
 
-            rabbitTemplate.setReturnsCallback(returned -> log.error(
-                    "MQ 消息被退回 exchange={}, routingKey={}, replyText={}",
-                    returned.getExchange(),
-                    returned.getRoutingKey(),
-                    returned.getReplyText()
-            ));
+            rabbitTemplate.setReturnsCallback(returned -> {
+                String cid = ReturnRecorder.extractCorrelationId(returned);
+                returnRecorder.record(cid, returned);
+                log.error("MQ returned cid={}, exchange={}, routingKey={}, replyCode={}, replyText={}",
+                        cid, returned.getExchange(), returned.getRoutingKey(),
+                        returned.getReplyCode(), returned.getReplyText());
+            });
         };
     }
-
 }
