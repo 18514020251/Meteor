@@ -1,21 +1,20 @@
-package com.meteor.admin.domain.enums;
+package com.meteor.common.enums.merchant;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
- *  商家申请状态枚举
+ * 商家申请状态枚举
  *
  * @author Programmer
- * @date 2026-01-23 16:42
  */
 @Getter
 public enum MerchantApplyStatusEnum {
 
     PENDING(0, "待审核"),
-    APPROVED(1, "通过"),
-    REJECTED(2, "拒绝");
+    APPROVED(1, "已通过"),
+    REJECTED(2, "已拒绝");
 
     @EnumValue
     private final Integer code;
@@ -39,5 +38,4 @@ public enum MerchantApplyStatusEnum {
         }
         return null;
     }
-
 }

@@ -2,6 +2,7 @@ package com.meteor.user.mq.publisher;
 
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.common.mq.constants.MqConstants;
 import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import com.meteor.common.mq.merchant.MerchantApplyCreatedMessage;
 import com.meteor.mq.core.MqSendResult;
@@ -11,7 +12,6 @@ import com.meteor.user.mq.assembler.MerchantApplyMessageAssembler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 
 /**
  * 商家申请事件发布器
@@ -19,11 +19,16 @@ import java.time.Duration;
  */
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1123")
 public class MerchantApplyEventPublisher {
 
     private final MqSender mqSender;
     private final MerchantApplyMessageAssembler assembler;
 
+
+    /**
+     *  @Deprecated (since = "use publishCreatedOrThrow instead" )
+     * */
     public void publishCreated(MerchantApply apply) {
 
         MerchantApplyCreatedMessage message = assembler.from(apply);
@@ -43,7 +48,7 @@ public class MerchantApplyEventPublisher {
                 MerchantApplyEvent.Exchange.MERCHANT_APPLY,
                 MerchantApplyEvent.RoutingKey.MERCHANT_APPLY_CREATED,
                 message,
-                Duration.ofSeconds(3)
+                MqConstants.CONFIRM_TIMEOUT
         );
 
         if (!result.isAck()) {

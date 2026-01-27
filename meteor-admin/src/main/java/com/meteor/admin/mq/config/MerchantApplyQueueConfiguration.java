@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  商家申请消息队列配置类
+ * 商家申请消息队列配置类
  *
  * @author Programmer
  * @date 2026-01-23 11:27
@@ -42,13 +42,17 @@ public class MerchantApplyQueueConfiguration {
         );
     }
 
-    /** DLQ：死信队列 */
+    /**
+     * DLQ：死信队列
+     */
     @Bean
     public Queue merchantApplyCreatedDlq() {
         return new Queue(MerchantApplyEvent.Queue.MERCHANT_APPLY_CREATED_DLX, true);
     }
 
-    /** DLQ 绑定 */
+    /**
+     * DLQ 绑定
+     */
     @Bean
     public Binding merchantApplyCreatedDlqBinding(Queue merchantApplyCreatedDlq,
                                                   DirectExchange merchantApplyDlxExchange) {

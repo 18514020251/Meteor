@@ -7,8 +7,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.admin.domain.dto.MerchantApplyDTO;
 import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
-import com.meteor.admin.domain.enums.MerchantApplyStatusEnum;
 import com.meteor.admin.mapper.MerchantApplyMapper;
+import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.exception.BizException;
@@ -16,6 +16,8 @@ import com.meteor.common.exception.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +34,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         implements IMerchantApplyService {
 
     private final MerchantApplyMapper merchantApplyMapper;
+    private final IMerchantApplyReviewedService merchantApplyReviewedService;
 
     @Override
     public PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query) {
@@ -63,6 +66,8 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         apply.approve(getReviewerId(), LocalDateTime.now());
 
         merchantApplyMapper.updateById(apply);
+
+        merchantApplyReviewedService.send(apply);
 
         // 后续扩展点：审批通过后的副作用
         afterApproved(apply);

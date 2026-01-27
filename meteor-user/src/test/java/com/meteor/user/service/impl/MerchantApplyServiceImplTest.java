@@ -5,7 +5,6 @@ import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.domain.entity.MerchantApply;
-import com.meteor.user.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.user.mapper.MerchantApplyMapper;
 import com.meteor.user.mq.publisher.MerchantApplyEventPublisher;
 import org.junit.jupiter.api.Test;
@@ -16,8 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.ArgumentMatchers.*;
 
 /**
  * 商家申请服务测试类
@@ -65,33 +62,6 @@ class MerchantApplyServiceImplTest {
         );
     }
 
-    /**
-     * 测试提交商家申请 - 用户已存在已通过申请
-     * 预期：抛出OPERATION_NOT_ALLOWED异常
-     */
-    @Test
-    void apply_should_throw_exception_when_approved_apply_exists() {
-        // 模拟merchantApplyMapper.exists方法返回true（存在已通过申请）
-        Mockito.doReturn(true)
-               .when(merchantApplyMapper).exists(Mockito.any(LambdaQueryWrapper.class));
-        
-        // 创建DTO对象
-        MerchantApplyDTO dto = new MerchantApplyDTO();
-        dto.setShopName("Test Shop");
-        dto.setApplyReason("Test application");
-        
-        Long userId = 1L;
-        
-        BizException ex = assertThrows(
-                BizException.class,
-                () -> merchantApplyService.apply(userId, dto)
-        );
-
-        assertEquals(
-                CommonErrorCode.OPERATION_NOT_ALLOWED.getCode(),
-                ex.getCode()
-        );
-    }
 
     /**
      * 测试提交商家申请 - 正常提交

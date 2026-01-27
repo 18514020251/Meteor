@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.meteor.common.exception.BizException;
 import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.domain.entity.MerchantApply;
-import com.meteor.user.enums.merchant.MerchantApplyStatusEnum;
+import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.user.mapper.MerchantApplyMapper;
 import com.meteor.user.mq.publisher.MerchantApplyEventPublisher;
 import com.meteor.user.service.IMerchantApplyService;
@@ -27,6 +27,7 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
     private final MerchantApplyMapper merchantApplyMapper;
     private final MerchantApplyEventPublisher eventPublisher;
 
+    // todo: 后面移走多余代码，这里只关心MQ操作
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void apply(Long userId, MerchantApplyDTO applyReason) {

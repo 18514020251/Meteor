@@ -8,13 +8,13 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
-import com.meteor.admin.domain.enums.MerchantApplyStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 
 /**
  * <p>

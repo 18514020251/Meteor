@@ -129,8 +129,8 @@ public class UserCacheServiceImpl implements IUserCacheService {
 
     @Override
     public void evictUserRole(Long userId) {
-        String kry = buildUserRoleKey(userId);
-        redisTemplate.delete(kry);
+        String key = buildUserRoleKey(userId);
+        redisTemplate.delete(key);
     }
 
     @Override
