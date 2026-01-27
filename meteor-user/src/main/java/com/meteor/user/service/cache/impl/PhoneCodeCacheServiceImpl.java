@@ -6,6 +6,7 @@ import com.meteor.common.enums.VerifyCodeSceneEnum;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
 import static com.meteor.common.constants.VerifyCodeConstants.PHONE_CODE_TTL;
@@ -22,6 +23,21 @@ import static com.meteor.common.constants.VerifyCodeConstants.PHONE_CODE_TTL;
 public class PhoneCodeCacheServiceImpl implements IPhoneCodeCacheService {
 
     private final StringRedisTemplate redisTemplate;
+
+
+    private static final DefaultRedisScript<Long> VERIFY_AND_DELETE_SCRIPT =
+            new DefaultRedisScript<>(
+                    """
+                    local v = redis.call('GET', KEYS[1])
+                    if (not v) then return 0 end
+                    if (v == ARGV[1]) then
+                        redis.call('DEL', KEYS[1])
+                        return 1
+                    end
+                    return 0
+                    """,
+                    Long.class
+            );
 
     @Override
     public void saveCode(VerifyCodeSceneEnum scene, String phone, String code) {
@@ -47,24 +63,16 @@ public class PhoneCodeCacheServiceImpl implements IPhoneCodeCacheService {
     }
 
     @Override
-    public boolean verifyAndDelete(
-            VerifyCodeSceneEnum scene,
-            String phone,
-            String inputCode
-    ) {
+    public boolean verifyAndDelete(VerifyCodeSceneEnum scene, String phone, String inputCode) {
         if (StringUtils.isBlank(inputCode)) {
             return false;
         }
-
         String key = RedisKeyConstants.phoneCodeKey(scene, phone);
-        String realCode = redisTemplate.opsForValue().get(key);
-
-        if (!inputCode.equals(realCode)) {
-            return false;
-        }
-
-        redisTemplate.delete(key);
-        return true;
+        return redisTemplate.execute(
+                VERIFY_AND_DELETE_SCRIPT,
+                java.util.List.of(key),
+                inputCode.trim()
+        ) == 1L;
     }
 }
 

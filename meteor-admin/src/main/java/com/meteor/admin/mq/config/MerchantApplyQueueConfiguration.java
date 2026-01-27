@@ -1,4 +1,4 @@
-package com.meteor.admin.mq.comfig;
+package com.meteor.admin.mq.config;
 
 import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import org.springframework.amqp.core.Binding;

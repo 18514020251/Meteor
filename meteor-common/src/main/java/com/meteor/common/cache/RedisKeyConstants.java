@@ -40,7 +40,7 @@ public class RedisKeyConstants {
     public static final long USER_INFO_TTL_RANDOM = 20L;
 
     public static String phoneCodeKey(VerifyCodeSceneEnum scene, String phone) {
-        return String.format(PHONE_CODE_PREFIX, scene.name(), phone);
+        return String.format(PHONE_CODE_PREFIX, scene.getCode(), phone);
     }
 
     public static String phoneCodeLimitKey(VerifyCodeSceneEnum scene, String phone) {
@@ -55,11 +55,7 @@ public class RedisKeyConstants {
         return String.format(USER_INFO_KEY, userId);
     }
 
-    public static String buildUserRoleKey(Long userId){
-        return String.format(USER_ROLE_KEY, userId);
-    }
-
-    public static String buildUserRoleKey(String userId){
+    public static String buildUserRoleKey(Object userId){
         return String.format(USER_ROLE_KEY, userId);
     }
 

@@ -1,7 +1,9 @@
 programmer:
   mysql:
     host: ${MYSQL_HOST:127.0.0.1}
-    db: ${MYSQL_ADMIN_DB:meteor_admin}
+    port: ${MYSQL_PORT:3306}
+    user-db: ${MYSQL_USER_DB:meteor_user}
+    admin-db: ${MYSQL_ADMIN_DB:meteor_admin}
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:}
 

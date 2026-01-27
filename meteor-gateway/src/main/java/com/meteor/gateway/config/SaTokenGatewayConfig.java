@@ -33,6 +33,7 @@ public class SaTokenGatewayConfig {
                 .addExclude(
                         "/user/login",
                         "/user/register",
+                        "/user/phone/code",
                         "/error"
                 )
                 .setAuth(obj -> {

@@ -1,7 +1,11 @@
 package com.meteor.common.exception;
 
 import com.meteor.common.result.Result;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -24,11 +28,28 @@ public class GlobalExceptionHandler {
         return Result.fail(e.getCode(), e.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Result<Void> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        FieldError fe = e.getBindingResult().getFieldError();
+        String msg = (fe == null) ? "参数校验失败" : fe.getDefaultMessage();
+        // 你也可以拼成：fe.getField() + ": " + msg
+        return Result.fail(CommonErrorCode.PARAM_INVALID, msg);
+    }
+
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.warn("上传文件大小超出限制：{}", e.getMessage());
         return Result.fail(CommonErrorCode.FILE_SIZE_ERROR);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Result<Void> handleConstraintViolation(ConstraintViolationException e) {
+        String msg = e.getConstraintViolations().stream()
+                .findFirst()
+                .map(ConstraintViolation::getMessage)
+                .orElse("参数校验失败");
+        return Result.fail(CommonErrorCode.PARAM_INVALID, msg);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

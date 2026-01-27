@@ -5,6 +5,7 @@ import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.meteor.common.domain.PageResult;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * <p>
@@ -17,4 +18,8 @@ import com.meteor.common.domain.PageResult;
 public interface IMerchantApplyService extends IService<MerchantApply> {
 
     PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query);
+
+    void approve(Long id);
+
+    void reject(Long id, @NotBlank(message = "拒绝原因不能为空") String rejectReason);
 }

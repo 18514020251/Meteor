@@ -28,10 +28,11 @@ public class PhoneCodeLimitCacheServiceImpl
     @Override
     public boolean tryAcquire(VerifyCodeSceneEnum scene, String phone) {
 
-        String key = RedisKeyConstants.phoneCodeLimitKey(
-                VerifyCodeSceneEnum.BIND_PHONE,
-                phone
-        );
+        if (scene == null || StringUtils.isBlank(phone)) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
+        String key = RedisKeyConstants.phoneCodeLimitKey(scene, phone);
 
         Boolean success = redisTemplate.opsForValue()
                 .setIfAbsent(

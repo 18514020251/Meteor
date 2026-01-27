@@ -279,10 +279,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (StringUtils.isNotBlank(dto.getPhone())
                 && !dto.getPhone().equals(user.getPhone())) {
 
-            verifyPhoneCode(
-                    dto.getPhone(),
-                    dto.getPhoneCode()
-            );
+            verifyPhoneCode(VerifyCodeSceneEnum.BIND_PHONE, dto.getPhone(), dto.getPhoneCode());
 
             checkPhoneUnique(dto.getPhone(), userId);
 
@@ -301,20 +298,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /*
     *  验证手机验证码
     * */
-    private void verifyPhoneCode(
-            String phone,
-            String code
-    ) {
+    private void verifyPhoneCode(VerifyCodeSceneEnum scene, String phone, String code) {
         if (StringUtils.isBlank(code)) {
             throw new BizException(CommonErrorCode.PHONE_CODE_REQUIRED);
         }
-
-        boolean valid = phoneCodeCacheService.verifyAndDelete(
-                VerifyCodeSceneEnum.BIND_PHONE,
-                phone,
-                code
-        );
-
+        boolean valid = phoneCodeCacheService.verifyAndDelete(scene, phone, code);
         if (!valid) {
             throw new BizException(CommonErrorCode.PHONE_CODE_ERROR);
         }
@@ -430,7 +418,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /*
-    *  发送手机验证码
+    *发送手机验证码
     * */
     @Override
     public void sendPhoneVerifyCode(PhoneVerifyCodeSendDTO dto , String clientIp) {
