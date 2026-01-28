@@ -27,11 +27,14 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
     private final MerchantApplyMapper merchantApplyMapper;
     private final MerchantApplyEventPublisher eventPublisher;
 
-    // todo: 后面移走多余代码，这里只关心MQ操作
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void apply(Long userId, MerchantApplyDTO applyReason) {
+    public void apply(Long userId, MerchantApplyDTO dto) {
+        MerchantApply apply = createAndPersistApply(userId, dto);
+        publishCreatedEvent(apply);
+    }
 
+    private MerchantApply createAndPersistApply(Long userId, MerchantApplyDTO dto) {
         boolean exists = merchantApplyMapper.exists(
                 new LambdaQueryWrapper<MerchantApply>()
                         .eq(MerchantApply::getUserId, userId)
@@ -46,14 +49,17 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
 
         MerchantApply apply = MerchantApply.pending(
                 userId,
-                applyReason.getShopName(),
-                applyReason.getApplyReason()
+                dto.getShopName(),
+                dto.getApplyReason()
         );
 
         merchantApplyMapper.insert(apply);
-
-        eventPublisher.publishCreatedOrThrow(apply);
+        return apply;
     }
 
+    private void publishCreatedEvent(MerchantApply apply) {
+        eventPublisher.publishCreatedOrThrow(apply);
+    }
 }
+
 

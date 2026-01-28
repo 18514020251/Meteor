@@ -1,6 +1,5 @@
 package com.meteor.admin.service.impl;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,6 +12,7 @@ import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.satoken.context.LoginContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,8 @@ import java.util.List;
 public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, MerchantApply>
         implements IMerchantApplyService {
 
-    private final MerchantApplyMapper merchantApplyMapper;
+    private final LoginContext loginContext;
+
     private final IMerchantApplyReviewedService merchantApplyReviewedService;
 
     @Override
@@ -41,7 +42,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
 
         LambdaQueryWrapper<MerchantApply> wrapper = buildWrapper(query);
 
-        merchantApplyMapper.selectPage(page, wrapper);
+        baseMapper.selectPage(page, wrapper);
 
         List<MerchantApplyDTO> dtoList = page.getRecords().stream()
                 .map(MerchantApplyDTO::fromEntity)
@@ -62,18 +63,19 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     public void approveByApplyId(Long applyId) {
         MerchantApply apply = getByApplyIdOrThrow(applyId);
 
-        apply.approve(getReviewerId(), LocalDateTime.now());
+        Long reviewerId = loginContext.currentLoginId();
+        LocalDateTime now = LocalDateTime.now();
+        apply.approve(reviewerId, now);
 
-        int update = merchantApplyMapper.updateById(apply);
+        int update = baseMapper.updateById(apply);
         if (update != 1) {
             throw new BizException(CommonErrorCode.DATA_ERROR);
         }
 
         merchantApplyReviewedService.send(apply);
-
-        // 后续扩展点：审批通过后的副作用
         afterApproved(apply);
     }
+
 
     private void afterApproved(MerchantApply apply) {
         // 1) 清理 token/身份缓存（跨服务：需要发 MQ 给 user 或调用 user 服务）
@@ -90,29 +92,24 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     public void rejectByApplyId(Long applyId, String rejectReason) {
         MerchantApply apply = getByApplyIdOrThrow(applyId);
 
-        apply.reject(getReviewerId() , LocalDateTime.now(), rejectReason);
+        Long reviewerId = loginContext.currentLoginId();
+        LocalDateTime now = LocalDateTime.now();
+        apply.reject(reviewerId, now, rejectReason);
 
-        int update = merchantApplyMapper.updateById(apply);
+        int update = baseMapper.updateById(apply);
         if (update != 1) {
             throw new BizException(CommonErrorCode.DATA_ERROR);
         }
 
         merchantApplyReviewedService.send(apply);
-
-        // 后续扩展点：拒绝后的副作用
     }
 
     private MerchantApply getByApplyIdOrThrow(Long applyId) {
-        MerchantApply apply = merchantApplyMapper.selectOne(new LambdaQueryWrapper<MerchantApply>().eq(MerchantApply::getApplyId, applyId));
+        MerchantApply apply = baseMapper.selectOne(new LambdaQueryWrapper<MerchantApply>().eq(MerchantApply::getApplyId, applyId));
         if (apply == null) {
             throw new BizException(CommonErrorCode.MERCHANT_APPLY_NOT_EXIST);
         }
         return apply;
-    }
-
-
-    private Long getReviewerId() {
-        return StpUtil.getLoginIdAsLong();
     }
 
     /**

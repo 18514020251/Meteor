@@ -9,6 +9,7 @@ import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.result.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,32 +22,33 @@ import org.springframework.web.bind.annotation.*;
  * @author Programmer
  * @since 2026-01-23
  */
+@SaCheckRole("admin")
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/admin/merchant-apply")
 @RequiredArgsConstructor
+@Tag(name = "商家审核", description = "管理端商家申请审核接口")
 public class MerchantApplyController {
 
     private final IMerchantApplyService merchantApplyService;
 
     @Operation(summary = "分页查询商家申请列表")
-    @GetMapping("/list")
-    public PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query) {
-        return merchantApplyService.list(query);
+    @GetMapping
+    public Result<PageResult<MerchantApplyDTO>> list(MerchantApplyQueryDTO query) {
+        return Result.success(merchantApplyService.list(query));
     }
 
     @Operation(summary = "审核通过")
-    @PostMapping("/merchant-apply/{applyId}/approve")
+    @PostMapping("/{applyId}/approve")
     public Result<Void> approve(@PathVariable Long applyId) {
         merchantApplyService.approveByApplyId(applyId);
         return Result.success();
     }
 
     @Operation(summary = "审核拒绝")
-    @PostMapping("/merchant-apply/{applyId}/reject")
-    @SaCheckRole("admin")
-    public Result<Void> reject(@PathVariable Long applyId, @RequestBody @Valid MerchantApplyRejectDTO req) {
+    @PostMapping("/{applyId}/reject")
+    public Result<Void> reject(@PathVariable Long applyId,
+                               @RequestBody @Valid MerchantApplyRejectDTO req) {
         merchantApplyService.rejectByApplyId(applyId, req.getRejectReason());
         return Result.success();
     }
-
 }

@@ -48,16 +48,16 @@ public class MerchantApplyReviewedConsumer {
             return;
         }
 
-        MerchantApply record = merchantApplyMapper.selectById(message.getApplyId());
+        MerchantApply apply = merchantApplyMapper.selectById(message.getApplyId());
 
-        if (record == null) {
+        if (apply == null) {
             log.error("商家申请记录不存在，申请ID={}", message.getApplyId());
             return;
         }
 
-        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(record.getStatus())) {
+        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
             log.info("商家申请已被处理，无需重复更新，申请ID={}, 当前状态={}",
-                    message.getApplyId(), record.getStatus());
+                    message.getApplyId(), apply.getStatus());
             return;
         }
 

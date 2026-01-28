@@ -1,11 +1,10 @@
 package com.meteor.user.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.common.result.Result;
 import com.meteor.common.utils.IpUtils;
+import com.meteor.satoken.context.LoginContext;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.vo.UserInfoVO;
-import com.meteor.user.service.IMerchantApplyService;
 import com.meteor.user.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     private final IUserService userService;
-    private final IMerchantApplyService merchantApplyService;
+    private final LoginContext loginContext;
 
     @Operation(summary = "用户注册", description = "用户通过用户名、密码注册账号")
     @PostMapping("/register")
@@ -51,7 +50,7 @@ public class UserController {
     @Operation(summary = "获取用户信息", description = "获取当前登录用户的个人信息")
     @GetMapping("/info")
     public Result<UserInfoVO> info() {
-        Long userId = StpUtil.getLoginIdAsLong();
+        Long userId = loginContext.currentLoginId();
         UserInfoVO userInfo = userService.getCurrentUserInfo(userId);
         return Result.success(userInfo);
     }
@@ -59,7 +58,7 @@ public class UserController {
     @Operation(summary = "上传用户头像", description = "用户上传并更新头像")
     @PutMapping("/avatar")
     public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        Long userId = StpUtil.getLoginIdAsLong();
+        Long userId = loginContext.currentLoginId();
         String avatarUrl = userService.uploadAvatar(file , userId);
         return Result.success(avatarUrl);
     }
@@ -67,7 +66,7 @@ public class UserController {
     @Operation(summary = "删除用户账号", description = "删除当前用户及其相关信息")
     @DeleteMapping("/delete")
     public Result<Void> deleteUser() {
-        Long userId = StpUtil.getLoginIdAsLong();
+        Long userId = loginContext.currentLoginId();
         userService.deleteUserAndRelatedInfo(userId);
         return Result.success();
     }
@@ -75,7 +74,7 @@ public class UserController {
     @Operation(summary = "修改用户信息", description = "用户修改自己的用户名和手机号")
     @PutMapping("/profile")
     public Result<Void> updateProfile(@RequestBody @Valid UserProfileUpdateDTO dto) {
-        Long userId = StpUtil.getLoginIdAsLong();
+        Long userId = loginContext.currentLoginId();
         userService.updateProfile(userId, dto);
         return Result.success();
     }
@@ -83,7 +82,7 @@ public class UserController {
     @Operation(summary = "修改用户密码", description = "用户可以修改自己的密码")
     @PutMapping("/update-password")
     public Result<Void> updatePassword(@RequestBody @Valid UserPasswordUpdateDTO dto) {
-        Long userId = StpUtil.getLoginIdAsLong();
+        Long userId = loginContext.currentLoginId();
         userService.updatePassword(userId, dto);
         return Result.success();
     }
@@ -105,22 +104,10 @@ public class UserController {
             description = "用户获取手机验证码,用户绑定手机号"
     )
     @PostMapping("/phone/code")
-    public Result<Void> sendPhoneVerifyCode( @RequestBody PhoneVerifyCodeSendDTO dto, HttpServletRequest  request) {
+    public Result<Void> sendPhoneVerifyCode(@Valid @RequestBody PhoneVerifyCodeSendDTO dto, HttpServletRequest  request) {
         String clientIp = IpUtils.getClientIp(request);
         userService.sendPhoneVerifyCode(dto , clientIp);
         return Result.success();
     }
-
-    @Operation(summary = "申请成为商户", description = "用户申请成为商户")
-    @PostMapping("/merchant/apply")
-    public Result<Void> applyMerchant(@RequestBody @Valid MerchantApplyDTO dto) {
-
-        Long userId = StpUtil.getLoginIdAsLong();
-
-        merchantApplyService.apply(userId, dto);
-
-        return Result.success();
-    }
-
 
 }
