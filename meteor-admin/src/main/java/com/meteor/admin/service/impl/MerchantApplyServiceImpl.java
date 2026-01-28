@@ -16,7 +16,6 @@ import com.meteor.common.exception.CommonErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 
 
 import java.time.LocalDateTime;
@@ -56,16 +55,19 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
      * <p>
      *      审批通过
      * </p>
-     * @param id 商家申请 ID
+     * @param applyId 商家申请 ID
      * */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void approve(Long id) {
-        MerchantApply apply = getByIdOrThrow(id);
+    public void approveByApplyId(Long applyId) {
+        MerchantApply apply = getByApplyIdOrThrow(applyId);
 
         apply.approve(getReviewerId(), LocalDateTime.now());
 
-        merchantApplyMapper.updateById(apply);
+        int update = merchantApplyMapper.updateById(apply);
+        if (update != 1) {
+            throw new BizException(CommonErrorCode.DATA_ERROR);
+        }
 
         merchantApplyReviewedService.send(apply);
 
@@ -79,35 +81,29 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     }
 
     /**
-     * <p>
-     *     拒绝策略
-     * </p>
-     * @param id 商家申请 ID
+     * <p>拒绝策略</p>
+     * @param applyId 商家申请 ID
      * @param rejectReason 拒绝理由
      * */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void reject(Long id, String rejectReason) {
-        MerchantApply apply = getByIdOrThrow(id);
+    public void rejectByApplyId(Long applyId, String rejectReason) {
+        MerchantApply apply = getByApplyIdOrThrow(applyId);
 
-        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
-            throw new BizException(CommonErrorCode.MERCHANT_APPLY_ALREADY_REVIEWED);
+        apply.reject(getReviewerId() , LocalDateTime.now(), rejectReason);
+
+        int update = merchantApplyMapper.updateById(apply);
+        if (update != 1) {
+            throw new BizException(CommonErrorCode.DATA_ERROR);
         }
 
-        if (rejectReason == null || rejectReason.isBlank()) {
-            throw new BizException(CommonErrorCode.MERCHANT_APPLY_REJECT_REASON_REQUIRED);
-        }
+        merchantApplyReviewedService.send(apply);
 
-        apply.setStatus(MerchantApplyStatusEnum.REJECTED);
-        apply.setRejectReason(rejectReason.trim());
-        apply.setReviewedBy(getReviewerId());
-        apply.setReviewedTime(LocalDateTime.now());
-
-        merchantApplyMapper.updateById(apply);
+        // 后续扩展点：拒绝后的副作用
     }
 
-    private MerchantApply getByIdOrThrow(Long id) {
-        MerchantApply apply = merchantApplyMapper.selectById(id);
+    private MerchantApply getByApplyIdOrThrow(Long applyId) {
+        MerchantApply apply = merchantApplyMapper.selectOne(new LambdaQueryWrapper<MerchantApply>().eq(MerchantApply::getApplyId, applyId));
         if (apply == null) {
             throw new BizException(CommonErrorCode.MERCHANT_APPLY_NOT_EXIST);
         }
@@ -120,9 +116,9 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     }
 
     /**
-     * <p>
-     *     构建查询条件
-     * </p>
+     * <p>构建查询条件</p>
+     *
+     * @param query 查询条件
      * */
     private LambdaQueryWrapper<MerchantApply> buildWrapper(MerchantApplyQueryDTO query) {
         LambdaQueryWrapper<MerchantApply> wrapper = new LambdaQueryWrapper<>();

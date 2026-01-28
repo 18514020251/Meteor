@@ -29,7 +29,7 @@ public class MerchantApplyReviewedConsumer {
     public void handle(MerchantApplyReviewedMessage message) {
 
         if (message == null || message.getApplyId() == null || message.getStatus() == null) {
-            throw new IllegalArgumentException("MerchantApplyReviewedMessage invalid: " + message);
+            throw new IllegalArgumentException("审核结果消息不合法: " + message);
         }
 
         MerchantApplyStatusEnum statusEnum = message.getStatus();
@@ -43,11 +43,25 @@ public class MerchantApplyReviewedConsumer {
         int rows = merchantApplyMapper.update(null, updateWrapper);
 
         if (rows > 0) {
-            log.info("MerchantApply reviewed success. applyId={}, status={}",
+            log.info("商家申请审核状态更新成功，申请ID={}, 新状态={}",
                     message.getApplyId(), statusEnum);
             return;
         }
 
-        log.info("MerchantApply reviewed already processed. applyId={}", message.getApplyId());
+        MerchantApply record = merchantApplyMapper.selectById(message.getApplyId());
+
+        if (record == null) {
+            log.error("商家申请记录不存在，申请ID={}", message.getApplyId());
+            return;
+        }
+
+        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(record.getStatus())) {
+            log.info("商家申请已被处理，无需重复更新，申请ID={}, 当前状态={}",
+                    message.getApplyId(), record.getStatus());
+            return;
+        }
+
+        log.error("商家申请审核状态更新失败，数据库状态异常，申请ID={}", message.getApplyId());
     }
+
 }

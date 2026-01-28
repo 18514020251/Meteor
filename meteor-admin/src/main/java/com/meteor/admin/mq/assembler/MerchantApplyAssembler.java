@@ -15,6 +15,12 @@ import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 @Component
 public class MerchantApplyAssembler {
 
+    /**
+     * <p>
+     *      转换成商家申请
+     * </p>
+     * @param message 商家申请创建消息
+     * */
     public MerchantApply from(MerchantApplyCreatedMessage message) {
         MerchantApply entity = new MerchantApply();
         entity.setApplyId(message.getApplyId());
@@ -25,6 +31,7 @@ public class MerchantApplyAssembler {
         entity.setCreateTime(message.getApplyTime());
         return entity;
     }
+
 
     public MerchantApplyReviewedMessage toReviewedMessage(MerchantApply apply ){
         MerchantApplyReviewedMessage message = new MerchantApplyReviewedMessage();

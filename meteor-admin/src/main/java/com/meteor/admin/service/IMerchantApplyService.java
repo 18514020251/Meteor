@@ -17,9 +17,25 @@ import jakarta.validation.constraints.NotBlank;
  */
 public interface IMerchantApplyService extends IService<MerchantApply> {
 
+    /**
+     * <p>分页查询商家申请列表</p>
+     * @param query 查询参数
+     * @return 商家申请列表
+     * */
     PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query);
 
-    void approve(Long id);
+    /**
+     * <p>审核通过</p>
+     * @param id 商家申请ID
+     * */
+    void approveByApplyId(Long id);
 
-    void reject(Long id, @NotBlank(message = "拒绝原因不能为空") String rejectReason);
+
+    /**
+     * <p>审核拒绝</p>
+     * @param applyId 商家申请ID
+     * @param rejectReason 拒绝原因
+     * */
+    void rejectByApplyId(Long applyId, @NotBlank(message = "拒绝原因不能为空") String rejectReason);
+
 }

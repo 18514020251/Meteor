@@ -1,15 +1,15 @@
 package com.meteor.admin.controller;
 
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.meteor.admin.domain.dto.MerchantApplyDTO;
 import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
+import com.meteor.admin.domain.dto.MerchantApplyRejectDTO;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.result.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,23 +35,18 @@ public class MerchantApplyController {
     }
 
     @Operation(summary = "审核通过")
-    @PostMapping("/merchant-apply/{id}/approve")
-    public Result<Void> approve(@PathVariable Long id) {
-        merchantApplyService.approve(id);
+    @PostMapping("/merchant-apply/{applyId}/approve")
+    public Result<Void> approve(@PathVariable Long applyId) {
+        merchantApplyService.approveByApplyId(applyId);
         return Result.success();
     }
 
     @Operation(summary = "审核拒绝")
-    @PostMapping("/merchant-apply/{id}/reject")
-    public Result<Void> reject(@PathVariable Long id, @Valid @RequestBody RejectReq req) {
-        merchantApplyService.reject(id, req.getRejectReason());
+    @PostMapping("/merchant-apply/{applyId}/reject")
+    @SaCheckRole("admin")
+    public Result<Void> reject(@PathVariable Long applyId, @RequestBody @Valid MerchantApplyRejectDTO req) {
+        merchantApplyService.rejectByApplyId(applyId, req.getRejectReason());
         return Result.success();
-    }
-
-    @Data
-    public static class RejectReq {
-        @NotBlank(message = "拒绝原因不能为空")
-        private String rejectReason;
     }
 
 }
