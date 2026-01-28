@@ -1,6 +1,7 @@
 package com.meteor.satoken.context;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.meteor.satoken.constants.RoleConst;
 
 /**
  * @author Programmer
@@ -23,13 +24,6 @@ public class LoginContext {
     }
 
     /**
-     * <p>检查当前用户是否是管理员</p>
-     * */
-    public void checkAdminRole() {
-        StpUtil.checkRole("admin");
-    }
-
-    /**
      * <p>取消用户登录状态</p>
      * */
     public void logout() {
@@ -43,4 +37,17 @@ public class LoginContext {
         StpUtil.logout(userId);
     }
 
+    /**
+     * <p>检查当前用户是否是普通用户</p>
+     */
+    public void checkUserRole(){
+        StpUtil.checkRole(RoleConst.USER);
+    }
+
+    /**
+     * <p>检查当前用户是否是管理员</p>
+     * */
+    public void checkAdminRole() {
+        StpUtil.checkRole(RoleConst.ADMIN);
+    }
 }

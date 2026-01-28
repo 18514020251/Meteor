@@ -10,13 +10,16 @@ import lombok.Getter;
  *
  * @author Programmer
  * @date 2026-01-13 18:42
+ * <p>
+ * 仅用于业务域/DB映射，不用于 Sa-Token 鉴权。
+ * Sa-Token 角色常量统一使用 RoleConst。
+ * </p>
  */
-
 @Getter
 public enum RoleEnum {
 
     USER(0, "user"),
-    MERCHANT(1, "mdrchant"),
+    MERCHANT(1, "merchant"),
     ADMIN(2, "admin");
 
     @EnumValue

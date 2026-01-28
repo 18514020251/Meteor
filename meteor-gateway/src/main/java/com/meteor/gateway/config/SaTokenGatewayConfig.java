@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;
+import com.meteor.satoken.constants.RoleConst;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cn.dev33.satoken.exception.NotRoleException;
@@ -41,7 +42,7 @@ public class SaTokenGatewayConfig {
 
                     String path = SaHolder.getRequest().getRequestPath();
                     if (path.startsWith("/admin")) {
-                        StpUtil.checkRole("admin");
+                        StpUtil.checkRole(RoleConst.ADMIN);
                     }
                 })
                 .setError(this::handleSaTokenError);

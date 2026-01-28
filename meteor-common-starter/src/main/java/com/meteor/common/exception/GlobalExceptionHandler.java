@@ -1,5 +1,8 @@
 package com.meteor.common.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import com.meteor.common.result.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -34,8 +37,22 @@ public class GlobalExceptionHandler {
     public Result<Void> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         FieldError fe = e.getBindingResult().getFieldError();
         String msg = (fe == null) ? "参数校验失败" : fe.getDefaultMessage();
-        // 你也可以拼成：fe.getField() + ": " + msg
         return Result.fail(CommonErrorCode.PARAM_INVALID, msg);
+    }
+
+    @ExceptionHandler(NotLoginException.class)
+    public Result<Void> handleNotLogin(NotLoginException e) {
+        return Result.fail(CommonErrorCode.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(NotRoleException.class)
+    public Result<Void> handleNotRole(NotRoleException e) {
+        return Result.fail(CommonErrorCode.FORBIDDEN);
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    public Result<Void> handleNotPermission(NotPermissionException e) {
+        return Result.fail(CommonErrorCode.FORBIDDEN);
     }
 
 

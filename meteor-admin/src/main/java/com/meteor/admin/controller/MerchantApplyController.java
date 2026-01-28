@@ -8,6 +8,7 @@ import com.meteor.admin.domain.dto.MerchantApplyRejectDTO;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.result.Result;
+import com.meteor.satoken.constants.RoleConst;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
  * @author Programmer
  * @since 2026-01-23
  */
-@SaCheckRole("admin")
 @RestController
 @RequestMapping("/admin/merchant-apply")
 @RequiredArgsConstructor
@@ -33,6 +33,7 @@ public class MerchantApplyController {
 
     @Operation(summary = "分页查询商家申请列表")
     @GetMapping
+    @SaCheckRole(RoleConst.ADMIN)
     public Result<PageResult<MerchantApplyDTO>> list(MerchantApplyQueryDTO query) {
         return Result.success(merchantApplyService.list(query));
     }

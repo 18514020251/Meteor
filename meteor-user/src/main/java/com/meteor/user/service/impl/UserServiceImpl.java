@@ -12,6 +12,7 @@ import com.meteor.common.utils.PhoneUtil;
 import com.meteor.common.utils.image.ImageCropUtil;
 import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.util.MinioUtil;
+import com.meteor.satoken.constants.RoleConst;
 import com.meteor.user.domain.assembler.UserInfoAssembler;
 import com.meteor.user.domain.dto.*;
 import com.meteor.user.domain.entity.User;
@@ -50,7 +51,7 @@ import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
-
+    // NOTE：后续移除 userMapper
     private final UserMapper userMapper;
     private final MinioUtil minioUtil;
     private final UserDomainService userDomainService;
@@ -107,15 +108,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.USER_OR_PASSWORD_ERROR);
         }
 
-        String loginType = switch (user.getRole()) {
-            case 2 -> RoleEnum.ADMIN.getDesc();
-            case 1 -> RoleEnum.MERCHANT.getDesc();
-            default -> RoleEnum.USER.getDesc();
+        String role = switch (user.getRole()) {
+            case 2 -> RoleConst.ADMIN;
+            case 1 -> RoleConst.MERCHANT;
+            default -> RoleConst.USER;
         };
 
-        userCacheService.cacheUserRole(user.getId(), loginType);
+        userCacheService.cacheUserRole(user.getId(), role);
 
-        StpUtil.login(user.getId(), loginType);
+        StpUtil.login(user.getId());
         return StpUtil.getTokenValue();
     }
 

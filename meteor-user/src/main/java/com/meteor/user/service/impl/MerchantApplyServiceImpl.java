@@ -35,7 +35,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<UserMapper, User>  imp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void apply(Long userId, MerchantApplyDTO dto) {
-        // NOTE: 检查用户身份
+        loginContext.checkUserRole();
         MerchantApply apply = createAndPersistApply(userId, dto);
         publishCreatedEvent(apply);
     }
