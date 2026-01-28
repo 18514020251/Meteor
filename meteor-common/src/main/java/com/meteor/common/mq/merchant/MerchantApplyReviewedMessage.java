@@ -33,4 +33,7 @@ public class MerchantApplyReviewedMessage implements Serializable {
 
     /** 审核时间 */
     private LocalDateTime reviewedTime;
+
+    /** 相关用户id */
+    private Long userId;
 }

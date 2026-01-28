@@ -78,8 +78,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
 
 
     private void afterApproved(MerchantApply apply) {
-        // 1) 清理 token/身份缓存（跨服务：需要发 MQ 给 user 或调用 user 服务）
-        // 2) 发送消息提醒用户（跨服务：同样走 MQ）
+        // NOTE: Async side effects (notifications / inbox messages) will be implemented later in message module.
     }
 
     /**

@@ -1,15 +1,14 @@
 package com.meteor.satoken.autoconfigure;
 
 import cn.dev33.satoken.config.SaTokenConfig;
+import com.meteor.satoken.context.LoginContext;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 
 /**
  * sa-token 配置类
- *
  * @author Programmer
- * @Date 2026-01-16 15:12:00
  */
 @AutoConfiguration
 public class MeteorSaTokenAutoConfiguration {
@@ -26,5 +25,11 @@ public class MeteorSaTokenAutoConfiguration {
         config.setIsShare(true);
         config.setTokenStyle("uuid");
         return config;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public LoginContext loginContext() {
+        return new LoginContext();
     }
 }

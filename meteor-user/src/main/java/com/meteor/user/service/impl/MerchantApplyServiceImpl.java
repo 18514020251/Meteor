@@ -1,11 +1,15 @@
 package com.meteor.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.exception.BizException;
+import com.meteor.satoken.context.LoginContext;
 import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.domain.entity.MerchantApply;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
+import com.meteor.user.domain.entity.User;
 import com.meteor.user.mapper.MerchantApplyMapper;
+import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.mq.publisher.MerchantApplyEventPublisher;
 import com.meteor.user.service.IMerchantApplyService;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +26,16 @@ import static com.meteor.common.exception.CommonErrorCode.OPERATION_NOT_ALLOWED;
  */
 @Service
 @RequiredArgsConstructor
-public class MerchantApplyServiceImpl implements IMerchantApplyService {
+public class MerchantApplyServiceImpl extends ServiceImpl<UserMapper, User>  implements IMerchantApplyService{
 
     private final MerchantApplyMapper merchantApplyMapper;
     private final MerchantApplyEventPublisher eventPublisher;
+    private final LoginContext loginContext;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void apply(Long userId, MerchantApplyDTO dto) {
+        // NOTE: 检查用户身份
         MerchantApply apply = createAndPersistApply(userId, dto);
         publishCreatedEvent(apply);
     }
@@ -56,6 +62,7 @@ public class MerchantApplyServiceImpl implements IMerchantApplyService {
         merchantApplyMapper.insert(apply);
         return apply;
     }
+
 
     private void publishCreatedEvent(MerchantApply apply) {
         eventPublisher.publishCreatedOrThrow(apply);

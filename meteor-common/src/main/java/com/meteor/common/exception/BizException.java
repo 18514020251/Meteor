@@ -23,4 +23,5 @@ public class BizException extends RuntimeException {
         this.code = errorCode.getCode();
     }
 
+
 }

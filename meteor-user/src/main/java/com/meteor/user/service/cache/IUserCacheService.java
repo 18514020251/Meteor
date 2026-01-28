@@ -19,10 +19,24 @@ public interface IUserCacheService {
      */
     UserInfoCache getUserInfo(Long userId);
 
+    /**
+     * 判断用户信息缓存是否为空
+     *
+     * @param userId 用户 ID
+     * @return
+     *  - 命中：true
+     *  - 未命中：false
+     */
     boolean isNullCached(Long userId);
 
+    /**
+     * 缓存用户角色
+     */
     void cacheUserRole(Long userId, String role);
 
+    /**
+     * 缓存用户信息
+     */
     void cacheUserAll(Long userId , String role , UserInfoCache cache);
 
     /**

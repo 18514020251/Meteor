@@ -40,6 +40,7 @@ public class MerchantApplyAssembler {
         message.setReviewedBy(apply.getReviewedBy());
         message.setReviewedTime(apply.getReviewedTime());
         message.setRejectReason(apply.getRejectReason());
+        message.setUserId(apply.getUserId());
         return message;
     }
 }

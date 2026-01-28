@@ -22,7 +22,7 @@ public class MerchantApplyCreatedConsumer {
     private final MerchantApplyMapper mapper;
     private final MerchantApplyAssembler assembler;
 
-    @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_CREATED)
+    @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_CREATED  , errorHandler = "mqRejectErrorHandler")
     @Transactional(rollbackFor = Exception.class)
     public void handle(MerchantApplyCreatedMessage message) {
 
