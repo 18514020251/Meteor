@@ -5,9 +5,8 @@ import com.meteor.admin.mq.assembler.MerchantApplyAssembler;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.mq.constants.MqConstants;
-import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import com.meteor.common.mq.merchant.MerchantApplyReviewedMessage;
+import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.mq.core.MqSendResult;
 import com.meteor.mq.core.MqSender;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +29,10 @@ public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedS
     public void send(MerchantApply apply) {
         MerchantApplyReviewedMessage message = merchantApplyAssembler.toReviewedMessage(apply);
         MqSendResult result = mqSender.sendAndWaitConfirm(
-                MerchantApplyEvent.Exchange.MERCHANT_APPLY,
-                MerchantApplyEvent.RoutingKey.MERCHANT_APPLY_REVIEWED,
+                MerchantApplyContract.Exchange.MERCHANT_APPLY,
+                MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED,
                 message,
-                MqConstants.CONFIRM_TIMEOUT
+                MerchantApplyContract.CONFIRM_TIMEOUT
         );
 
         if (!result.isAck()) {

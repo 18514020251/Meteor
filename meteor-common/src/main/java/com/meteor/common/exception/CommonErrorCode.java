@@ -22,6 +22,7 @@ public enum CommonErrorCode implements IErrorCode {
     PHONE_CODE_REQUIRED(400, "验证码不能为空", HttpStatus.BAD_REQUEST),
     PHONE_CODE_ERROR(400, "验证码错误", HttpStatus.BAD_REQUEST),
     REQUEST_TOO_FREQUENT(400, "请求过于频繁", HttpStatus.BAD_REQUEST),
+    METHOD_NOT_ALLOWED(405, "不支持当前请求方法", HttpStatus.METHOD_NOT_ALLOWED),
 
     // 用户模块
     USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),

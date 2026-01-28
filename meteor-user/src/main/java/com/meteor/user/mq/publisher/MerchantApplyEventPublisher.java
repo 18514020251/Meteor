@@ -2,9 +2,8 @@ package com.meteor.user.mq.publisher;
 
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.mq.constants.MqConstants;
-import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import com.meteor.common.mq.merchant.MerchantApplyCreatedMessage;
+import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.mq.core.MqSendResult;
 import com.meteor.mq.core.MqSender;
 import com.meteor.user.domain.entity.MerchantApply;
@@ -34,8 +33,8 @@ public class MerchantApplyEventPublisher {
         MerchantApplyCreatedMessage message = assembler.from(apply);
 
         mqSender.send(
-                MerchantApplyEvent.Exchange.MERCHANT_APPLY,
-                MerchantApplyEvent.RoutingKey.MERCHANT_APPLY_CREATED,
+                MerchantApplyContract.Exchange.MERCHANT_APPLY,
+                MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED,
                 message
         );
     }
@@ -45,10 +44,10 @@ public class MerchantApplyEventPublisher {
         MerchantApplyCreatedMessage message = assembler.from(apply);
 
         MqSendResult result = mqSender.sendAndWaitConfirm(
-                MerchantApplyEvent.Exchange.MERCHANT_APPLY,
-                MerchantApplyEvent.RoutingKey.MERCHANT_APPLY_CREATED,
+                MerchantApplyContract.Exchange.MERCHANT_APPLY,
+                MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED,
                 message,
-                MqConstants.CONFIRM_TIMEOUT
+                MerchantApplyContract.CONFIRM_TIMEOUT
         );
 
         if (!result.isAck()) {

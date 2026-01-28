@@ -29,6 +29,8 @@
 		<module>meteor-mq-starter</module>
 		<module>meteor-admin</module>
 		<module>meteor-mp-starter</module>
+        <module>meteor-mq-contract</module>
+		<module>meteor-mq-topology-starter</module>
 	</modules>
 
 	<properties>
@@ -101,6 +103,16 @@
 			<dependency>
 				<groupId>com.meteor</groupId>
 				<artifactId>meteor-common-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.meteor</groupId>
+				<artifactId>meteor-mq-contract</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.meteor</groupId>
+				<artifactId>meteor-mq-topology-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

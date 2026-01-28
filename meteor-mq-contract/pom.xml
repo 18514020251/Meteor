@@ -1,0 +1,14 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.meteor</groupId>
+        <artifactId>meteor</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <description>MQ Contract Module</description>
+
+    <artifactId>meteor-mq-contract</artifactId>
+
+</project>

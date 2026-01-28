@@ -2,8 +2,8 @@ package com.meteor.user.mq.consumer;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.common.mq.merchant.MerchantApplyEvent;
 import com.meteor.common.mq.merchant.MerchantApplyReviewedMessage;
+import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.user.domain.entity.MerchantApply;
 import com.meteor.user.mapper.MerchantApplyMapper;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class MerchantApplyReviewedConsumer {
 
     private final MerchantApplyMapper merchantApplyMapper;
 
-    @RabbitListener(queues = MerchantApplyEvent.Queue.MERCHANT_APPLY_REVIEWED)
+    @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED)
     @Transactional(rollbackFor = Exception.class)
     public void handle(MerchantApplyReviewedMessage message) {
 
