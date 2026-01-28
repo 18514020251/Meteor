@@ -1,2 +1,3 @@
 com.meteor.mq.autoconfigure.MeteorMqAutoConfiguration
 com.meteor.mq.autoconfigure.MeteorMqErrorHandlerAutoConfiguration
+com.meteor.mq.autoconfigure.MeteorMqHealthCheckAutoConfiguration
