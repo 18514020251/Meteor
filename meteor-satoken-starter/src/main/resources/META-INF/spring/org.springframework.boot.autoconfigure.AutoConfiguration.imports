@@ -1,1 +1,2 @@
 com.meteor.satoken.autoconfigure.MeteorSaTokenAutoConfiguration
+com.meteor.satoken.autoconfigure.MeteorSaTokenMvcAutoConfiguration

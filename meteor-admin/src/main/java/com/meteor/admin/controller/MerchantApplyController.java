@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -23,17 +24,18 @@ import org.springframework.web.bind.annotation.*;
  * @author Programmer
  * @since 2026-01-23
  */
+@Slf4j
 @RestController
 @RequestMapping("/admin/merchant-apply")
 @RequiredArgsConstructor
 @Tag(name = "商家审核", description = "管理端商家申请审核接口")
+@SaCheckRole(RoleConst.ADMIN)
 public class MerchantApplyController {
 
     private final IMerchantApplyService merchantApplyService;
 
     @Operation(summary = "分页查询商家申请列表")
     @GetMapping
-    @SaCheckRole(RoleConst.ADMIN)
     public Result<PageResult<MerchantApplyDTO>> list(MerchantApplyQueryDTO query) {
         return Result.success(merchantApplyService.list(query));
     }

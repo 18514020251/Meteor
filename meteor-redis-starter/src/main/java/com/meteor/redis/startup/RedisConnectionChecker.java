@@ -1,4 +1,4 @@
-package com.meteor.user.startup;
+package com.meteor.redis.startup;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,20 +8,16 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 import static com.meteor.common.constants.SpringPropertyKeys.*;
 
 /**
- * Redis 连接测试
- *
  * @author Programmer
- * @date 2026-01-26 21:32
+ * @date 2026-01-28 19:28
  */
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class RedisConnectionChecker implements ApplicationListener<ApplicationReadyEvent> {
 
@@ -37,36 +33,34 @@ public class RedisConnectionChecker implements ApplicationListener<ApplicationRe
         RedisConnectionFactory factory = stringRedisTemplate.getConnectionFactory();
         if (factory == null) {
             log.warn("""
-                ======== Middleware Check (meteor-user) ========
+                ======== Middleware Check (redis-starter) ========
                 Redis:  FAIL
                 Reason: ConnectionFactory is null
                 Addr :  {}:{}
                 DB   :  {}
-                ===============================================
+                ================================================
                 """, host, port, db);
             return;
         }
 
         try (RedisConnection conn = factory.getConnection()) {
             String pong = conn.ping();
-
             log.info("""
-                ======== Middleware Check (meteor-user) ========
+                ======== Middleware Check (redis-starter) ========
                 Redis:  OK
                 Addr :  {}:{}
                 DB   :  {}
                 PING :  {}
-                ===============================================
+                ================================================
                 """, host, port, db, pong);
-
         } catch (Exception e) {
             log.warn("""
-                ======== Middleware Check (meteor-user) ========
+                ======== Middleware Check (redis-starter) ========
                 Redis:  FAIL
                 Addr :  {}:{}
                 DB   :  {}
                 ERR  :  {}
-                ===============================================
+                ================================================
                 """, host, port, db, rootMessage(e));
         }
     }

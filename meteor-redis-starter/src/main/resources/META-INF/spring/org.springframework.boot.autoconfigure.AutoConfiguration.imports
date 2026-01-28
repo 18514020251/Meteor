@@ -1,1 +1,2 @@
 com.meteor.redis.autoconfigure.MeteorRedisTemplateAutoConfiguration
+com.meteor.redis.autoconfigure.MeteorRedisHealthCheckAutoConfiguration
