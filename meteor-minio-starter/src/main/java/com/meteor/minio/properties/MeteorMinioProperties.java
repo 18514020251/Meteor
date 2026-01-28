@@ -15,6 +15,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "meteor.minio")
 public class MeteorMinioProperties {
 
+    private static final int DEFAULT_EXPIRE_MINUTES = 5;
+
     /**
      * MinIO 服务地址
      */
@@ -44,5 +46,5 @@ public class MeteorMinioProperties {
     /*
     *  头像有效期
     * */
-    private int presignedUrlExpireMinutes = 5;
+    private int presignedUrlExpireMinutes = DEFAULT_EXPIRE_MINUTES;
 }

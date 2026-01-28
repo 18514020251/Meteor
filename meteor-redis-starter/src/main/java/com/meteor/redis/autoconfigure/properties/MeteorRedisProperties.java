@@ -12,13 +12,14 @@ import java.time.Duration;
  * @date 2026-01-17 12:46
  */
 @Data
-@ConfigurationProperties(prefix = "spring.redis")
+@ConfigurationProperties(prefix = "spring.data.redis")
 public class MeteorRedisProperties {
+
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
 
     private String host;
     private int port;
     private String password;
-    private Duration timeout = Duration.ofSeconds(10);
-
+    private Duration timeout = DEFAULT_TIMEOUT;
 
 }

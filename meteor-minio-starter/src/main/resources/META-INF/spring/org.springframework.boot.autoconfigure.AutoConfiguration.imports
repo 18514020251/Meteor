@@ -1,1 +1,2 @@
 com.meteor.minio.autoconfigure.MeteorMinioAutoConfiguration
+com.meteor.minio.autoconfigure.MeteorMinioHealthCheckAutoConfiguration
