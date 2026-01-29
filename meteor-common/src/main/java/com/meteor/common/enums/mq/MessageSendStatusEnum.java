@@ -14,10 +14,10 @@ public enum MessageSendStatusEnum {
     UNSENT(0, "未发送"),
     SENT(1, "已发送");
 
-    private final int code;
+    private final Integer code;
     private final String desc;
 
-    MessageSendStatusEnum(int code, String desc) {
+    MessageSendStatusEnum(Integer code, String desc) {
         this.code = code;
         this.desc = desc;
     }

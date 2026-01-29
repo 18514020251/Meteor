@@ -18,6 +18,7 @@ import java.util.List;
 
 /**
  *  商家申请服务实现类
+ *  业务用例
  *
  * @author Programmer
  */

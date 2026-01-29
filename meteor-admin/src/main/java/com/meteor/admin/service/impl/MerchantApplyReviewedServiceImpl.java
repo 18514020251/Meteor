@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 /**
  *  发送商家申请审核结果
+ *  MQ 发送
  *
  * @author Programmer
  * @date 2026-01-27 18:07
