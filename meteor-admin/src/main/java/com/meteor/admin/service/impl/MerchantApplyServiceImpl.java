@@ -10,15 +10,10 @@ import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
-import com.meteor.common.exception.BizException;
-import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.satoken.context.LoginContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -55,13 +50,6 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     }
 
 
-
-    @Transactional(rollbackFor = Exception.class)
-    public MerchantApply approvePersist(Long applyId) {
-        MerchantApply apply = getByApplyIdOrThrow(applyId);
-        return txService.persistReviewUpdate(apply);
-    }
-
     /**
      * <p>
      *      审批通过
@@ -71,9 +59,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     @Override
     public void approveByApplyId(Long applyId) {
         MerchantApply apply = txService.approvePersist(applyId);
-
         merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
-
         afterApproved(apply);
     }
 
@@ -87,30 +73,12 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
      * @param applyId 商家申请 ID
      * @param rejectReason 拒绝理由
      * */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void rejectByApplyId(Long applyId, String rejectReason) {
-        MerchantApply apply = getByApplyIdOrThrow(applyId);
-
-        Long reviewerId = loginContext.currentLoginId();
-        LocalDateTime now = LocalDateTime.now();
-        apply.reject(reviewerId, now, rejectReason);
-
-        int update = baseMapper.updateById(apply);
-        if (update != 1) {
-            throw new BizException(CommonErrorCode.DATA_ERROR);
-        }
-
-        merchantApplyReviewedService.send(apply);
+        MerchantApply apply = txService.rejectPersist(applyId, rejectReason);
+        merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
     }
 
-    private MerchantApply getByApplyIdOrThrow(Long applyId) {
-        MerchantApply apply = baseMapper.selectOne(new LambdaQueryWrapper<MerchantApply>().eq(MerchantApply::getApplyId, applyId));
-        if (apply == null) {
-            throw new BizException(CommonErrorCode.MERCHANT_APPLY_NOT_EXIST);
-        }
-        return apply;
-    }
 
     /**
      * <p>构建查询条件</p>
