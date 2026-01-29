@@ -89,6 +89,30 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
         throw new BizException(CommonErrorCode.OPERATION_FAILED);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int markReadAll(Long userId) {
+        return updateAllUnreadToRead(userId);
+    }
+
+    /**
+     * 一键将未读更新为已读
+     */
+    private int updateAllUnreadToRead(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        UserMessage entity = new UserMessage();
+        entity.setReadStatus(ReadStatusQueryEnum.READ.getCode());
+        entity.setReadTime(now);
+
+        return this.baseMapper.update(entity,
+                new LambdaQueryWrapper<UserMessage>()
+                        .eq(UserMessage::getUserId, userId)
+                        .eq(UserMessage::getDeleted, DeleteStatus.NORMAL.getCode())
+                        .eq(UserMessage::getReadStatus, ReadStatusQueryEnum.UNREAD.getCode())
+        );
+    }
+
     /**
     *  查询未读消息，并更新为已读
     * */

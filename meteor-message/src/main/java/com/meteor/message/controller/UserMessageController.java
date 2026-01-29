@@ -46,4 +46,12 @@ public class UserMessageController {
         return Result.success();
     }
 
+    @PostMapping("/read-all")
+    @Operation(summary = "一键已读")
+    public Result<Integer> markReadAll() {
+        Long userId = loginContext.currentLoginId();
+        int count = userMessageService.markReadAll(userId);
+        return Result.success(count);
+    }
+
 }

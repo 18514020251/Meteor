@@ -19,7 +19,6 @@ public interface IUserMessageService extends IService<UserMessage> {
     /**
      * 获取收件箱列表
      *
-     * @param getTheMessageDTO
      * @return 查询返回结果
      */
     PageResult<UserMessageVO> pageInbox(GetTheMessageDTO getTheMessageDTO , Long userId);
@@ -31,4 +30,11 @@ public interface IUserMessageService extends IService<UserMessage> {
      *  @param userId 用户ID
      * */
     void markRead(Long id, Long userId);
+    /**
+     * 一键已读所有
+     *
+     * @param userId 用户ID
+     * @return 影响行数
+     * */
+    int markReadAll(Long userId);
 }
