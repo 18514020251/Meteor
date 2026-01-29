@@ -25,7 +25,6 @@ public class MeteorMqErrorHandlerAutoConfiguration {
 
             Throwable root = rootCause(exception);
 
-            // 不可修复：消息体非法（建议丢弃/进DLQ，别疯狂重试）
             if (root instanceof BizException be
                     && be.getCode() == CommonErrorCode.INVALID_MQ_MESSAGE.getCode()) {
 
@@ -33,7 +32,6 @@ public class MeteorMqErrorHandlerAutoConfiguration {
                 throw exception;
             }
 
-            // 其他异常：继续抛出，让容器走重试策略
             log.error("MQ consume failed: {}", safePayload(message), exception);
             throw exception;
         };

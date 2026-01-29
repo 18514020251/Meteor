@@ -8,7 +8,10 @@ import com.meteor.common.mq.merchant.MerchantApplyReviewedMessage;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.satoken.context.LoginContext;
 import com.meteor.user.domain.entity.MerchantApply;
+import com.meteor.user.domain.entity.User;
+import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.mapper.MerchantApplyMapper;
+import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.cache.IUserCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +32,13 @@ public class MerchantApplyReviewedConsumer {
     private final MerchantApplyMapper merchantApplyMapper;
     private final LoginContext loginContext;
     private final IUserCacheService userCacheService;
+    private final UserMapper userMapper;
 
     @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED , errorHandler = "mqRejectErrorHandler")
     @Transactional(rollbackFor = Exception.class)
     public void handle(MerchantApplyReviewedMessage message) {
-
+        // NOTE: 管理员拒绝发送消息提醒用户
         validate(message);
-
         MerchantApplyStatusEnum statusEnum = message.getStatus();
 
         LambdaUpdateWrapper<MerchantApply> updateWrapper = buildUpdateWrapper(message, statusEnum);
@@ -99,13 +102,31 @@ public class MerchantApplyReviewedConsumer {
         if (message.getStatus() != MerchantApplyStatusEnum.APPROVED) {
             return;
         }
+
         Long userId = message.getUserId();
+        if (userId == null) {
+            throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
+        }
+
+        int updated = userMapper.update(null,
+                new LambdaUpdateWrapper<User>()
+                        .eq(User::getId, userId)
+                        .ne(User::getRole, RoleEnum.MERCHANT.getCode())
+                        .set(User::getRole, RoleEnum.MERCHANT.getCode())
+        );
+
+        if (updated == 0) {
+            User u = userMapper.selectById(userId);
+            if (u == null) {
+                throw new BizException(CommonErrorCode.DATA_ERROR);
+            }
+        }
 
         try {
             userCacheService.evictUserAll(userId);
             loginContext.kickout(userId);
         } catch (Exception e) {
-            log.warn("followUpActions failed, userId={}", userId, e);
+            log.warn("followUpActions non-critical failed, userId={}", userId, e);
         }
     }
 

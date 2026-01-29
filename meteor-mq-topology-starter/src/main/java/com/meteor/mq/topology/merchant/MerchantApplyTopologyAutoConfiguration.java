@@ -54,7 +54,10 @@ public class MerchantApplyTopologyAutoConfiguration {
 
     @Bean
     public Queue merchantApplyReviewedQueue() {
-        return new Queue(MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED, true, false, false);
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-dead-letter-exchange", MerchantApplyContract.Exchange.MERCHANT_APPLY_DLX);
+        args.put("x-dead-letter-routing-key", MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED_DLX);
+        return new Queue(MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED, true, false, false, args);
     }
 
     @Bean
@@ -76,5 +79,18 @@ public class MerchantApplyTopologyAutoConfiguration {
         return BindingBuilder.bind(merchantApplyCreatedDlq)
                 .to(merchantApplyDlxExchange)
                 .with(MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED_DLX);
+    }
+
+    @Bean
+    public Queue merchantApplyReviewedDlq() {
+        return new Queue(MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED_DLX, true);
+    }
+
+    @Bean
+    public Binding merchantApplyReviewedDlqBinding(Queue merchantApplyReviewedDlq,
+                                                   DirectExchange merchantApplyDlxExchange) {
+        return BindingBuilder.bind(merchantApplyReviewedDlq)
+                .to(merchantApplyDlxExchange)
+                .with(MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED_DLX);
     }
 }

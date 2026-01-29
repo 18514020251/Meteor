@@ -47,6 +47,9 @@ spring:
     password: ${programmer.rabbitmq.password}
     publisher-confirm-type: correlated
     publisher-returns: true
+  listener:
+    simple:
+      default-requeue-rejected: false
 
 server:
   port: ${ADMIN_PORT:8082}
