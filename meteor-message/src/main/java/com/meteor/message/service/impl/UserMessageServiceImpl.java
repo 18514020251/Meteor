@@ -1,6 +1,7 @@
 package com.meteor.message.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.enums.DeleteStatus;
@@ -113,6 +114,17 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
         }
 
         throw new BizException(CommonErrorCode.OPERATION_FAILED);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteAll(Long userId) {
+        return this.baseMapper.update(null,
+                new LambdaUpdateWrapper<UserMessage>()
+                        .set(UserMessage::getDeleted, DeleteStatus.DELETED.getCode())
+                        .eq(UserMessage::getUserId, userId)
+                        .eq(UserMessage::getDeleted, DeleteStatus.NORMAL.getCode())
+        );
     }
 
 

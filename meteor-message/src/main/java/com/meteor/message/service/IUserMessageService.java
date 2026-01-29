@@ -45,4 +45,9 @@ public interface IUserMessageService extends IService<UserMessage> {
      * @param userId 用户ID
      * */
     void deleteOne(Long id, Long userId);
+
+    /**
+     *  删除所有
+     * */
+    int deleteAll(Long userId);
 }

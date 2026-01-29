@@ -62,4 +62,13 @@ public class UserMessageController {
         return Result.success();
     }
 
+    @DeleteMapping("/delete-all")
+    @Operation(summary = "一键删除全部消息")
+    public Result<Integer> deleteAll() {
+        Long userId = loginContext.currentLoginId();
+        int count = userMessageService.deleteAll(userId);
+        return Result.success(count);
+    }
+
+
 }
