@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+
 /**
  * @author Programmer
  * @date 2026-01-27 18:07
@@ -27,7 +28,34 @@ public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedS
 
     @Override
     public void send(MerchantApply apply) {
+        doSend(apply);
+    }
+
+    @Override
+    public void send(MerchantApply apply, Runnable onSuccess) {
+
+        MqSendResult result = doSend(apply);
+        if (result == null) {
+            return;
+        }
+
+        if (onSuccess != null) {
+            try {
+                onSuccess.run();
+            } catch (Exception e) {
+                log.warn("MQ sent ok but onSuccess failed, applyId={}", apply.getApplyId(), e);
+                throw new BizException(CommonErrorCode.SYSTEM_ERROR);
+            }
+        }
+    }
+
+    /**
+     * 真正发送逻辑：失败直接 return null；成功 return result
+     */
+    private MqSendResult doSend(MerchantApply apply) {
+
         MerchantApplyReviewedMessage message = merchantApplyAssembler.toReviewedMessage(apply);
+
         MqSendResult result = mqSender.sendAndWaitConfirm(
                 MerchantApplyContract.Exchange.MERCHANT_APPLY,
                 MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED,
@@ -36,12 +64,21 @@ public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedS
         );
 
         if (!result.isAck()) {
-            throw new BizException(CommonErrorCode.SYSTEM_ERROR,
-                    "MQ confirm failed");
+            log.error("MQ confirm failed, applyId={}, exchange={}, routingKey={}",
+                    apply.getApplyId(),
+                    MerchantApplyContract.Exchange.MERCHANT_APPLY,
+                    MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED);
+            return null;
         }
 
         if (result.noRoute()) {
-            log.warn("MQ NO_ROUTE");
+            log.warn("MQ NO_ROUTE, applyId={}, exchange={}, routingKey={}",
+                    apply.getApplyId(),
+                    MerchantApplyContract.Exchange.MERCHANT_APPLY,
+                    MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED);
+            return null;
         }
+
+        return result;
     }
 }

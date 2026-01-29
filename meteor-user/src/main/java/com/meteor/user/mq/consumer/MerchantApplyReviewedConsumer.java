@@ -56,11 +56,13 @@ public class MerchantApplyReviewedConsumer {
         }
 
         if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
-            log.info("商家申请已被处理，无需重复更新，申请ID={}, 当前状态={}", message.getApplyId(), apply.getStatus());
+            log.info("商家申请已被处理，无需重复更新，申请ID={}, 当前状态={}, msgStatus={}",
+                    message.getApplyId(), apply.getStatus(), statusEnum);
             return;
         }
 
-        log.error("商家申请审核状态更新失败，数据库状态异常，申请ID={}, msgStatus={}", message.getApplyId(), statusEnum);
+        log.error("商家申请审核状态更新失败：rows==0 但 DB 仍为PENDING，申请ID={}, dbStatus={}, msgStatus={}",
+                message.getApplyId(), apply.getStatus(), statusEnum);
     }
 
     /**
@@ -68,7 +70,10 @@ public class MerchantApplyReviewedConsumer {
      * @param message 商家申请审核结果消息
      * */
     private void validate(MerchantApplyReviewedMessage message){
-        if (message == null || message.getApplyId() == null || message.getStatus() == null || message.getUserId() == null) {
+        if (message == null || message.getApplyId() == null || message.getStatus() == null) {
+            throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
+        }
+        if (message.getStatus() == MerchantApplyStatusEnum.APPROVED && message.getUserId() == null) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
     }

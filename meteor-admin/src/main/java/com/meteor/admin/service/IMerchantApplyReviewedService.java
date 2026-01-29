@@ -9,4 +9,6 @@ import com.meteor.admin.domain.entity.MerchantApply;
 public interface IMerchantApplyReviewedService {
     void send(MerchantApply apply);
 
+    void send(MerchantApply apply , Runnable onSuccess);
+
 }

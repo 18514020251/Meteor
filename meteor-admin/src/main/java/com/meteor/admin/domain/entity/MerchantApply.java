@@ -8,6 +8,7 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.meteor.common.enums.mq.MessageSendStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,6 +66,13 @@ public class MerchantApply implements Serializable {
     @Schema(description = "记录创建时间")
     private LocalDateTime createTime;
 
+    @Schema(description = "消息发送成功")
+    private Integer reviewedMsgSent;
+
+    @Schema(description = "消息发送时间")
+    private LocalDateTime reviewedMsgSentTime;
+
+
     public void setStatus(MerchantApplyStatusEnum status) {
         this.status = status.getCode();
     }
@@ -77,6 +85,8 @@ public class MerchantApply implements Serializable {
         this.rejectReason = null;
         this.reviewedBy = reviewerId;
         this.reviewedTime = reviewedTime;
+        this.reviewedMsgSent = MessageSendStatusEnum.UNSENT.getCode();
+        this.setReviewedMsgSentTime(null);
     }
 
     public void reject(Long reviewerId, LocalDateTime reviewedTime, String rejectReason) {
@@ -90,5 +100,7 @@ public class MerchantApply implements Serializable {
         this.rejectReason = rejectReason.trim();
         this.reviewedBy = reviewerId;
         this.reviewedTime = reviewedTime;
+        this.reviewedMsgSent = MessageSendStatusEnum.UNSENT.getCode();
+        this.setReviewedMsgSentTime(null);
     }
 }

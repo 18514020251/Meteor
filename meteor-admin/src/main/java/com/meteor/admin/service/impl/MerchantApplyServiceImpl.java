@@ -36,6 +36,9 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
 
     private final IMerchantApplyReviewedService merchantApplyReviewedService;
 
+    private final MerchantApplyTxServiceImpl txService;
+
+
     @Override
     public PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query) {
         Page<MerchantApply> page = new Page<>(query.getPageNum(), query.getPageSize());
@@ -52,27 +55,25 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     }
 
 
+
+    @Transactional(rollbackFor = Exception.class)
+    public MerchantApply approvePersist(Long applyId) {
+        MerchantApply apply = getByApplyIdOrThrow(applyId);
+        return txService.persistReviewUpdate(apply);
+    }
+
     /**
      * <p>
      *      审批通过
      * </p>
      * @param applyId 商家申请 ID
      * */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void approveByApplyId(Long applyId) {
-        MerchantApply apply = getByApplyIdOrThrow(applyId);
+        MerchantApply apply = txService.approvePersist(applyId);
 
-        Long reviewerId = loginContext.currentLoginId();
-        LocalDateTime now = LocalDateTime.now();
-        apply.approve(reviewerId, now);
+        merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
 
-        int update = baseMapper.updateById(apply);
-        if (update != 1) {
-            throw new BizException(CommonErrorCode.DATA_ERROR);
-        }
-
-        merchantApplyReviewedService.send(apply);
         afterApproved(apply);
     }
 
