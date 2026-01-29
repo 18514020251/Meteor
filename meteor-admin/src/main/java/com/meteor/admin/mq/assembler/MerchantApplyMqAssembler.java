@@ -13,7 +13,7 @@ import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
  * @date 2026-01-23 16:48
  */
 @Component
-public class MerchantApplyAssembler {
+public class MerchantApplyMqAssembler {
 
     /**
      * <p>

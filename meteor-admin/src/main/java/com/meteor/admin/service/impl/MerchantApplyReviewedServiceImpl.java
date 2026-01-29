@@ -1,7 +1,7 @@
 package com.meteor.admin.service.impl;
 
 import com.meteor.admin.domain.entity.MerchantApply;
-import com.meteor.admin.mq.assembler.MerchantApplyAssembler;
+import com.meteor.admin.mq.assembler.MerchantApplyMqAssembler;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 
 /**
+ *  发送商家申请审核结果
+ *
  * @author Programmer
  * @date 2026-01-27 18:07
  */
@@ -23,7 +25,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedService {
 
-    private final MerchantApplyAssembler merchantApplyAssembler;
+    private final MerchantApplyMqAssembler merchantApplyAssembler;
     private final MqSender mqSender;
 
     @Override
@@ -50,7 +52,7 @@ public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedS
     }
 
     /**
-     * 真正发送逻辑：失败直接 return null；成功 return result
+     * 发送逻辑
      */
     private MqSendResult doSend(MerchantApply apply) {
 

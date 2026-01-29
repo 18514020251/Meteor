@@ -1,5 +1,6 @@
 package com.meteor.admin.domain.dto;
 
+import com.meteor.common.constants.PageConstants;
 import lombok.Data;
 
 /**
@@ -17,6 +18,6 @@ public class MerchantApplyQueryDTO {
 
     private Integer status;
 
-    private Integer pageNum = 1;
-    private Integer pageSize = 10;
+    private Integer pageNum = PageConstants.DEFAULT_PAGE_NUM;
+    private Integer pageSize = PageConstants.ADMIN_FIXED_PAGE_SIZE;
 }

@@ -1,7 +1,7 @@
 package com.meteor.common.constants;
 
 /**
- *  Redos 启动连接测试常量
+ *  Redis 启动连接测试常量
  *
  * @author Programmer
  * @date 2026-01-26 22:03
