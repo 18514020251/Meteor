@@ -31,6 +31,7 @@
 		<module>meteor-mp-starter</module>
         <module>meteor-mq-contract</module>
 		<module>meteor-mq-topology-starter</module>
+		<module>meteor-message</module>
 	</modules>
 
 	<properties>

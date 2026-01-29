@@ -24,7 +24,7 @@ public class RabbitConnectionChecker implements ApplicationListener<ApplicationR
 
     private final ConnectionFactory connectionFactory;
     private final Environment env;
-
+    // NOTE: 后续增加接口并发测试接口
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         String host = env.getProperty("spring.rabbitmq.host", UNKNOWN);

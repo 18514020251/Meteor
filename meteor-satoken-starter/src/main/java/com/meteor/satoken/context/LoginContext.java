@@ -4,6 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.meteor.satoken.constants.RoleConst;
 
 /**
+ *  登录上下文
+ *
  * @author Programmer
  * @date 2026-01-28 13:42
  */

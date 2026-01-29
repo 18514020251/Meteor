@@ -21,6 +21,8 @@ public class PageResult<T> {
     private long pageNum;
     private long pageSize;
 
+
+
     public static <T> PageResult<T> of(List<T> records, long total, long pageNum, long pageSize) {
         return new PageResult<>(records, total, pageNum, pageSize);
     }

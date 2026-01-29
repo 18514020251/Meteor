@@ -46,6 +46,10 @@ spring:
           predicates:
             - Path=/admin/**
 
+        - id: meteor-message
+          uri: lb://meteor-message
+          predicates:
+            - Path=/message/**
       default-filters:
         - name: RequestRateLimiter
           args:
