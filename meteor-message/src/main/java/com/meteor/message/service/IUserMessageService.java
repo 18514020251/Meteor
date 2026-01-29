@@ -37,4 +37,12 @@ public interface IUserMessageService extends IService<UserMessage> {
      * @return 影响行数
      * */
     int markReadAll(Long userId);
+
+    /**
+     * 删除单个
+     *
+     * @param id 消息ID
+     * @param userId 用户ID
+     * */
+    void deleteOne(Long id, Long userId);
 }

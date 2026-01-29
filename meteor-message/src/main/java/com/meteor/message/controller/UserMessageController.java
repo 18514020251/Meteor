@@ -54,4 +54,12 @@ public class UserMessageController {
         return Result.success(count);
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "单条消息删除")
+    public Result<Void> deleteOne(@PathVariable Long id) {
+        Long userId = loginContext.currentLoginId();
+        userMessageService.deleteOne(id, userId);
+        return Result.success();
+    }
+
 }

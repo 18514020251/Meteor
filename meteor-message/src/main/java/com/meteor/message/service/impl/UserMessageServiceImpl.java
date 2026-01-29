@@ -95,6 +95,51 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
         return updateAllUnreadToRead(userId);
     }
 
+    @Override
+    public void deleteOne(Long id, Long userId) {
+
+        if (softDeleteById(id, userId)) {
+            return;
+        }
+
+        UserMessage msg = findUserMessageByIdAndUserId(id, userId);
+
+        if (msg == null) {
+            throw new BizException(CommonErrorCode.NOT_FOUND);
+        }
+
+        if (msg.getDeleted().equals(DeleteStatus.DELETED.getCode())) {
+            return;
+        }
+
+        throw new BizException(CommonErrorCode.OPERATION_FAILED);
+    }
+
+
+    /**
+     * 根据ID和用户ID查找消息
+     */
+    private UserMessage findUserMessageByIdAndUserId(Long id, Long userId) {
+        return this.lambdaQuery()
+                .select(UserMessage::getId, UserMessage::getDeleted)
+                .eq(UserMessage::getId, id)
+                .eq(UserMessage::getUserId, userId)
+                .one();
+    }
+
+
+    /**
+     *  逻辑删除消息
+     * */
+    private boolean softDeleteById(Long id, Long userId) {
+        return this.lambdaUpdate()
+                .eq(UserMessage::getId, id)
+                .eq(UserMessage::getUserId, userId)
+                .eq(UserMessage::getDeleted, DeleteStatus.NORMAL.getCode())
+                .set(UserMessage::getDeleted, DeleteStatus.DELETED.getCode())
+                .update();
+    }
+
     /**
      * 一键将未读更新为已读
      */
