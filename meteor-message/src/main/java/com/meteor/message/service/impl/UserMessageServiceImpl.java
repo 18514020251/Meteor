@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.enums.DeleteStatus;
+import com.meteor.common.exception.BizException;
+import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.message.domain.assembler.UserMessageAssembler;
 import com.meteor.message.domain.dto.GetTheMessageDTO;
 import com.meteor.message.domain.entity.UserMessage;
@@ -13,7 +15,9 @@ import com.meteor.message.mapper.UserMessageMapper;
 import com.meteor.message.service.IUserMessageService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -66,5 +70,56 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
                 UserMessage::getReadTime
         );
         return qw;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void markRead(Long id, Long userId) {
+
+        if (updateUnreadToRead(id, userId)) {
+            return;
+        }
+
+        UserMessage msg = checkMessageExist(id, userId);
+
+        if (msg.getReadStatus().equals(ReadStatusQueryEnum.READ.getCode())) {
+            return;
+        }
+
+        throw new BizException(CommonErrorCode.OPERATION_FAILED);
+    }
+
+    /**
+    *  查询未读消息，并更新为已读
+    * */
+    private boolean updateUnreadToRead(Long id, Long userId) {
+        return this.lambdaUpdate()
+                .eq(UserMessage::getId, id)
+                .eq(UserMessage::getUserId, userId)
+                .eq(UserMessage::getDeleted, DeleteStatus.NORMAL.getCode())
+                .eq(UserMessage::getReadStatus, ReadStatusQueryEnum.UNREAD.getCode())
+                .set(UserMessage::getReadStatus, ReadStatusQueryEnum.READ.getCode())
+                .set(UserMessage::getReadTime, LocalDateTime.now())
+                .update();
+    }
+
+
+    /**
+     *  检查消息是否存在
+     * */
+    private UserMessage checkMessageExist(Long id, Long userId) {
+        UserMessage msg = this.lambdaQuery()
+                .select(UserMessage::getId,
+                        UserMessage::getReadStatus,
+                        UserMessage::getDeleted)
+                .eq(UserMessage::getId, id)
+                .eq(UserMessage::getUserId, userId)
+                .one();
+
+        if (msg == null || msg.getDeleted().equals(DeleteStatus.DELETED.getCode())) {
+            throw new BizException(CommonErrorCode.NOT_FOUND);
+        }
+
+        return msg;
     }
 }

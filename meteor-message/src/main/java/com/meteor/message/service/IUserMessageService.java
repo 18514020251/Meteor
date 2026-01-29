@@ -23,4 +23,12 @@ public interface IUserMessageService extends IService<UserMessage> {
      * @return 查询返回结果
      */
     PageResult<UserMessageVO> pageInbox(GetTheMessageDTO getTheMessageDTO , Long userId);
+
+    /**
+     *  标记已读
+     *
+     *  @param id 消息ID
+     *  @param userId 用户ID
+     * */
+    void markRead(Long id, Long userId);
 }

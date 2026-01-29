@@ -35,6 +35,8 @@ public enum CommonErrorCode implements IErrorCode {
     USER_OR_PASSWORD_ERROR(1003, "用户名或密码错误", HttpStatus.UNAUTHORIZED),
     PHONE_FORMAT_ERROR(1007, "手机号格式错误", HttpStatus.BAD_REQUEST),
     UNKNOWN_ROLE_ERROR(1008, "未知角色", HttpStatus.BAD_REQUEST),
+    OPERATION_FAILED(1009, "操作失败", HttpStatus.BAD_REQUEST),
+
 
 
     // 文件相关模块

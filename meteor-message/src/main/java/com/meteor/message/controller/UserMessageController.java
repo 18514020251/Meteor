@@ -38,4 +38,12 @@ public class UserMessageController {
         return Result.success(userMessageService.pageInbox(getTheMessageDTO , userId));
     }
 
+    @PostMapping("/{id}/read")
+    @Operation(summary = "单条消息已读")
+    public Result<Void> markRead(@PathVariable Long id) {
+        Long userId = loginContext.currentLoginId();
+        userMessageService.markRead(id, userId);
+        return Result.success();
+    }
+
 }
