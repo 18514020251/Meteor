@@ -7,7 +7,7 @@ import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.service.IMerchantApplyReviewedCompensateService;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.common.enums.mq.MessageSendStatusEnum;
+import com.meteor.mq.contract.enums.MessageSendStatusEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

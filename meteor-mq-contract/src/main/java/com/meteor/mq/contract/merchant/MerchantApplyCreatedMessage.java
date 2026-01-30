@@ -1,4 +1,4 @@
-package com.meteor.common.mq.merchant;
+package com.meteor.mq.contract.merchant;
 
 import lombok.Data;
 

@@ -2,11 +2,11 @@ package com.meteor.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.satoken.context.LoginContext;
 import com.meteor.user.domain.dto.MerchantApplyDTO;
 import com.meteor.user.domain.entity.MerchantApply;
-import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.mapper.MerchantApplyMapper;
 import com.meteor.user.mapper.UserMapper;

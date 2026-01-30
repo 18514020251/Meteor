@@ -1,8 +1,8 @@
 package com.meteor.admin.domain.dto;
 
 import com.meteor.admin.domain.entity.MerchantApply;
-import lombok.Data;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 

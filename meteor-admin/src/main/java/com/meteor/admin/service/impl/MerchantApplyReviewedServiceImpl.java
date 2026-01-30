@@ -5,8 +5,8 @@ import com.meteor.admin.mq.assembler.MerchantApplyMqAssembler;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.mq.merchant.MerchantApplyReviewedMessage;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
+import com.meteor.mq.contract.merchant.MerchantApplyReviewedMessage;
 import com.meteor.mq.core.MqSendResult;
 import com.meteor.mq.core.MqSender;
 import lombok.RequiredArgsConstructor;
@@ -66,12 +66,17 @@ public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedS
                 MerchantApplyContract.CONFIRM_TIMEOUT
         );
 
+        if (result == null) {
+            log.error("MQ sendAndWaitConfirm returned null, applyId={}", apply.getApplyId());
+            return MqSendResult.failed();
+        }
+
         if (!result.isAck()) {
             log.error("MQ confirm failed, applyId={}, exchange={}, routingKey={}",
                     apply.getApplyId(),
                     MerchantApplyContract.Exchange.MERCHANT_APPLY,
                     MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED);
-            return null;
+            return result;
         }
 
         if (result.noRoute()) {
@@ -79,7 +84,7 @@ public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedS
                     apply.getApplyId(),
                     MerchantApplyContract.Exchange.MERCHANT_APPLY,
                     MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED);
-            return null;
+            return result;
         }
 
         return result;

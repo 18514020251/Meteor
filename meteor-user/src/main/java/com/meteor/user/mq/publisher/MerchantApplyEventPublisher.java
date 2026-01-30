@@ -2,8 +2,8 @@ package com.meteor.user.mq.publisher;
 
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.mq.merchant.MerchantApplyCreatedMessage;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
+import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
 import com.meteor.mq.core.MqSendResult;
 import com.meteor.mq.core.MqSender;
 import com.meteor.user.domain.entity.MerchantApply;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-@SuppressWarnings("squid:S1123")
 public class MerchantApplyEventPublisher {
 
     private final MqSender mqSender;

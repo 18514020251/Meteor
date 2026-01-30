@@ -1,1 +1,2 @@
 com.meteor.mq.topology.merchant.MerchantApplyTopologyAutoConfiguration
+com.meteor.mq.topology.message.UserMessageTopologyAutoConfiguration

@@ -1,19 +1,16 @@
-package com.meteor.mq.topology.merchant;
+package com.meteor.mq.topology.message;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- *  商家申请拓扑属性
- *
  * @author Programmer
- * @date 2026-01-28 11:15
+ * @date 2026-01-29 21:19
  */
-@ConfigurationProperties(prefix = "meteor.mq.topology.merchant-apply")
-public class MerchantApplyTopologyProperties {
+@ConfigurationProperties(prefix = "meteor.mq.topology.user-message")
+public class UserMessageTopologyProperties {
 
     private boolean enabled = true;
 
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }
-

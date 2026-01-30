@@ -1,4 +1,4 @@
-package com.meteor.common.enums.mq;
+package com.meteor.mq.contract.enums;
 
 import lombok.Getter;
 

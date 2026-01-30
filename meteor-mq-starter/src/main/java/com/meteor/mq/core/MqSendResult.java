@@ -25,4 +25,8 @@ public class MqSendResult {
     public boolean noRoute() {
         return returnedMessage != null;
     }
+
+    public static MqSendResult failed() {
+        return new MqSendResult(false, "SEND_FAILED", null);
+    }
 }

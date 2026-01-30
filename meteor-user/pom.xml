@@ -25,6 +25,11 @@
 
         <dependency>
             <groupId>com.meteor</groupId>
+            <artifactId>meteor-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.meteor</groupId>
             <artifactId>meteor-mp-starter</artifactId>
         </dependency>
 
@@ -98,6 +103,7 @@
             <groupId>com.meteor</groupId>
             <artifactId>meteor-mq-topology-starter</artifactId>
         </dependency>
+
 
 
     </dependencies>

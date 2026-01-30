@@ -1,6 +1,6 @@
 package com.meteor.user.mq.assembler;
 
-import com.meteor.common.mq.merchant.MerchantApplyCreatedMessage;
+import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
 import com.meteor.user.domain.entity.MerchantApply;
 import org.springframework.stereotype.Component;
 

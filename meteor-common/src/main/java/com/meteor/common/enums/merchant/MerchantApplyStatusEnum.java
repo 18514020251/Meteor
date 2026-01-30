@@ -16,6 +16,7 @@ public enum MerchantApplyStatusEnum {
     APPROVED(1, "已通过"),
     REJECTED(2, "已拒绝");
 
+
     @EnumValue
     private final Integer code;
     @JsonValue

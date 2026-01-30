@@ -103,6 +103,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.meteor</groupId>
+				<artifactId>meteor-message</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.meteor</groupId>
 				<artifactId>meteor-common-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>

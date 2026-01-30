@@ -2,8 +2,8 @@ package com.meteor.admin.mq.consumer;
 
 import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.mq.assembler.MerchantApplyMqAssembler;
-import com.meteor.common.mq.merchant.MerchantApplyCreatedMessage;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
+import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;

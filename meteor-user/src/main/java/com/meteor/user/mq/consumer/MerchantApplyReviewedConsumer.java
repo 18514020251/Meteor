@@ -1,11 +1,12 @@
 package com.meteor.user.mq.consumer;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.mq.merchant.MerchantApplyReviewedMessage;
+import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
+import com.meteor.mq.contract.enums.merchant.MerchantApplyStatus; // ✅ contract enum
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
+import com.meteor.mq.contract.merchant.MerchantApplyReviewedMessage;
 import com.meteor.satoken.context.LoginContext;
 import com.meteor.user.domain.entity.MerchantApply;
 import com.meteor.user.domain.entity.User;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- *  商家申请审核结果消息队列消费者
+ * 商家申请审核结果消息队列消费者
  *
  * @author Programmer
  */
@@ -34,12 +35,14 @@ public class MerchantApplyReviewedConsumer {
     private final IUserCacheService userCacheService;
     private final UserMapper userMapper;
 
-    @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED , errorHandler = "mqRejectErrorHandler")
+    @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED, errorHandler = "mqRejectErrorHandler")
     @Transactional(rollbackFor = Exception.class)
     public void handle(MerchantApplyReviewedMessage message) {
-        // NOTE: 管理员拒绝发送消息提醒用户
         validate(message);
-        MerchantApplyStatusEnum statusEnum = message.getStatus();
+
+        MerchantApplyStatus contractStatus = message.getStatus();
+
+        MerchantApplyStatusEnum statusEnum = MerchantApplyStatusEnum.valueOf(contractStatus.name());
 
         LambdaUpdateWrapper<MerchantApply> updateWrapper = buildUpdateWrapper(message, statusEnum);
 
@@ -69,24 +72,22 @@ public class MerchantApplyReviewedConsumer {
     }
 
     /**
-     * <p>参数校验</p>
-     * @param message 商家申请审核结果消息
-     * */
-    private void validate(MerchantApplyReviewedMessage message){
+     * 参数校验
+     */
+    private void validate(MerchantApplyReviewedMessage message) {
         if (message == null || message.getApplyId() == null || message.getStatus() == null) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
-        if (message.getStatus() == MerchantApplyStatusEnum.APPROVED && message.getUserId() == null) {
+
+        if (message.getStatus() == MerchantApplyStatus.APPROVED && message.getUserId() == null) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
     }
 
     /**
-     * <p>构建修改条件</p>
-     * @param message 商家申请审核结果消息
-     * @param statusEnum 状态枚举
-     * */
-    private LambdaUpdateWrapper<MerchantApply> buildUpdateWrapper(MerchantApplyReviewedMessage message , MerchantApplyStatusEnum statusEnum) {
+     * 构建修改条件
+     */
+    private LambdaUpdateWrapper<MerchantApply> buildUpdateWrapper(MerchantApplyReviewedMessage message,  MerchantApplyStatusEnum statusEnum) {
         return new LambdaUpdateWrapper<MerchantApply>()
                 .eq(MerchantApply::getId, message.getApplyId())
                 .eq(MerchantApply::getStatus, MerchantApplyStatusEnum.PENDING.getCode())
@@ -99,7 +100,7 @@ public class MerchantApplyReviewedConsumer {
      * @param message 商家申请审核结果消息
      * */
     private void followUpActions(MerchantApplyReviewedMessage message) {
-        if (message.getStatus() != MerchantApplyStatusEnum.APPROVED) {
+        if (message.getStatus() != MerchantApplyStatus.APPROVED) {
             return;
         }
 

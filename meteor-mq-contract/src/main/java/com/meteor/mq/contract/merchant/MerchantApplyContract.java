@@ -27,7 +27,7 @@ public final class MerchantApplyContract {
         public static final String MERCHANT_APPLY_CREATED = "merchant.apply.created.queue";
         public static final String MERCHANT_APPLY_REVIEWED = "merchant.apply.reviewed.queue";
         public static final String MERCHANT_APPLY_CREATED_DLX = "merchant.apply.created.dlx.queue";
-        public static final String MERCHANT_APPLY_REVIEWED_DLX = "merchant.apply.reviewed.dlx.queue"; // ✅ 补
+        public static final String MERCHANT_APPLY_REVIEWED_DLX = "merchant.apply.reviewed.dlx.queue";
     }
 
     public static final class RoutingKey {
@@ -35,6 +35,6 @@ public final class MerchantApplyContract {
         public static final String MERCHANT_APPLY_CREATED = "merchant.apply.created";
         public static final String MERCHANT_APPLY_REVIEWED = "merchant.apply.reviewed";
         public static final String MERCHANT_APPLY_CREATED_DLX = "merchant.apply.created.dlx";
-        public static final String MERCHANT_APPLY_REVIEWED_DLX = "merchant.apply.reviewed.dlx"; // ✅ 补
+        public static final String MERCHANT_APPLY_REVIEWED_DLX = "merchant.apply.reviewed.dlx";
     }
 }

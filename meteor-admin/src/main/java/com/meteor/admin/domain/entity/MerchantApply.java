@@ -8,14 +8,14 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
-import com.meteor.common.enums.mq.MessageSendStatusEnum;
+import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.mq.contract.enums.MessageSendStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 
 /**
  * <p>
