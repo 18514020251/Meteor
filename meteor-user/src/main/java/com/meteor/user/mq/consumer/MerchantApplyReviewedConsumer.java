@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.mq.contract.enums.merchant.MerchantApplyStatus; // ✅ contract enum
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.mq.contract.merchant.MerchantApplyReviewedMessage;
 import com.meteor.satoken.context.LoginContext;
@@ -35,22 +34,26 @@ public class MerchantApplyReviewedConsumer {
     private final IUserCacheService userCacheService;
     private final UserMapper userMapper;
 
-    @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED, errorHandler = "mqRejectErrorHandler")
+    @RabbitListener(
+            queues = MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED,
+            errorHandler = "mqRejectErrorHandler"
+    )
     @Transactional(rollbackFor = Exception.class)
     public void handle(MerchantApplyReviewedMessage message) {
         validate(message);
 
-        MerchantApplyStatus contractStatus = message.getStatus();
+        MerchantApplyStatusEnum statusEnum =
+                MerchantApplyStatusEnum.fromCode(message.getStatusCode());
 
-        MerchantApplyStatusEnum statusEnum = MerchantApplyStatusEnum.valueOf(contractStatus.name());
-
-        LambdaUpdateWrapper<MerchantApply> updateWrapper = buildUpdateWrapper(message, statusEnum);
+        LambdaUpdateWrapper<MerchantApply> updateWrapper =
+                buildUpdateWrapper(message, statusEnum);
 
         int rows = merchantApplyMapper.update(null, updateWrapper);
 
         if (rows > 0) {
             followUpActions(message);
-            log.info("商家申请审核状态更新成功，申请ID={}, 新状态={}", message.getApplyId(), statusEnum);
+            log.info("商家申请审核状态更新成功，申请ID={}, 新状态={}",
+                    message.getApplyId(), statusEnum);
             return;
         }
 
@@ -61,25 +64,32 @@ public class MerchantApplyReviewedConsumer {
             return;
         }
 
-        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
-            log.info("商家申请已被处理，无需重复更新，申请ID={}, 当前状态={}, msgStatus={}",
-                    message.getApplyId(), apply.getStatus(), statusEnum);
+        if (apply.getStatus() != MerchantApplyStatusEnum.PENDING) {
+            log.info(
+                    "商家申请已被处理，无需重复更新，申请ID={}, 当前状态={}, msgStatus={}",
+                    message.getApplyId(), apply.getStatus(), statusEnum
+            );
             return;
         }
 
-        log.error("商家申请审核状态更新失败：rows==0 但 DB 仍为PENDING，申请ID={}, dbStatus={}, msgStatus={}",
-                message.getApplyId(), apply.getStatus(), statusEnum);
+        log.error(
+                "商家申请审核状态更新失败：rows==0 但 DB 仍为 PENDING，申请ID={}, dbStatus={}, msgStatus={}",
+                message.getApplyId(), apply.getStatus(), statusEnum
+        );
     }
 
     /**
      * 参数校验
      */
     private void validate(MerchantApplyReviewedMessage message) {
-        if (message == null || message.getApplyId() == null || message.getStatus() == null) {
+        if (message == null
+                || message.getApplyId() == null
+                || message.getStatusCode() == null) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
 
-        if (message.getStatus() == MerchantApplyStatus.APPROVED && message.getUserId() == null) {
+        if (message.getStatusCode().equals(MerchantApplyStatusEnum.APPROVED.getCode())
+                && message.getUserId() == null) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
     }
@@ -100,7 +110,8 @@ public class MerchantApplyReviewedConsumer {
      * @param message 商家申请审核结果消息
      * */
     private void followUpActions(MerchantApplyReviewedMessage message) {
-        if (message.getStatus() != MerchantApplyStatus.APPROVED) {
+        if (!MerchantApplyStatusEnum.APPROVED.getCode()
+                .equals(message.getStatusCode())) {
             return;
         }
 

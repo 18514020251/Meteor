@@ -2,7 +2,6 @@ package com.meteor.admin.mq.assembler;
 
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.mq.contract.enums.merchant.MerchantApplyStatus;
 import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
 import com.meteor.mq.contract.merchant.MerchantApplyReviewedMessage;
 import org.springframework.stereotype.Component;
@@ -38,18 +37,12 @@ public class MerchantApplyMqAssembler {
     public MerchantApplyReviewedMessage toReviewedMessage(MerchantApply apply) {
         MerchantApplyReviewedMessage message = new MerchantApplyReviewedMessage();
         message.setApplyId(apply.getApplyId());
-
-        MerchantApplyStatusEnum bizStatus = MerchantApplyStatusEnum.fromCode(apply.getStatus());
-        if (bizStatus == null) {
-            throw new IllegalArgumentException("Unknown MerchantApplyStatus code: " + apply.getStatus());
-        }
-
-        message.setStatus(MerchantApplyStatus.valueOf(bizStatus.name()));
-
+        message.setStatusCode(apply.getStatus().getCode());
         message.setReviewedBy(apply.getReviewedBy());
         message.setReviewedTime(apply.getReviewedTime());
         message.setRejectReason(apply.getRejectReason());
         message.setUserId(apply.getUserId());
         return message;
     }
+
 }

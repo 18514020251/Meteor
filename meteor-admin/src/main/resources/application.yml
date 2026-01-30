@@ -72,6 +72,7 @@ sa-token:
 
 mybatis-plus:
   type-aliases-package: com.meteor.domain
+  type-enums-package: com.meteor.common.enums
   configuration:
     map-underscore-to-camel-case: true
   global-config:

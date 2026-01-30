@@ -1,5 +1,6 @@
-package com.meteor.mq.contract.enums;
+package com.meteor.common.enums.message;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
 /**
@@ -14,6 +15,7 @@ public enum MessageSendStatusEnum {
     UNSENT(0, "未发送"),
     SENT(1, "已发送");
 
+    @EnumValue
     private final Integer code;
     private final String desc;
 

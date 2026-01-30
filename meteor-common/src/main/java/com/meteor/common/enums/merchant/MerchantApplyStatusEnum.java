@@ -1,7 +1,6 @@
 package com.meteor.common.enums.merchant;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -19,7 +18,7 @@ public enum MerchantApplyStatusEnum {
 
     @EnumValue
     private final Integer code;
-    @JsonValue
+
     private final String desc;
 
 
@@ -28,15 +27,15 @@ public enum MerchantApplyStatusEnum {
         this.desc = desc;
     }
 
-    public static MerchantApplyStatusEnum fromCode(Integer status) {
-        if (status == null) {
-            return null;
+    public static MerchantApplyStatusEnum fromCode(Integer code) {
+        if (code == null) {
+            throw new IllegalArgumentException("MerchantApplyStatus code is null");
         }
         for (MerchantApplyStatusEnum value : values()) {
-            if (value.getCode().equals(status)) {
+            if (value.code.equals(code)) {
                 return value;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Unknown MerchantApplyStatus code: " + code);
     }
 }

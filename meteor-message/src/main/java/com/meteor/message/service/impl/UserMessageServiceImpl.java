@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.enums.DeleteStatus;
+import com.meteor.common.enums.message.MessageReadStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.message.domain.assembler.UserMessageAssembler;
@@ -83,7 +84,7 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
 
         UserMessage msg = checkMessageExist(id, userId);
 
-        if (msg.getReadStatus().equals(ReadStatusQueryEnum.READ.getCode())) {
+        if (MessageReadStatusEnum.READ.equals(msg.getReadStatus())) {
             return;
         }
 
@@ -109,7 +110,7 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
             throw new BizException(CommonErrorCode.NOT_FOUND);
         }
 
-        if (msg.getDeleted().equals(DeleteStatus.DELETED.getCode())) {
+        if (DeleteStatus.DELETED.equals(msg.getDeleted())) {
             return;
         }
 
@@ -159,7 +160,7 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
         LocalDateTime now = LocalDateTime.now();
 
         UserMessage entity = new UserMessage();
-        entity.setReadStatus(ReadStatusQueryEnum.READ.getCode());
+        entity.setReadStatus(MessageReadStatusEnum.READ);
         entity.setReadTime(now);
 
         return this.baseMapper.update(entity,
@@ -197,7 +198,7 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
                 .eq(UserMessage::getUserId, userId)
                 .one();
 
-        if (msg == null || msg.getDeleted().equals(DeleteStatus.DELETED.getCode())) {
+        if (msg == null || DeleteStatus.DELETED.equals(msg.getDeleted())) {
             throw new BizException(CommonErrorCode.NOT_FOUND);
         }
 

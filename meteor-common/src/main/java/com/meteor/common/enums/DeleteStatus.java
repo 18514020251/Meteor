@@ -1,7 +1,6 @@
 package com.meteor.common.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -18,7 +17,6 @@ public enum DeleteStatus {
     @EnumValue
     private final Integer code;
 
-    @JsonValue
     private final String desc;
 
     DeleteStatus(Integer code, String desc) {
@@ -26,12 +24,4 @@ public enum DeleteStatus {
         this.desc = desc;
     }
 
-    public static DeleteStatus getByCode(Integer code) {
-        for (DeleteStatus status : values()) {
-            if (status.getCode().equals(code)) {
-                return status;
-            }
-        }
-        return null;
-    }
 }

@@ -16,10 +16,10 @@ import java.util.Map;
 public class UserEventMessage implements Serializable {
 
     // 幂等ID
-    private String eventId;
+    private Long eventId;
 
     // 事件类型
-    private String eventType;
+    private Integer eventType;
 
     // 目标用户
     private Long userId;

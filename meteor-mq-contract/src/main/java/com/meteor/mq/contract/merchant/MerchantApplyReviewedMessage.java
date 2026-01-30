@@ -1,6 +1,5 @@
 package com.meteor.mq.contract.merchant;
 
-import com.meteor.mq.contract.enums.merchant.MerchantApplyStatus;
 import lombok.Data;
 
 import java.io.Serial;
@@ -23,7 +22,7 @@ public class MerchantApplyReviewedMessage implements Serializable {
     private Long applyId;
 
     /** 审核结果：0-PENDING 1-APPROVED 2-REJECTED */
-    private MerchantApplyStatus status;
+    private Integer statusCode;
 
     /** 拒绝原因（通过时可为 null） */
     private String rejectReason;

@@ -8,6 +8,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.meteor.common.enums.DeleteStatus;
+import com.meteor.common.enums.message.MessageReadStatusEnum;
+import com.meteor.common.enums.message.MessageSourceEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,7 +43,7 @@ public class UserMessage implements Serializable {
     private Long userId;
 
     @Schema(description = "消息来源：0系统消息 1业务事件(如MQ消费生成)")
-    private Integer source;
+    private MessageSourceEnum source;
 
     @Schema(description = "系统消息ID(source=0时关联sys_message.id)")
     private Long sysMsgId;
@@ -57,14 +61,14 @@ public class UserMessage implements Serializable {
     private String bizKey;
 
     @Schema(description = "已读状态：0未读 1已读")
-    private Integer readStatus;
+    private MessageReadStatusEnum readStatus;
 
     @Schema(description = "已读时间")
     private LocalDateTime readTime;
 
     @Schema(description = "删除标记：0正常 1已删除")
     @TableLogic
-    private Integer deleted;
+    private DeleteStatus deleted;
 
     @Schema(description = "创建时间(投递/生成时间)")
     private LocalDateTime createTime;

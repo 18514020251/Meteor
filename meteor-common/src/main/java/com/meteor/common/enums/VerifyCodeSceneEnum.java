@@ -1,5 +1,6 @@
 package com.meteor.common.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;
 
 /**
@@ -16,6 +17,7 @@ public enum VerifyCodeSceneEnum {
     //目前没有实现，只做预留
     LOGIN("login", "验证码登录");
 
+    @EnumValue
     private final String code;
     private final String desc;
 

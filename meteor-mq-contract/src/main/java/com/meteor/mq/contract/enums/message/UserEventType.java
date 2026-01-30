@@ -10,10 +10,24 @@ import lombok.Getter;
  */
 @Getter
 public enum UserEventType {
+    USER_PASSWORD_CHANGED(0),
+    MERCHANT_APPLY_SUBMITTED(1),
+    MERCHANT_APPLY_REVIEWED(2),
+    MERCHANT_APPLY_REJECTED(3);
 
-    USER_PASSWORD_CHANGED,
-    MERCHANT_APPLY_SUBMITTED,
-    MERCHANT_APPLY_REVIEWED;
+    private final int code;
 
+    UserEventType(int code) {
+        this.code = code;
+    }
+
+    public static UserEventType fromCode(int code) {
+        for (UserEventType value : values()) {
+            if (value.code == code) {
+                return value;
+            }
+        }
+        return null;
+    }
 }
 

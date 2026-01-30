@@ -20,6 +20,7 @@ import com.meteor.user.domain.vo.UserInfoVO;
 import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.mq.publisher.MerchantApplyEventPublisher;
+import com.meteor.user.mq.publisher.MessageApplyEventPublisher;
 import com.meteor.user.service.IUserService;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import com.meteor.user.service.cache.IPhoneCodeLimitCacheService;
@@ -61,6 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IPhoneCodeLimitCacheService phoneCodeLimitCacheService;
     private final UserInfoAssembler userInfoAssembler;
     private final MerchantApplyEventPublisher eventPublisher;
+    private final MessageApplyEventPublisher messageApplyEventPublisher;
 
     /**
      * 用户注册
@@ -440,7 +442,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userMapper.updateById(user);
 
         StpUtil.logout();
-        //eventPublisher.publishCreatedOrThrow();
+        messageApplyEventPublisher.publishPasswordChanged(user);
     }
 
     /**

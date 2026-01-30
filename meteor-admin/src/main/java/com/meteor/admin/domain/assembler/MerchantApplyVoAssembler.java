@@ -18,7 +18,7 @@ public class MerchantApplyVoAssembler {
         vo.setApplyId(a.getApplyId());
         vo.setUserId(a.getUserId());
         vo.setShopName(a.getShopName());
-        vo.setStatus(a.getStatus());
+        vo.setStatus(a.getStatus().getCode());
         vo.setReviewedBy(a.getReviewedBy());
         vo.setReviewedTime(a.getReviewedTime());
         vo.setReviewedMsgSent(a.getReviewedMsgSent());

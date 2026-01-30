@@ -24,6 +24,7 @@ public enum CommonErrorCode implements IErrorCode {
     REQUEST_TOO_FREQUENT(400, "请求过于频繁", HttpStatus.BAD_REQUEST),
     METHOD_NOT_ALLOWED(405, "不支持当前请求方法", HttpStatus.METHOD_NOT_ALLOWED),
     DATA_ERROR(400, "数据异常", HttpStatus.BAD_REQUEST),
+    TIME_REVERSED(400, "时间逆转了，拒绝验证身份" , HttpStatus.BAD_REQUEST),
 
     // 用户模块
     USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),

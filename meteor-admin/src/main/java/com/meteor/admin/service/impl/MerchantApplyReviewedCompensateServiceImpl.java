@@ -7,7 +7,7 @@ import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.service.IMerchantApplyReviewedCompensateService;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.mq.contract.enums.MessageSendStatusEnum;
+import com.meteor.common.enums.message.MessageSendStatusEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,7 @@ public class MerchantApplyReviewedCompensateServiceImpl implements IMerchantAppl
             return new ReviewedResendVO(false, false, "applyId 不存在");
         }
 
-        if (MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
+        if (apply.getStatus() == MerchantApplyStatusEnum.PENDING) {
             return new ReviewedResendVO(false, false, "该申请未审核，无法补发");
         }
 

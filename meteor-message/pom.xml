@@ -42,6 +42,18 @@
             <groupId>com.meteor</groupId>
             <artifactId>meteor-common-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mq-topology-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mq-contract</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mq-starter</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

@@ -11,7 +11,7 @@ import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.service.IMerchantApplyReviewedQueryService;
 import com.meteor.common.constants.PageConstants;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.mq.contract.enums.MessageSendStatusEnum;
+import com.meteor.common.enums.message.MessageSendStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

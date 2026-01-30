@@ -2,6 +2,7 @@ package com.meteor.mq.contract.merchant;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
  * @date 2026-01-21 16:43
  */
 @Data
-public class MerchantApplyCreatedMessage {
+public class MerchantApplyCreatedMessage implements Serializable {
 
     /** 用户侧申请ID（user.merchant_apply.id） */
     private Long applyId;

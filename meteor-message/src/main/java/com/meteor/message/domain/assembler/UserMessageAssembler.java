@@ -20,7 +20,7 @@ public class UserMessageAssembler {
         vo.setType(e.getType());
         vo.setTitle(e.getTitle());
         vo.setContent(e.getContent());
-        vo.setReadStatus(e.getReadStatus());
+        vo.setReadStatus(e.getReadStatus().getCode());
         vo.setCreateTime(e.getCreateTime());
         vo.setReadTime(e.getReadTime());
         return vo;

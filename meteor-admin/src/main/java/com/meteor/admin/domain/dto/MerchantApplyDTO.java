@@ -36,11 +36,15 @@ public class MerchantApplyDTO {
         dto.setUserId(entity.getUserId());
         dto.setShopName(entity.getShopName());
         dto.setApplyReason(entity.getApplyReason());
-        dto.setStatus(entity.getStatus());
-        dto.setStatusDesc(MerchantApplyStatusEnum.fromCode(entity.getStatus()).getDesc());
+
+        MerchantApplyStatusEnum status = entity.getStatus();
+        dto.setStatus(status.getCode());
+        dto.setStatusDesc(status.getDesc());
+
         dto.setReviewedBy(entity.getReviewedBy());
         dto.setReviewedTime(entity.getReviewedTime());
         dto.setCreateTime(entity.getCreateTime());
         return dto;
     }
+
 }

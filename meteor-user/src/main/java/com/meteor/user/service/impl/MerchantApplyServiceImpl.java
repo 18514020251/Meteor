@@ -45,8 +45,8 @@ public class MerchantApplyServiceImpl extends ServiceImpl<UserMapper, User>  imp
                 new LambdaQueryWrapper<MerchantApply>()
                         .eq(MerchantApply::getUserId, userId)
                         .in(MerchantApply::getStatus,
-                                MerchantApplyStatusEnum.PENDING.getCode(),
-                                MerchantApplyStatusEnum.APPROVED.getCode())
+                                MerchantApplyStatusEnum.PENDING,
+                                MerchantApplyStatusEnum.APPROVED)
         );
 
         if (exists) {
