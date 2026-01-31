@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 /**
  *  消息 MQ消息构造器
@@ -22,16 +23,16 @@ public class MessageApplyMessageAssembler {
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 
     public UserEventMessage from(User user, UserEventType eventType) {
+        return from(user.getId(), eventType);
+    }
+
+    public UserEventMessage from(Long userId, UserEventType eventType) {
         UserEventMessage msg = new UserEventMessage();
-
         msg.setEventId(snowflakeIdGenerator.nextId());
-
         msg.setEventType(eventType.getCode());
-
-        msg.setUserId(user.getId());
-
+        msg.setUserId(userId);
         msg.setOccurredAt(LocalDateTime.now());
-
+        msg.setPayload(new HashMap<>());
         return msg;
     }
 }

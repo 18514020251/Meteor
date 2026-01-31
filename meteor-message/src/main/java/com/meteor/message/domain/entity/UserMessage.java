@@ -45,9 +45,6 @@ public class UserMessage implements Serializable {
     @Schema(description = "消息来源：0系统消息 1业务事件(如MQ消费生成)")
     private MessageSourceEnum source;
 
-    @Schema(description = "系统消息ID(source=0时关联sys_message.id)")
-    private Long sysMsgId;
-
     @Schema(description = "消息类型(冗余字段，避免查询总是JOIN)")
     private Integer type;
 

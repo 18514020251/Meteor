@@ -7,11 +7,13 @@ import com.meteor.admin.domain.dto.MerchantApplyDTO;
 import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.mapper.MerchantApplyMapper;
+import com.meteor.admin.service.IMerchantApplyNotifyService;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.satoken.context.LoginContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @SuppressWarnings("squid:S1172")
 public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, MerchantApply>
         implements IMerchantApplyService {
@@ -34,6 +37,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
 
     private final MerchantApplyTxServiceImpl txService;
 
+    private final IMerchantApplyNotifyService merchantApplyNotifyService;
 
     @Override
     public PageResult<MerchantApplyDTO> list(MerchantApplyQueryDTO query) {
@@ -50,7 +54,6 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         return PageResult.of(dtoList, page.getTotal(), query.getPageNum(), query.getPageSize());
     }
 
-
     /**
      * <p>
      *      审批通过
@@ -61,12 +64,16 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     public void approveByApplyId(Long applyId) {
         MerchantApply apply = txService.approvePersist(applyId);
         merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
+
         afterApproved(apply);
     }
 
-
     private void afterApproved(MerchantApply apply) {
-        // NOTE: Async side effects (notifications / inbox messages) will be implemented later in message module.
+        try {
+            merchantApplyNotifyService.notifyApproved(apply);
+        } catch (Exception e) {
+            log.warn("notifyApproved failed, applyId={}, err={}", apply.getApplyId(), e, e);
+        }
     }
 
     /**
@@ -78,8 +85,17 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     public void rejectByApplyId(Long applyId, String rejectReason) {
         MerchantApply apply = txService.rejectPersist(applyId, rejectReason);
         merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
+
+        afterRejected(apply);
     }
 
+    private void afterRejected(MerchantApply apply) {
+        try {
+            merchantApplyNotifyService.notifyRejected(apply);
+        } catch (Exception e) {
+            log.warn("notifyRejected failed, applyId={}, err={}", apply.getApplyId(), e.toString(), e);
+        }
+    }
 
     /**
      * <p>构建查询条件</p>

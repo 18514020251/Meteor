@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
+ *  消息 MQ消息构造器
+ *
  * @author Programmer
  * @date 2026-01-30 18:14
  */
@@ -25,11 +27,14 @@ public class MessageApplyMqAssembler {
         UserMessage entity = new UserMessage();
         entity.setUserId(msg.getUserId());
         entity.setSource(MessageSourceEnum.EVENT);
-        entity.setSysMsgId(null);
 
         entity.setType(msg.getEventType());
         entity.setTitle(tpl.getTitleTemplate());
-        entity.setContent(renderer.renderContent(tpl.getContentTemplate(), msg.getOccurredAt()));
+        entity.setContent(renderer.renderContent(
+                tpl.getContentTemplate(),
+                msg.getOccurredAt(),
+                msg.getPayload()
+        ));
 
         entity.setBizKey(MessageConstants.BIZ_KEY_EVENT_PREFIX + msg.getEventId());
 

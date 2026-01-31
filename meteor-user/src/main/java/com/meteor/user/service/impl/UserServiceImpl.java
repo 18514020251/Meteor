@@ -417,6 +417,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @throws BizException 参数不合法、旧密码错误、新密码确认不一致
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updatePassword(Long userId, UserPasswordUpdateDTO dto) {
 
         if (dto == null
@@ -442,7 +443,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userMapper.updateById(user);
 
         StpUtil.logout();
-        messageApplyEventPublisher.publishPasswordChanged(user);
+        try {
+            messageApplyEventPublisher.publishPasswordChanged(user);
+        } catch (Exception e) {
+            log.warn("publishPasswordChanged failed, userId={}, err={}", userId, e, e);
+        }
     }
 
     /**

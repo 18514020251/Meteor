@@ -59,7 +59,8 @@ public enum CommonErrorCode implements IErrorCode {
     MERCHANT_APPLY_REJECT_REASON_REQUIRED(5004, "拒绝原因不能为空", HttpStatus.BAD_REQUEST),
 
     //MQ
-    INVALID_MQ_MESSAGE(6001, "消息体不合法", HttpStatus.BAD_REQUEST);
+    INVALID_MQ_MESSAGE(6001, "消息体不合法", HttpStatus.BAD_REQUEST),
+    MQ_SEND_FAILED(6002, "消息发送失败", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;

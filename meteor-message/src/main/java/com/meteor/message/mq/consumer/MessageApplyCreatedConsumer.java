@@ -34,53 +34,19 @@ public class MessageApplyCreatedConsumer {
 
     @RabbitListener(queues = UserMessageContract.Queue.USER_MESSAGE_CREATED,
             errorHandler = "mqRejectErrorHandler")
-    @Transactional(rollbackFor = Exception.class )
     public void handle(UserEventMessage msg) {
         validate(msg);
 
         UserEventType eventType = UserEventType.fromCode(msg.getEventType());
         if (eventType == null) {
-            log.warn("未知 eventType: {}", msg.getEventType());
-            return;
+            throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
 
         switch (eventType) {
-            case USER_PASSWORD_CHANGED -> handlePasswordChanged(msg);
-            case MERCHANT_APPLY_SUBMITTED -> handleMerchantApplySubmitted(msg);
-            case MERCHANT_APPLY_REVIEWED -> handleMerchantApplyReviewed(msg);
-            case MERCHANT_APPLY_REJECTED -> handleMerchantApplyRejected(msg);
-            default -> log.warn("参数异常");
+            case USER_PASSWORD_CHANGED, MERCHANT_APPLY_SUBMITTED -> persistAsUserMessage(msg);
+            case MERCHANT_APPLY_REVIEWED, MERCHANT_APPLY_REJECTED -> persistMessage(msg);
+            default -> log.warn("未处理的 eventType={}, eventId={}", msg.getEventType(), msg.getEventId());
         }
-    }
-
-    private void handlePasswordChanged(UserEventMessage msg) {
-
-        UserMessageTemplate tpl = templateRegistry.getByEventType(msg.getEventType());
-
-        if (tpl == null) {
-            log.warn("缺少模板 eventType={}, eventId={}", msg.getEventType(), msg.getEventId());
-            return;
-        }
-
-        UserMessage entity = assembler.toEntity(msg, tpl);
-
-        try {
-            mapper.insert(entity);
-        } catch (DuplicateKeyException e) {
-            log.info("重复消费已忽略 bizKey={}, userId={}", entity.getBizKey(), entity.getUserId());
-        }
-    }
-
-    private void handleMerchantApplyRejected(UserEventMessage msg) {
-        // 方法待实现
-    }
-
-    private void handleMerchantApplyReviewed(UserEventMessage msg) {
-        // 方法待实现
-    }
-
-    private void handleMerchantApplySubmitted(UserEventMessage msg) {
-        // 方法待实现
     }
 
     private void validate(UserEventMessage msg) {
@@ -93,4 +59,31 @@ public class MessageApplyCreatedConsumer {
         }
     }
 
+    private void persistAsUserMessage(UserEventMessage msg) {
+        persistMessageInternal(msg, (m, e) -> log.info("消息入库成功 type={}, bizKey={}, userId={}",
+                e.getType(), e.getBizKey(), e.getUserId()));
+    }
+
+    private void persistMessage(UserEventMessage msg) {
+        persistMessageInternal(msg, (m, e) -> log.info("消息入库成功 eventType={}, bizKey={}, userId={}",
+                m.getEventType(), e.getBizKey(), e.getUserId()));
+    }
+
+    private void persistMessageInternal(UserEventMessage msg,
+                                        java.util.function.BiConsumer<UserEventMessage, UserMessage> successLogger) {
+        UserMessageTemplate tpl = templateRegistry.getByEventType(msg.getEventType());
+        if (tpl == null) {
+            log.warn("缺少模板 eventType={}, eventId={}", msg.getEventType(), msg.getEventId());
+            return;
+        }
+
+        UserMessage entity = assembler.toEntity(msg, tpl);
+
+        try {
+            mapper.insert(entity);
+            successLogger.accept(msg, entity);
+        } catch (DuplicateKeyException e) {
+            log.info("重复消费已忽略 bizKey={}, userId={}", entity.getBizKey(), entity.getUserId());
+        }
+    }
 }

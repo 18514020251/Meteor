@@ -1,7 +1,5 @@
 package com.meteor.user.mq.publisher;
 
-import com.meteor.common.exception.BizException;
-import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.mq.contract.enums.message.UserEventType;
 import com.meteor.mq.contract.message.UserEventMessage;
 import com.meteor.mq.contract.message.UserMessageContract;
@@ -12,6 +10,8 @@ import com.meteor.user.mq.assembler.MessageApplyMessageAssembler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  *  消息发布器
@@ -27,8 +27,27 @@ public class MessageApplyEventPublisher {
     private final MessageApplyMessageAssembler assembler;
 
     public void publishPasswordChanged(User user) {
-        UserEventMessage message = assembler.from(user , UserEventType.USER_PASSWORD_CHANGED);
+        UserEventMessage message = assembler.from(user, UserEventType.USER_PASSWORD_CHANGED);
+        doSend(message);
+    }
 
+    /**
+     * 用户提交商家申请
+     */
+    public void publishMerchantApplySubmitted(Long userId, Long applyId, String shopName) {
+        UserEventMessage message = assembler.from(userId, UserEventType.MERCHANT_APPLY_SUBMITTED);
+
+        message.setBizId(String.valueOf(applyId));
+
+        message.setPayload(Map.of(
+                "applyId", String.valueOf(applyId),
+                "shopName", shopName == null ? "" : shopName
+        ));
+
+        doSend(message);
+    }
+
+    private void doSend(UserEventMessage message) {
         MqSendResult result = mqSender.sendAndWaitConfirm(
                 UserMessageContract.Exchange.USER_MESSAGE,
                 UserMessageContract.RoutingKey.USER_MESSAGE_CREATED,
@@ -37,14 +56,18 @@ public class MessageApplyEventPublisher {
         );
 
         if (!result.isAck()) {
-            throw new BizException(CommonErrorCode.SYSTEM_ERROR, "MQ confirm failed");
+            log.error("MQ confirm failed: exchange={}, routingKey={}, eventId={}",
+                    UserMessageContract.Exchange.USER_MESSAGE,
+                    UserMessageContract.RoutingKey.USER_MESSAGE_CREATED,
+                    message.getEventId());
+            return;
         }
 
         if (result.noRoute()) {
-             log.warn("MQ NO_ROUTE: exchange={}, routingKey={}, eventId={}",
-                     UserMessageContract.Exchange.USER_MESSAGE,
-                     UserMessageContract.RoutingKey.USER_MESSAGE_CREATED,
-                     message.getEventId());
+            log.warn("MQ NO_ROUTE: exchange={}, routingKey={}, eventId={}",
+                    UserMessageContract.Exchange.USER_MESSAGE,
+                    UserMessageContract.RoutingKey.USER_MESSAGE_CREATED,
+                    message.getEventId());
         }
     }
 }
