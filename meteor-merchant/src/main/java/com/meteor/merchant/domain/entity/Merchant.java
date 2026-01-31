@@ -1,5 +1,6 @@
 package com.meteor.merchant.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -7,6 +8,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.meteor.common.enums.DeleteStatus;
+import com.meteor.merchant.enums.MerchantStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -50,7 +54,7 @@ public class Merchant implements Serializable {
     private String notice;
 
     @Schema(description = "商家状态：0-正常 1-冻结 2-关闭")
-    private Integer status;
+    private MerchantStatusEnum status;
 
     @Schema(description = "审核通过/开通时间")
     private LocalDateTime verifiedTime;
@@ -65,7 +69,6 @@ public class Merchant implements Serializable {
     private LocalDateTime updateTime;
 
     @Schema(description = "软删：0-未删 1-已删")
-    private Integer isDeleted;
-
-
+    @TableLogic
+    private DeleteStatus isDeleted;
 }

@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * @author Programmer
  * @since 2026-01-23
  */
+// NOTE:系统消息接口
 @Slf4j
 @RestController
 @RequestMapping("/admin/merchant-apply")

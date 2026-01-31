@@ -35,4 +35,7 @@ public class MerchantApplyReviewedMessage implements Serializable {
 
     /** 相关用户id */
     private Long userId;
+
+    /** 店铺名称 */
+    private String shopName;
 }

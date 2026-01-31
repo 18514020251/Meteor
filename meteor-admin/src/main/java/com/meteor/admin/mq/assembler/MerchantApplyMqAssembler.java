@@ -42,6 +42,7 @@ public class MerchantApplyMqAssembler {
         message.setReviewedTime(apply.getReviewedTime());
         message.setRejectReason(apply.getRejectReason());
         message.setUserId(apply.getUserId());
+        message.setShopName(apply.getShopName());
         return message;
     }
 
