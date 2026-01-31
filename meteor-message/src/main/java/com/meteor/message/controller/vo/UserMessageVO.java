@@ -1,4 +1,4 @@
-package com.meteor.message.domain.vo;
+package com.meteor.message.controller.vo;
 
 import lombok.Data;
 

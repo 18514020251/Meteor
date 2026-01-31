@@ -1,4 +1,4 @@
-package com.meteor.admin.domain.dto;
+package com.meteor.admin.controller.dto;
 
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;

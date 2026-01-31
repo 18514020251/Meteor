@@ -1,7 +1,7 @@
 package com.meteor.admin.service;
 
-import com.meteor.admin.domain.dto.MerchantApplyDTO;
-import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
+import com.meteor.admin.controller.dto.MerchantApplyDTO;
+import com.meteor.admin.controller.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.meteor.common.domain.PageResult;

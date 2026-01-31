@@ -18,7 +18,7 @@ import java.util.HashMap;
  */
 @Component
 @RequiredArgsConstructor
-public class MessageApplyMessageAssembler {
+public class MessageUserEventMessageAssembler {
 
     private final SnowflakeIdGenerator snowflakeIdGenerator;
 

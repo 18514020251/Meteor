@@ -1,4 +1,4 @@
-package com.meteor.admin.domain.dto;
+package com.meteor.admin.controller.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;

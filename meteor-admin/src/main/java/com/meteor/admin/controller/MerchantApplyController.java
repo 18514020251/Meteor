@@ -2,9 +2,9 @@ package com.meteor.admin.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.meteor.admin.domain.dto.MerchantApplyDTO;
-import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
-import com.meteor.admin.domain.dto.MerchantApplyRejectDTO;
+import com.meteor.admin.controller.dto.MerchantApplyDTO;
+import com.meteor.admin.controller.dto.MerchantApplyQueryDTO;
+import com.meteor.admin.controller.dto.MerchantApplyRejectDTO;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.common.result.Result;

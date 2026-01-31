@@ -1,8 +1,8 @@
 package com.meteor.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.meteor.admin.domain.dto.MerchantApplyUnsentQueryDTO;
-import com.meteor.admin.domain.vo.MerchantApplyUnsentVO;
+import com.meteor.admin.controller.dto.MerchantApplyUnsentQueryDTO;
+import com.meteor.admin.controller.vo.MerchantApplyUnsentVO;
 
 /**
  *  商家申请审核查询服务

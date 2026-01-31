@@ -1,4 +1,4 @@
-package com.meteor.user.domain.vo;
+package com.meteor.user.controller.vo;
 
 import com.meteor.user.enums.RoleEnum;
 import lombok.Data;

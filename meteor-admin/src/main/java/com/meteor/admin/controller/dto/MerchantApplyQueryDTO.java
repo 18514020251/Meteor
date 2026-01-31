@@ -1,4 +1,4 @@
-package com.meteor.admin.domain.dto;
+package com.meteor.admin.controller.dto;
 
 import com.meteor.common.constants.PageConstants;
 import lombok.Data;

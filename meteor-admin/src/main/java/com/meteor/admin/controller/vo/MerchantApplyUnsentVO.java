@@ -1,4 +1,4 @@
-package com.meteor.admin.domain.vo;
+package com.meteor.admin.controller.vo;
 
 import lombok.Data;
 

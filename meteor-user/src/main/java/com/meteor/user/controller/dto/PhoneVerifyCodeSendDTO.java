@@ -1,4 +1,4 @@
-package com.meteor.user.domain.dto;
+package com.meteor.user.controller.dto;
 
 import com.meteor.common.enums.VerifyCodeSceneEnum;
 import lombok.Data;

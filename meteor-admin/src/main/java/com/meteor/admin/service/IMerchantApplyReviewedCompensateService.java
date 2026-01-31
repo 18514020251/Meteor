@@ -1,6 +1,6 @@
 package com.meteor.admin.service;
 
-import com.meteor.admin.domain.vo.ReviewedResendVO;
+import com.meteor.admin.controller.vo.ReviewedResendVO;
 
 /**
  *  商家申请审核结果补偿服务

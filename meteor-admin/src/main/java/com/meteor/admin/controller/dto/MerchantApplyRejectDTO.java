@@ -1,4 +1,4 @@
-package com.meteor.admin.domain.dto;
+package com.meteor.admin.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

@@ -1,10 +1,10 @@
 package com.meteor.message.service;
 
 import com.meteor.common.domain.PageResult;
-import com.meteor.message.domain.dto.GetTheMessageDTO;
+import com.meteor.message.controller.dto.GetTheMessageDTO;
 import com.meteor.message.domain.entity.UserMessage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.meteor.message.domain.vo.UserMessageVO;
+import com.meteor.message.controller.vo.UserMessageVO;
 
 /**
  * <p>

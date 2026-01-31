@@ -1,4 +1,4 @@
-package com.meteor.user.service.domain;
+package com.meteor.user.service.internal;
 
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;

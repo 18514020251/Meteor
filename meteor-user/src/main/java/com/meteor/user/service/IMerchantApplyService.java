@@ -1,6 +1,6 @@
 package com.meteor.user.service;
 
-import com.meteor.user.domain.dto.MerchantApplyDTO;
+import com.meteor.user.controller.dto.MerchantApplyDTO;
 
 /**
  *  商家申请表服务接口

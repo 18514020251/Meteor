@@ -1,4 +1,4 @@
-package com.meteor.user.config;
+package com.meteor.user.web;
 
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;

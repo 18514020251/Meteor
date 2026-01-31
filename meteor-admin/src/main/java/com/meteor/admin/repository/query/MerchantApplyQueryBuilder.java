@@ -1,7 +1,7 @@
 package com.meteor.admin.repository.query;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.meteor.admin.domain.dto.MerchantApplyQueryDTO;
+import com.meteor.admin.controller.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 
 /**

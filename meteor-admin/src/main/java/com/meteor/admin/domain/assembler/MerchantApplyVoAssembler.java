@@ -1,7 +1,7 @@
 package com.meteor.admin.domain.assembler;
 
 import com.meteor.admin.domain.entity.MerchantApply;
-import com.meteor.admin.domain.vo.MerchantApplyUnsentVO;
+import com.meteor.admin.controller.vo.MerchantApplyUnsentVO;
 import org.springframework.stereotype.Component;
 
 /**

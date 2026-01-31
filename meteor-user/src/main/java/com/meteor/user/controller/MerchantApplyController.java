@@ -2,7 +2,7 @@ package com.meteor.user.controller;
 
 import com.meteor.common.result.Result;
 import com.meteor.satoken.context.LoginContext;
-import com.meteor.user.domain.dto.MerchantApplyDTO;
+import com.meteor.user.controller.dto.MerchantApplyDTO;
 import com.meteor.user.service.IMerchantApplyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

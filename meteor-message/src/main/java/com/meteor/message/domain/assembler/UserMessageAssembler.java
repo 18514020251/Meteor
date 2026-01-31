@@ -1,7 +1,7 @@
 package com.meteor.message.domain.assembler;
 
 import com.meteor.message.domain.entity.UserMessage;
-import com.meteor.message.domain.vo.UserMessageVO;
+import com.meteor.message.controller.vo.UserMessageVO;
 
 /**
  *  用户消息 Assembler

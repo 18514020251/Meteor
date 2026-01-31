@@ -11,6 +11,7 @@ import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.mapper.MerchantApplyMapper;
 import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.service.post.MerchantApprovedPostCommitActions;
+import com.meteor.user.service.tx.model.TxResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 只做 DB：
  * 1) 更新 merchant_apply 状态
  * 2) APPROVED 时升级用户角色
+ * @author Programmer
  */
 @Slf4j
 @Service
@@ -85,7 +87,7 @@ public class MerchantApplyReviewedTxService {
             return TxResult.notFound();
         }
 
-        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus())) {
+        if (!MerchantApplyStatusEnum.PENDING.getCode().equals(apply.getStatus().getCode())) {
             log.info("merchant_apply already processed, applyId={}, dbStatus={}, msgStatus={}",
                     message.getApplyId(), apply.getStatus(), statusEnum);
             return TxResult.alreadyProcessed();

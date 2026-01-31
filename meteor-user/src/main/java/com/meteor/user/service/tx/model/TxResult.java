@@ -1,4 +1,4 @@
-package com.meteor.user.service.tx;
+package com.meteor.user.service.tx.model;
 
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import lombok.Getter;

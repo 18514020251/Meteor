@@ -1,10 +1,10 @@
 package com.meteor.admin.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.meteor.admin.domain.dto.MerchantApplyUnsentQueryDTO;
-import com.meteor.admin.domain.dto.ReviewedResendDTO;
-import com.meteor.admin.domain.vo.MerchantApplyUnsentVO;
-import com.meteor.admin.domain.vo.ReviewedResendVO;
+import com.meteor.admin.controller.dto.MerchantApplyUnsentQueryDTO;
+import com.meteor.admin.controller.dto.ReviewedResendDTO;
+import com.meteor.admin.controller.vo.MerchantApplyUnsentVO;
+import com.meteor.admin.controller.vo.ReviewedResendVO;
 import com.meteor.admin.service.IMerchantApplyReviewedCompensateService;
 import com.meteor.admin.service.IMerchantApplyReviewedQueryService;
 import com.meteor.common.result.Result;

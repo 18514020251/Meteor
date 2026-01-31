@@ -2,7 +2,7 @@ package com.meteor.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.meteor.admin.domain.entity.MerchantApply;
-import com.meteor.admin.domain.vo.ReviewedResendVO;
+import com.meteor.admin.controller.vo.ReviewedResendVO;
 import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.service.IMerchantApplyReviewedCompensateService;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
