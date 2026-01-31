@@ -50,6 +50,13 @@ spring:
           uri: lb://meteor-message
           predicates:
             - Path=/message/**
+
+        - id: meteor-merchant
+          uri: lb://meteor-merchant
+          predicates:
+            - Path=/merchant/**
+
+
       default-filters:
         - name: RequestRateLimiter
           args:

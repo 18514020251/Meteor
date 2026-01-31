@@ -33,6 +33,7 @@
 		<module>meteor-mq-topology-starter</module>
 		<module>meteor-message</module>
         <module>meteor-id-starter</module>
+        <module>meteor-merchant</module>
     </modules>
 
 	<properties>
