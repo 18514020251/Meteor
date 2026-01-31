@@ -1,4 +1,4 @@
-package com.meteor.message.template;
+package com.meteor.message.domain.template;
 
 import com.meteor.mq.contract.enums.message.UserEventType;
 import jakarta.annotation.PostConstruct;

@@ -1,6 +1,6 @@
 package com.meteor.admin.service.impl;
 
-import com.meteor.admin.domain.assembler.MerchantApplyNotifyMqAssembler;
+import com.meteor.admin.service.assembler.MerchantApplyNotifyMqAssembler;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.service.IMerchantApplyNotifyService;
 import com.meteor.common.exception.BizException;

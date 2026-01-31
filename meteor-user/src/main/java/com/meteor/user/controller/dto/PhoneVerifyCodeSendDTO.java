@@ -1,6 +1,6 @@
 package com.meteor.user.controller.dto;
 
-import com.meteor.common.enums.VerifyCodeSceneEnum;
+import com.meteor.common.enums.user.VerifyCodeSceneEnum;
 import lombok.Data;
 
 /**

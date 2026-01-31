@@ -1,7 +1,7 @@
 package com.meteor.admin.mq.consumer;
 
 import com.meteor.admin.mapper.MerchantApplyMapper;
-import com.meteor.admin.mq.assembler.MerchantApplyMqAssembler;
+import com.meteor.admin.mq.mapper.MerchantApplyMqAssembler;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
 import lombok.RequiredArgsConstructor;

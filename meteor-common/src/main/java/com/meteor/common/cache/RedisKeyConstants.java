@@ -1,6 +1,6 @@
 package com.meteor.common.cache;
 
-import com.meteor.common.enums.VerifyCodeSceneEnum;
+import com.meteor.common.enums.user.VerifyCodeSceneEnum;
 
 import java.time.Duration;
 

@@ -1,4 +1,4 @@
-package com.meteor.admin.domain.assembler;
+package com.meteor.admin.service.assembler;
 
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.controller.vo.MerchantApplyUnsentVO;

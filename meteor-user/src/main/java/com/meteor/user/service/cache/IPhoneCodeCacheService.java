@@ -1,6 +1,6 @@
 package com.meteor.user.service.cache;
 
-import com.meteor.common.enums.VerifyCodeSceneEnum;
+import com.meteor.common.enums.user.VerifyCodeSceneEnum;
 
 /**
  *  手机验证码缓存服务

@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.meteor.common.constants.AvatarConstants;
-import com.meteor.common.enums.DeleteStatus;
+import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.utils.PasswordUtil;
 import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.enums.UserStatus;

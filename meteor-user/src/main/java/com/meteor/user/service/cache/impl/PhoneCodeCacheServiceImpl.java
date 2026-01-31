@@ -2,7 +2,7 @@ package com.meteor.user.service.cache.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.meteor.common.cache.RedisKeyConstants;
-import com.meteor.common.enums.VerifyCodeSceneEnum;
+import com.meteor.common.enums.user.VerifyCodeSceneEnum;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

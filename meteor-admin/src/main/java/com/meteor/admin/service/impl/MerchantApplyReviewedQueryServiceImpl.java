@@ -3,7 +3,7 @@ package com.meteor.admin.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.meteor.admin.domain.assembler.MerchantApplyVoAssembler;
+import com.meteor.admin.service.assembler.MerchantApplyVoAssembler;
 import com.meteor.admin.controller.dto.MerchantApplyUnsentQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.controller.vo.MerchantApplyUnsentVO;

@@ -1,4 +1,4 @@
-package com.meteor.message.template;
+package com.meteor.message.domain.template;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

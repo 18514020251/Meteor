@@ -1,12 +1,12 @@
-package com.meteor.message.mq.assembler;
+package com.meteor.message.mq.mapper;
 
-import com.meteor.common.enums.DeleteStatus;
+import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.enums.message.MessageReadStatusEnum;
 import com.meteor.common.enums.message.MessageSourceEnum;
 import com.meteor.message.constants.MessageConstants;
 import com.meteor.message.domain.entity.UserMessage;
-import com.meteor.message.template.UserMessageTemplate;
-import com.meteor.message.template.UserMessageTemplateRenderer;
+import com.meteor.message.domain.template.UserMessageTemplate;
+import com.meteor.message.domain.template.UserMessageTemplateRenderer;
 import com.meteor.mq.contract.message.UserEventMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class MessageApplyMqAssembler {
+public class MessageApplyCreatedMqMapper    {
 
     private final UserMessageTemplateRenderer renderer;
 

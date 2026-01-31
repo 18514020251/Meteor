@@ -1,4 +1,4 @@
-package com.meteor.common.constants;
+package com.meteor.common.properties;
 
 /**
  *  Redis 启动连接测试常量

@@ -1,4 +1,4 @@
-package com.meteor.common.enums;
+package com.meteor.common.enums.user;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.Getter;

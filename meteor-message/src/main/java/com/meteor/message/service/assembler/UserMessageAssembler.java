@@ -1,4 +1,4 @@
-package com.meteor.message.domain.assembler;
+package com.meteor.message.service.assembler;
 
 import com.meteor.message.domain.entity.UserMessage;
 import com.meteor.message.controller.vo.UserMessageVO;

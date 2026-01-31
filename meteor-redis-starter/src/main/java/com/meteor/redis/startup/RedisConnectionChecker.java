@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Objects;
 
-import static com.meteor.common.constants.SpringPropertyKeys.*;
+import static com.meteor.common.properties.SpringPropertyKeys.*;
 
 /**
  * @author Programmer

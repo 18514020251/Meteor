@@ -9,7 +9,7 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
-import com.meteor.common.enums.DeleteStatus;
+import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.merchant.enums.MerchantStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

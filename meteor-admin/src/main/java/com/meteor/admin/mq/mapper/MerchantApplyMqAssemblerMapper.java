@@ -1,4 +1,4 @@
-package com.meteor.admin.mq.assembler;
+package com.meteor.admin.mq.mapper;
 
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  * @date 2026-01-23 16:48
  */
 @Component
-public class MerchantApplyMqAssembler {
+public class MerchantApplyMqAssemblerMapper {
 
     /**
      * 转换成商家申请（admin库落表）

@@ -1,7 +1,7 @@
 package com.meteor.admin.service.impl;
 
 import com.meteor.admin.domain.entity.MerchantApply;
-import com.meteor.admin.mq.assembler.MerchantApplyMqAssembler;
+import com.meteor.admin.mq.mapper.MerchantApplyMqAssembler;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
