@@ -4,9 +4,9 @@ import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.message.domain.entity.UserMessage;
 import com.meteor.message.mapper.UserMessageMapper;
-import com.meteor.message.mq.mapper.MessageApplyMqAssembler;
 import com.meteor.message.domain.template.UserMessageTemplate;
 import com.meteor.message.domain.template.UserMessageTemplateRegistry;
+import com.meteor.message.mq.mapper.MessageApplyCreatedMqMapper;
 import com.meteor.mq.contract.enums.message.UserEventType;
 import com.meteor.mq.contract.message.UserEventMessage;
 import com.meteor.mq.contract.message.UserMessageContract;
@@ -29,7 +29,7 @@ public class MessageApplyCreatedConsumer {
 
     private final UserMessageMapper mapper;
     private final UserMessageTemplateRegistry templateRegistry;
-    private final MessageApplyMqAssembler assembler;
+    private final MessageApplyCreatedMqMapper assembler;
 
     @RabbitListener(queues = UserMessageContract.Queue.USER_MESSAGE_CREATED,
             errorHandler = "mqRejectErrorHandler")

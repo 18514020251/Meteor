@@ -41,7 +41,6 @@ public class MerchantApplyReviewedTxService {
 
         validate(message, statusEnum);
 
-        // 1) 更新 merchant_apply：PENDING -> 新状态
         int rows = merchantApplyMapper.update(null,
                 new LambdaUpdateWrapper<MerchantApply>()
                         .eq(MerchantApply::getId, message.getApplyId())
@@ -53,11 +52,9 @@ public class MerchantApplyReviewedTxService {
             return handleRowsZero(message, statusEnum);
         }
 
-        // 2) APPROVED 时升级用户角色（仍然是 DB）
         if (statusEnum == MerchantApplyStatusEnum.APPROVED) {
             upgradeUserRoleToMerchant(message.getUserId());
 
-            // 3) 事务提交后：调用副作用处理
             postCommitActions.onApproved(message);
         }
 

@@ -1,7 +1,7 @@
 package com.meteor.admin.mq.consumer;
 
 import com.meteor.admin.mapper.MerchantApplyMapper;
-import com.meteor.admin.mq.mapper.MerchantApplyMqAssembler;
+import com.meteor.admin.mq.mapper.MerchantApplyMqAssemblerMapper;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MerchantApplyCreatedConsumer {
 
     private final MerchantApplyMapper mapper;
-    private final MerchantApplyMqAssembler assembler;
+    private final MerchantApplyMqAssemblerMapper assembler;
 
     @RabbitListener(queues = MerchantApplyContract.Queue.MERCHANT_APPLY_CREATED  , errorHandler = "mqRejectErrorHandler")
     @Transactional(rollbackFor = Exception.class)

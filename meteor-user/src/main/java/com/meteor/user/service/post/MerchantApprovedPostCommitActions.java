@@ -30,7 +30,6 @@ public class MerchantApprovedPostCommitActions {
     public void onApproved(MerchantApplyReviewedMessage message) {
         Long userId = message.getUserId();
 
-        // 清缓存和踢下线（非事务中的操作）
         try {
             userCacheService.evictUserAll(userId);
             loginContext.kickout(userId);
@@ -38,7 +37,6 @@ public class MerchantApprovedPostCommitActions {
             log.warn("post-commit evict/kickout failed, userId={}", userId, e);
         }
 
-        // 发送MQ通知给商家模块（商家档案初始化）
         try {
             mqSender.send(
                     MerchantContract.Exchange.MERCHANT,

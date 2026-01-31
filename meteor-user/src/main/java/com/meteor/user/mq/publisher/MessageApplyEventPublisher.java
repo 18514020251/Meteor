@@ -6,7 +6,7 @@ import com.meteor.mq.contract.message.UserMessageContract;
 import com.meteor.mq.core.MqSendResult;
 import com.meteor.mq.core.MqSender;
 import com.meteor.user.domain.entity.User;
-import com.meteor.user.mq.assembler.MessageApplyMessageAssembler;
+import com.meteor.user.mq.assembler.MessageUserEventMessageAssembler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ import java.util.Map;
 @Slf4j
 public class MessageApplyEventPublisher {
     private final MqSender mqSender;
-    private final MessageApplyMessageAssembler assembler;
+    private final MessageUserEventMessageAssembler assembler;
 
     public void publishPasswordChanged(User user) {
         UserEventMessage message = assembler.from(user, UserEventType.USER_PASSWORD_CHANGED);

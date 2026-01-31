@@ -1,7 +1,7 @@
 package com.meteor.admin.service.impl;
 
 import com.meteor.admin.domain.entity.MerchantApply;
-import com.meteor.admin.mq.mapper.MerchantApplyMqAssembler;
+import com.meteor.admin.mq.mapper.MerchantApplyMqAssemblerMapper;
 import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class MerchantApplyReviewedServiceImpl implements IMerchantApplyReviewedService {
 
-    private final MerchantApplyMqAssembler merchantApplyAssembler;
+    private final MerchantApplyMqAssemblerMapper merchantApplyAssembler;
     private final MqSender mqSender;
 
     @Override
