@@ -35,9 +35,9 @@ public class RedisKeyConstants {
     public static final int PHONE_CODE_IP_LIMIT_COUNT = 5;
 
 
-    /*
+    /**
     *  用户信息缓存 TTL 随机抖动上限（秒）
-    * */
+    */
     public static final long USER_INFO_TTL_RANDOM = 20L;
 
     public static String phoneCodeKey(VerifyCodeSceneEnum scene, String phone) {

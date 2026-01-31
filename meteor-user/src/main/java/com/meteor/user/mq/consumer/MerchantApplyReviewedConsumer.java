@@ -48,8 +48,13 @@ public class MerchantApplyReviewedConsumer {
                 && message.getUserId() == null) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
-        if (message.getStatusCode().equals(MerchantApplyStatusEnum.APPROVED.getCode())
-                && (message.getShopName() == null || message.getShopName().isBlank())) {
+        boolean approved = MerchantApplyStatusEnum.APPROVED.getCode()
+                .equals(message.getStatusCode());
+
+        boolean shopNameInvalid =
+                message.getShopName() == null || message.getShopName().isBlank();
+
+        if (approved && shopNameInvalid) {
             throw new BizException(CommonErrorCode.INVALID_MQ_MESSAGE);
         }
     }
