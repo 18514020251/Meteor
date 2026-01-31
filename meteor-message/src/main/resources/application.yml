@@ -95,3 +95,11 @@ meteor:
     bucket: ${programmer.minio.bucket:meteor}
     path-style: true
     presigned-url-expire-minutes: 5
+
+message:
+  cleanup:
+    # 每小时清理一次
+    fixed-delay-ms: 3600000
+    batch-size: 1000
+    max-rounds: 5
+    retention-days: 15

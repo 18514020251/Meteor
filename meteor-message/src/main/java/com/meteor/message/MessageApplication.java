@@ -6,6 +6,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  *  message 模块启动类
@@ -15,6 +16,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @EnableMeteorMyBatisPlus
 @EnableDiscoveryClient
+@EnableScheduling
 @SpringBootApplication
 @MapperScan("com.meteor.message.mapper")
 public class MessageApplication {

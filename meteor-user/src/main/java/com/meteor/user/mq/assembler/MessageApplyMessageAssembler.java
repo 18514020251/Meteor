@@ -32,7 +32,7 @@ public class MessageApplyMessageAssembler {
         msg.setEventType(eventType.getCode());
         msg.setUserId(userId);
         msg.setOccurredAt(LocalDateTime.now());
-        msg.setPayload(new HashMap<>());
+        msg.setPayload(new HashMap<>(16));
         return msg;
     }
 }

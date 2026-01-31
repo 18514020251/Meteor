@@ -93,7 +93,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
         try {
             merchantApplyNotifyService.notifyRejected(apply);
         } catch (Exception e) {
-            log.warn("notifyRejected failed, applyId={}, err={}", apply.getApplyId(), e.toString(), e);
+            log.warn("notifyRejected failed, applyId={}, err={}", apply.getApplyId(), e, e);
         }
     }
 
