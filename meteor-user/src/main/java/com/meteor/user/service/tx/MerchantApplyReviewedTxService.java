@@ -5,6 +5,7 @@ import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.mq.contract.merchant.MerchantApplyReviewedMessage;
+import com.meteor.mq.contract.merchant.UserDeactivatedMessage;
 import com.meteor.user.domain.entity.MerchantApply;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.enums.RoleEnum;
@@ -108,6 +109,26 @@ public class MerchantApplyReviewedTxService {
                 throw new BizException(CommonErrorCode.DATA_ERROR);
             }
             log.info("user already MERCHANT, userId={}", userId);
+        }
+    }
+
+    /**
+     * 处理用户注销：将商家用户角色改为普通用户
+     *
+     * @param message 用户注销事件
+     * @return 结果，是否有变更
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public TxResult processDeactivation(UserDeactivatedMessage message) {
+        // 查询用户是否存在且角色为商家
+        int rows = userMapper.updateRoleToNormalIfMerchant(message.getUserId());
+
+        if (rows == 0) {
+            // 如果没有更新任何行，说明要么用户不存在，要么已经是普通用户
+            return TxResult.alreadyProcessed();
+        } else {
+            // 如果更新了行，说明角色已变更
+            return TxResult.updated(MerchantApplyStatusEnum.APPROVED);
         }
     }
 }

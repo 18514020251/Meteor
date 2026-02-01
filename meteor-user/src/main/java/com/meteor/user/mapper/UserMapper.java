@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.meteor.user.domain.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * <p>
@@ -33,4 +34,13 @@ public interface UserMapper extends BaseMapper<User> {
     LIMIT 1
 """)
     User selectByUsername(String username);
+
+    @Update("""
+    UPDATE user
+    SET role = 0, update_time = NOW()
+    WHERE id = #{userId}
+        AND role = 1
+        AND is_deleted = 0
+""")
+    int updateRoleToNormalIfMerchant(Long userId);
 }

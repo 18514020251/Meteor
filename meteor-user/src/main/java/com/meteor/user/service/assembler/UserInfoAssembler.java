@@ -1,7 +1,9 @@
 package com.meteor.user.service.assembler;
 
+import com.meteor.common.dto.UserProfileDTO;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.controller.vo.UserInfoVO;
+import com.meteor.user.domain.entity.User;
 import com.meteor.user.enums.RoleEnum;
 import com.meteor.user.service.cache.model.UserInfoCache;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +28,13 @@ public class UserInfoAssembler {
         vo.setAvatar(minioUtil.buildPresignedUrl(cache.getAvatarObject()));
         vo.setPhone(cache.getPhone());
         return vo;
+    }
+
+    public UserProfileDTO toProfile(User user) {
+        UserProfileDTO dto = new UserProfileDTO();
+        dto.setUsername(user.getUsername());
+        dto.setPhone(user.getPhone());
+        dto.setAvatar(minioUtil.buildPresignedUrl(user.getAvatar()));
+        return dto;
     }
 }

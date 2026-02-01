@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.meteor.mq.contract.agreement.RabbitArgsConstants.*;
+
 /**
  *  商家申请拓扑声明
  *
@@ -38,8 +40,8 @@ public class MerchantApplyTopologyAutoConfiguration {
     public Queue merchantApplyCreatedQueue() {
         Map<String, Object> args = new HashMap<>();
         args.put("x-message-ttl", MerchantApplyContract.CREATED_MSG_TTL.toMillis());
-        args.put("x-dead-letter-exchange", MerchantApplyContract.Exchange.MERCHANT_APPLY_DLX);
-        args.put("x-dead-letter-routing-key", MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED_DLX);
+        args.put(X_DEAD_LETTER_EXCHANGE, MerchantApplyContract.Exchange.MERCHANT_APPLY_DLX);
+        args.put(X_DEAD_LETTER_ROUTING_KEY, MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED_DLX);
 
         return new Queue(MerchantApplyContract.Queue.MERCHANT_APPLY_CREATED, true, false, false, args);
     }
@@ -55,8 +57,8 @@ public class MerchantApplyTopologyAutoConfiguration {
     @Bean
     public Queue merchantApplyReviewedQueue() {
         Map<String, Object> args = new HashMap<>();
-        args.put("x-dead-letter-exchange", MerchantApplyContract.Exchange.MERCHANT_APPLY_DLX);
-        args.put("x-dead-letter-routing-key", MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED_DLX);
+        args.put(X_DEAD_LETTER_EXCHANGE, MerchantApplyContract.Exchange.MERCHANT_APPLY_DLX);
+        args.put(X_DEAD_LETTER_ROUTING_KEY, MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED_DLX);
         return new Queue(MerchantApplyContract.Queue.MERCHANT_APPLY_REVIEWED, true, false, false, args);
     }
 
@@ -92,5 +94,63 @@ public class MerchantApplyTopologyAutoConfiguration {
         return BindingBuilder.bind(merchantApplyReviewedDlq)
                 .to(merchantApplyDlxExchange)
                 .with(MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED_DLX);
+    }
+
+    @Bean
+    public DirectExchange userEventExchange() {
+        return new DirectExchange(
+                MerchantApplyContract.Exchange.USER_EVENT,
+                true,
+                false
+        );
+    }
+
+    @Bean
+    public DirectExchange userEventDlxExchange() {
+        return new DirectExchange(
+                MerchantApplyContract.Exchange.USER_EVENT_DLX,
+                true,
+                false
+        );
+    }
+
+    @Bean
+    public Queue merchantUserDeactivatedQueue() {
+        Map<String, Object> args = new HashMap<>();
+        args.put(X_MESSAGE_TTL, MerchantApplyContract.CREATED_MSG_TTL.toMillis());
+        args.put(X_DEAD_LETTER_EXCHANGE, MerchantApplyContract.Exchange.USER_EVENT_DLX);
+        args.put(X_DEAD_LETTER_ROUTING_KEY, MerchantApplyContract.RoutingKey.USER_DEACTIVATED_DLX);
+
+        return new Queue(
+                MerchantApplyContract.Queue.USER_DEACTIVATED,
+                true,
+                false,
+                false,
+                args
+        );
+    }
+
+    @Bean
+    public Binding merchantUserDeactivatedBinding(Queue merchantUserDeactivatedQueue,
+                                                  DirectExchange userEventExchange) {
+        return BindingBuilder.bind(merchantUserDeactivatedQueue)
+                .to(userEventExchange)
+                .with(MerchantApplyContract.RoutingKey.USER_DEACTIVATED);
+    }
+
+    @Bean
+    public Queue merchantUserDeactivatedDlq() {
+        return new Queue(
+                MerchantApplyContract.Queue.USER_DEACTIVATED_DLX,
+                true
+        );
+    }
+
+    @Bean
+    public Binding merchantUserDeactivatedDlqBinding(Queue merchantUserDeactivatedDlq,
+                                                     DirectExchange userEventDlxExchange) {
+        return BindingBuilder.bind(merchantUserDeactivatedDlq)
+                .to(userEventDlxExchange)
+                .with(MerchantApplyContract.RoutingKey.USER_DEACTIVATED_DLX);
     }
 }

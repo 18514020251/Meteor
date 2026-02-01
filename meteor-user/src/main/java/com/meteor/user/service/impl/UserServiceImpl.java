@@ -23,7 +23,6 @@ import com.meteor.user.mapper.UserMapper;
 import com.meteor.user.mq.publisher.MerchantApplyEventPublisher;
 import com.meteor.user.mq.publisher.MessageApplyEventPublisher;
 import com.meteor.user.service.IUserService;
-import com.meteor.user.service.assembler.UserProfileAssembler;
 import com.meteor.user.service.cache.IPhoneCodeCacheService;
 import com.meteor.user.service.cache.IPhoneCodeLimitCacheService;
 import com.meteor.user.service.cache.IUserCacheService;
@@ -538,6 +537,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (user == null || user.getIsDeleted() == 1) {
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
-        return UserProfileAssembler.toProfile(user);
+        return userInfoAssembler.toProfile(user);
     }
 }

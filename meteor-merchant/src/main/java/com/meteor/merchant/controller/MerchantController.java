@@ -48,4 +48,14 @@ public class MerchantController {
         return Result.success(merchantMeVO);
     }
 
+    @DeleteMapping("/me")
+    @Operation(summary = "注销当前商家")
+    public Result<Void> deleteMe() {
+        Long userId = loginContext.currentLoginId();
+
+        merchantService.deleteByMerchantId(userId);
+
+        return Result.success();
+    }
+
 }

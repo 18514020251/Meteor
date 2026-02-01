@@ -28,4 +28,11 @@ public interface IMerchantService extends IService<Merchant> {
      * @return 商家信息
      * */
     MerchantMeVO getMe(Long userId);
+
+    /**
+     * 根据用户ID删除商家信息
+     *
+     * @param userId 用户ID
+     * */
+    void deleteByMerchantId(Long userId);
 }
