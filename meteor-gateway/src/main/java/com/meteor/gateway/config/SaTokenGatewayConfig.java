@@ -35,6 +35,7 @@ public class SaTokenGatewayConfig {
                         "/user/login",
                         "/user/register",
                         "/user/phone/code",
+                        "/merchant/getInfo",
                         "/error"
                 )
                 .setAuth(obj -> {
@@ -43,9 +44,6 @@ public class SaTokenGatewayConfig {
                     String path = SaHolder.getRequest().getRequestPath();
                     if (path.startsWith("/admin")) {
                         StpUtil.checkRole(RoleConst.ADMIN);
-                    }
-                    if (path.startsWith("/merchant")){
-                        StpUtil.checkRole(RoleConst.MERCHANT);
                     }
                 })
                 .setError(this::handleSaTokenError);

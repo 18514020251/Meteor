@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/merchant")
-@SaCheckRole(RoleConst.MERCHANT)
 public class MerchantController {
 
     private final IMerchantService merchantService;
     private final LoginContext loginContext;
 
     @PutMapping("/updateNotice")
+    @SaCheckRole(RoleConst.MERCHANT)
     @Operation(summary = "修改商家公告")
     public Result<Void> updateShopNotice(@RequestBody @Valid UpdateShopNoticeDTO dto) {
         Long uid = loginContext.currentLoginId();
@@ -39,6 +39,7 @@ public class MerchantController {
     }
 
     @GetMapping("/me")
+    @SaCheckRole(RoleConst.MERCHANT)
     @Operation(summary = "获取当前登录用户的信息")
     public Result<MerchantMeVO> getMe() {
         Long userId = loginContext.currentLoginId();
@@ -49,6 +50,7 @@ public class MerchantController {
     }
 
     @DeleteMapping("/me")
+    @SaCheckRole(RoleConst.MERCHANT)
     @Operation(summary = "注销当前商家")
     public Result<Void> deleteMe() {
         Long userId = loginContext.currentLoginId();
@@ -56,6 +58,14 @@ public class MerchantController {
         merchantService.deleteByMerchantId(userId);
 
         return Result.success();
+    }
+
+    @GetMapping("/getInfo/{userId}")
+    @Operation(summary = "根据商家ID获取用户信息")
+    public Result<MerchantMeVO> getUserById(@PathVariable Long userId) {
+        MerchantMeVO merchantMeVO = merchantService.getMe(userId);
+
+        return Result.success(merchantMeVO);
     }
 
 }

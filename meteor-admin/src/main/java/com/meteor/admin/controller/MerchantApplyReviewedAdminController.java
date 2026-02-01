@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+// NOTE：后续做接口，查询所有在线用户/踢出用户在线状态
 /**
  *  商家申请审核AdminController
  *

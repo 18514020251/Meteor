@@ -534,7 +534,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public UserProfileDTO getUserProfile(Long userId) {
         User user = getById(userId);
-        if (user == null || user.getIsDeleted() == 1) {
+        if (user == null || user.getIsDeleted() == 1 || !user.getRole().equals(RoleEnum.MERCHANT.getCode())) {
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
         return userInfoAssembler.toProfile(user);

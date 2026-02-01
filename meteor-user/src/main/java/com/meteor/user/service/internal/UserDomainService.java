@@ -40,8 +40,8 @@ public class UserDomainService {
         return user;
     }
 
-    /*
-     *  根据用户名获取用户信息
+    /**
+     * 根据用户名获取用户信息
      * */
     public User getNormalUserByUsername(String username) {
         User user = userMapper.selectByUsername(username);
