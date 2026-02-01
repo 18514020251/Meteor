@@ -15,8 +15,9 @@ public final class AvatarConstants {
     /** 默认用户头像 */
     public static final String DEFAULT_AVATAR = "avatar/default.png";
 
-    /** 头像最大大小：2MB */
-    public static final long MAX_SIZE = 2L * 1024 * 1024;
+    /** 头像最大大小：5MB */
+    // NOTE：本地环境可以5MB，项目上限或者简历时一定改了
+    public static final long MAX_SIZE = 5L * 1024 * 1024;
 
     public static final String IMAGE_PNG = "image/png";
     public static final String IMAGE_JPEG = "image/jpeg";

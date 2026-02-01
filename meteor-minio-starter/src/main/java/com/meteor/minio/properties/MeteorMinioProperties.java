@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "meteor.minio")
 public class MeteorMinioProperties {
 
-    private static final int DEFAULT_EXPIRE_MINUTES = 5;
+    private static final int DEFAULT_EXPIRE_MINUTES = 60;
 
     /**
      * MinIO 服务地址

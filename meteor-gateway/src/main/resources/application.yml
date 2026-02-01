@@ -65,6 +65,20 @@ spring:
             redis-rate-limiter.requestedTokens: 1
             key-resolver: "#{@ipKeyResolver}"
 
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
 server:
   port: ${GATEWAY_PORT:8080}
 
