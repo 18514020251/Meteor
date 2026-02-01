@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ *  自定义权限验证接口扩展
+ *
  * @author Programmer
  */
 @Slf4j

@@ -33,6 +33,12 @@ spring:
     nacos:
       discovery:
         server-addr: ${programmer.nacos.addr}
+    feign:
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 5000
 
   rabbitmq:
     host: ${programmer.rabbitmq.host}

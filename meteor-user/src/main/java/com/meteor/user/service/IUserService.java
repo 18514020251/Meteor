@@ -1,6 +1,7 @@
 package com.meteor.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.meteor.common.dto.UserProfileDTO;
 import com.meteor.user.controller.dto.*;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.controller.vo.UserInfoVO;
@@ -95,4 +96,13 @@ public interface IUserService extends IService<User> {
      * @throws com.meteor.common.exception.BizException 当触发限流、手机号不合法、发送失败等业务异常时抛出
      */
     void sendPhoneVerifyCode(@Valid PhoneVerifyCodeSendDTO phone, String clientIp);
+
+    /**
+     *  内部接口 用于远程调用
+     *  merchant 模块 /me接口 -> user模块
+     *
+     * @param userId 用户Id
+     * @return 用户信息DTO
+     * */
+    UserProfileDTO getUserProfile(Long userId);
 }

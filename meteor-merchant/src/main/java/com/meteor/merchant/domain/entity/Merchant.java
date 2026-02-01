@@ -44,12 +44,6 @@ public class Merchant implements Serializable {
     @Schema(description = "店铺名称")
     private String shopName;
 
-    @Schema(description = "店铺头像")
-    private String shopAvatar;
-
-    @Schema(description = "联系电话")
-    private String contactPhone;
-
     @Schema(description = "店铺公告/简介（短）")
     private String notice;
 
@@ -71,4 +65,8 @@ public class Merchant implements Serializable {
     @Schema(description = "软删：0-未删 1-已删")
     @TableLogic
     private DeleteStatus isDeleted;
+
+    public boolean canEditProfile() {
+        return this.status == MerchantStatusEnum.NORMAL;
+    }
 }

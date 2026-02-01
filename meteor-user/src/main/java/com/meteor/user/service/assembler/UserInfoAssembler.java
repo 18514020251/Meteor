@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- *  用户信息转换
+ *  用户信息转换 工具类
  *
  * @author Programmer
  */

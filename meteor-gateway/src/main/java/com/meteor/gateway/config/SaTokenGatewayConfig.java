@@ -44,6 +44,9 @@ public class SaTokenGatewayConfig {
                     if (path.startsWith("/admin")) {
                         StpUtil.checkRole(RoleConst.ADMIN);
                     }
+                    if (path.startsWith("/merchant")){
+                        StpUtil.checkRole(RoleConst.MERCHANT);
+                    }
                 })
                 .setError(this::handleSaTokenError);
     }

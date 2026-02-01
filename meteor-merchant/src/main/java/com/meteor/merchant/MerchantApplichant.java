@@ -5,6 +5,7 @@ import com.meteor.mp.annotation.EnableMeteorMyBatisPlus;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * 商家模块启动类
@@ -12,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Programmer
  * @date 2026-01-31 15:41
  */
+@EnableFeignClients
 @EnableMeteorMyBatisPlus
 @SpringBootApplication
 @MapperScan("com.meteor.merchant.mapper")

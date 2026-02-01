@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ *  商家申请接口
+ *
  * @author Programmer
  * @date 2026-01-28 13:36
  */

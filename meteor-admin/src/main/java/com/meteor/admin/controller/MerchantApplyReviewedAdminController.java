@@ -1,5 +1,6 @@
 package com.meteor.admin.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.meteor.admin.controller.dto.MerchantApplyUnsentQueryDTO;
 import com.meteor.admin.controller.dto.ReviewedResendDTO;
@@ -8,6 +9,7 @@ import com.meteor.admin.controller.vo.ReviewedResendVO;
 import com.meteor.admin.service.IMerchantApplyReviewedCompensateService;
 import com.meteor.admin.service.IMerchantApplyReviewedQueryService;
 import com.meteor.common.result.Result;
+import com.meteor.satoken.constants.RoleConst;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "商家申请审核", description = "管理端商家申请审核接口")
 @RequestMapping("/admin/merchant-apply/reviewed")
+@SaCheckRole(RoleConst.ADMIN)
 public class MerchantApplyReviewedAdminController {
 
     private final IMerchantApplyReviewedQueryService queryService;
