@@ -55,7 +55,6 @@ import static com.meteor.common.constants.AvatarConstants.MAX_SIZE;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
-    // NOTE：后续移除 userMapper
     private final UserMapper userMapper;
     private final MinioUtil minioUtil;
     private final UserDomainService userDomainService;

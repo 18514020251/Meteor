@@ -34,6 +34,7 @@
 		<module>meteor-message</module>
         <module>meteor-id-starter</module>
         <module>meteor-merchant</module>
+        <module>meteor-product</module>
     </modules>
 
 	<properties>
