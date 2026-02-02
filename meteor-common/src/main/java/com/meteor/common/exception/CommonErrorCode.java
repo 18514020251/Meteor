@@ -65,7 +65,10 @@ public enum CommonErrorCode implements IErrorCode {
     MQ_SEND_FAILED(6002, "消息发送失败", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 票务相关
-    PARAM_ERROR(7001, "参数错误", HttpStatus.BAD_REQUEST);
+    PARAM_ERROR(7001, "参数错误", HttpStatus.BAD_REQUEST),
+
+    // 电影相关异常
+    CONFLICT(8001, "电影已存在", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;

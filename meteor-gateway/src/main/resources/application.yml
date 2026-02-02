@@ -61,6 +61,11 @@ spring:
           predicates:
             - Path=/ticketing/**
 
+        - id: meteor-movie
+          uri: lb://meteor-movie
+          predicates:
+            - Path=/movies/**
+
 
       default-filters:
         - name: RequestRateLimiter

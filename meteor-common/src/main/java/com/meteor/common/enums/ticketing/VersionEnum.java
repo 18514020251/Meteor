@@ -1,7 +1,6 @@
 package com.meteor.common.enums.ticketing;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 
 /**
