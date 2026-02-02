@@ -7,6 +7,11 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.meteor.common.constants.ticketing.TicketingConstants;
+import com.meteor.common.enums.system.DeleteStatus;
+import com.meteor.common.enums.ticketing.VersionEnum;
+import com.meteor.ticketing.controller.enums.SaleModeEnum;
+import com.meteor.ticketing.controller.enums.ScreeningStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,14 +39,11 @@ public class Screening implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    @Schema(description = "商家ID")
+    private Long merchantId;
+
     @Schema(description = "电影ID")
     private Long movieId;
-
-    @Schema(description = "影院ID")
-    private Long cinemaId;
-
-    @Schema(description = "影厅ID")
-    private Long hallId;
 
     @Schema(description = "开始时间")
     private LocalDateTime startTime;
@@ -55,11 +57,11 @@ public class Screening implements Serializable {
     @Schema(description = "停售时间")
     private LocalDateTime saleEndTime;
 
-    @Schema(description = "1=SCHEDULED 2=SELLING 3=SOLD_OUT 4=CLOSED 5=CANCELED")
-    private Integer status;
+    @Schema(description = "场次状态")
+    private ScreeningStatusEnum status;
 
-    @Schema(description = "1=AUTO抢票 2=MANUAL选座 3=MIXED")
-    private Integer saleMode;
+    @Schema(description = "销售模式")
+    private SaleModeEnum saleMode;
 
     @Schema(description = "基础价格(分)")
     private Integer basePrice;
@@ -100,5 +102,20 @@ public class Screening implements Serializable {
     @Schema(description = "是否删除 0=否 1=是")
     private Integer deleted;
 
+    public Screening initForCreate(Long operatorId, LocalDateTime now) {
+        this.setMinPrice(this.getBasePrice());
+        this.setMaxPrice(this.getBasePrice());
+        this.setAvailableTickets(this.getTotalTickets());
+        this.setSoldTickets(TicketingConstants.DEFAULT_TICKETING_SOLD_TICKETS);
+        this.setHotScore(TicketingConstants.DEFAULT_TICKETING_HOT_RANK);
+        this.setVersion(VersionEnum.INIT.getValue());
+        this.setDeleted(DeleteStatus.NORMAL.getCode());
+
+        this.setCreateBy(operatorId);
+        this.setUpdateBy(operatorId);
+        this.setCreateTime(now);
+        this.setUpdateTime(now);
+        return this;
+    }
 
 }

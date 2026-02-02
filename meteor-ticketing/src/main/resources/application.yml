@@ -3,7 +3,7 @@ application:
 
 spring:
   application:
-    name: meteor-user
+    name: meteor-ticketing
 
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
@@ -52,7 +52,7 @@ server:
 
 # MP 配置
 mybatis-plus:
-  type-enums-package: com.meteor.common.enums,com.meteor.user.enums
+  type-enums-package: com.meteor.common.enums,com.meteor.ticketing.enums
   configuration:
     map-underscore-to-camel-case: true
   global-config:

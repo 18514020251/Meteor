@@ -56,6 +56,11 @@ spring:
           predicates:
             - Path=/merchant/**
 
+        - id: mmeteor-ticketing
+          uri: lb://meteor-ticketing
+          predicates:
+            - Path=/ticketing/**
+
 
       default-filters:
         - name: RequestRateLimiter
