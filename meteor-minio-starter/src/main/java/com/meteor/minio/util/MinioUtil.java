@@ -164,6 +164,26 @@ public class MinioUtil {
         }
     }
 
+    public void putObject(
+            String objectName,
+            InputStream inputStream,
+            String contentType
+    ) {
+        try {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(properties.getBucket())
+                            .object(objectName)
+                            .stream(inputStream, -1, MIN_PART_SIZE)
+                            .contentType(contentType)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("上传文件失败，objectName={}", objectName, e);
+            throw new BizException(CommonErrorCode.FILE_UPLOAD_FAILED);
+        }
+    }
+
 
 
 }

@@ -2,6 +2,7 @@ package com.meteor.movie.mapper;
 
 import com.meteor.movie.domain.entity.MediaAsset;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * <p>
@@ -13,4 +14,15 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface MediaAssetMapper extends BaseMapper<MediaAsset> {
 
+    /**
+     * 判断 objectKey 是否仍被使用（未删除）
+     */
+    @Select("""
+        select 1
+        from media_asset
+        where object_key = #{objectKey}
+          and deleted = 0
+        limit 1
+        """)
+    Integer existsByObjectKey(String objectKey);
 }

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
-import java.util.Arrays;
 
 /**
  * @author Programmer
@@ -15,33 +14,21 @@ import java.util.Arrays;
 @Schema(description = "媒体资源类型")
 public enum MediaAssetKindEnum {
 
-    POSTER(1, "海报"),
-    COVER(2, "封面"),
-    GALLERY(3, "图集");
+    POSTER(1, "poster", "海报"),
+    COVER(2, "cover", "封面"),
+    GALLERY(3, "gallery", "图集");
 
     @EnumValue
     private final int code;
+
+    private final String dir;
+
     private final String desc;
 
-    MediaAssetKindEnum(int code, String desc) {
+    MediaAssetKindEnum(int code, String dir, String desc) {
         this.code = code;
+        this.dir = dir;
         this.desc = desc;
     }
-
-    public static MediaAssetKindEnum of(Integer code) {
-        if (code == null) {
-            return null;
-        }
-        return Arrays.stream(values())
-                .filter(e -> e.code == code)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("非法的 MediaAssetKindEnum code: " + code));
-    }
-
-    public static boolean isValid(Integer code) {
-        if (code == null) {
-            return false;
-        }
-        return Arrays.stream(values()).anyMatch(e -> e.code == code);
-    }
 }
+

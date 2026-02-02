@@ -39,15 +39,15 @@ public class MovieCreateDTO {
     @Schema(description = "分类ID列表", example = "[1,3,7]")
     private List<@NotNull(message = "分类ID不能为空") Long> categoryIds;
 
-    @Schema(description = "海报URL(kind=POSTER)", example = "http://xxx/poster.png")
+    @Schema(description = "海报URL(kind=POSTER)", example = "xxx/poster.png")
     @Size(max = 512, message = "posterUrl 太长")
-    private String posterUrl;
+    private String posterKey;
 
-    @Schema(description = "封面URL(kind=COVER)", example = "http://xxx/cover.png")
+    @Schema(description = "封面URL(kind=COVER)", example = "xxx/cover.png")
     @Size(max = 512, message = "coverUrl 太长")
-    private String coverUrl;
+    private String coverKey;
 
     @Schema(description = "图集URL列表(kind=GALLERY)，顺序即sort", example = "[\"http://xxx/1.png\",\"http://xxx/2.png\"]")
-    private List<@NotBlank(message = "galleryUrl不能为空") @Size(max = 512, message = "galleryUrl 太长") String> galleryUrls;
+    private List<@NotBlank(message = "galleryUrl不能为空") @Size(max = 512, message = "galleryUrl 太长") String> galleryKeys;
 }
 

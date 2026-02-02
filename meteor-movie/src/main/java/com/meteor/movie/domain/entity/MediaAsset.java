@@ -44,8 +44,8 @@ public class MediaAsset implements Serializable {
     @Schema(description = "业务ID")
     private Long bizId;
 
-    @Schema(description = "图片URL")
-    private String url;
+    @Schema(description = "路径")
+    private String objectKey;
 
     @Schema(description = "1=POSTER 2=COVER 3=GALLERY")
     private MediaAssetKindEnum kind;

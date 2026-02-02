@@ -21,7 +21,7 @@ public class MediaAssetAssembler {
 
     public MediaAsset createForMovie(
             Long movieId,
-            String url,
+            String objecyKey,
             MediaAssetKindEnum kind,
             int sort,
             Long operatorId,
@@ -30,7 +30,7 @@ public class MediaAssetAssembler {
         MediaAsset asset = new MediaAsset();
         asset.setBizType(MediaBizTypeEnum.MOVIE);
         asset.setBizId(movieId);
-        asset.setUrl(url);
+        asset.setObjectKey(objecyKey);
         asset.setKind(kind);
         asset.setSort(sort);
         asset.setCreateTime(now);

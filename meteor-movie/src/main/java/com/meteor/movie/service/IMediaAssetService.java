@@ -1,7 +1,10 @@
 package com.meteor.movie.service;
 
+import com.meteor.movie.controller.vo.MediaUploadVO;
 import com.meteor.movie.domain.entity.MediaAsset;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.meteor.movie.enums.MediaAssetKindEnum;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,4 +30,6 @@ public interface IMediaAssetService extends IService<MediaAsset> {
             Long operatorId,
             LocalDateTime now
     );
+
+    MediaUploadVO upload(MultipartFile file, MediaAssetKindEnum kind);
 }

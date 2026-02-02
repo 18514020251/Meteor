@@ -26,6 +26,7 @@ public enum CommonErrorCode implements IErrorCode {
     DATA_ERROR(400, "数据异常", HttpStatus.BAD_REQUEST),
     TIME_REVERSED(400, "时间逆转了，拒绝验证身份" , HttpStatus.BAD_REQUEST),
 
+
     // 用户模块
     USER_EXIST(1001, "用户已存在", HttpStatus.BAD_REQUEST),
     USER_NOT_EXIST(1002, "用户不存在", HttpStatus.NOT_FOUND),
@@ -51,6 +52,7 @@ public enum CommonErrorCode implements IErrorCode {
     AVATAR_SIZE_ERROR(3001, "头像大小不能超过 2MB", HttpStatus.BAD_REQUEST),
     AVATAR_TYPE_ERROR(3002, "头像格式错误", HttpStatus.BAD_REQUEST),
     IMAGE_PROCESS_ERROR(3003, "图片处理失败", HttpStatus.INTERNAL_SERVER_ERROR),
+    IMAGE_TYPE_ERROR(3004, "图片格式错误", HttpStatus.BAD_REQUEST),
 
     // 商家相关异常
     OPERATION_NOT_ALLOWED(5001, "请勿重复提交", HttpStatus.FORBIDDEN),

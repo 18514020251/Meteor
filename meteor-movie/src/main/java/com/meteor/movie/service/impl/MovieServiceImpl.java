@@ -54,7 +54,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
 
         movieCategoryRelService.bindCategories(movieId, dto.getCategoryIds(), operatorId, now);
 
-        mediaAssetService.createForMovie(movieId, dto.getPosterUrl(), dto.getCoverUrl(), dto.getGalleryUrls(), operatorId, now);
+        mediaAssetService.createForMovie(movieId, dto.getPosterKey(), dto.getCoverKey(), dto.getGalleryKeys(), operatorId, now);
     }
 }
 
