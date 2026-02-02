@@ -3,6 +3,7 @@ package com.meteor.movie.service.impl;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
+import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.domain.entity.Movie;
 import com.meteor.movie.mapper.MovieMapper;
 import com.meteor.movie.service.IMediaAssetService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -55,6 +57,17 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         movieCategoryRelService.bindCategories(movieId, dto.getCategoryIds(), operatorId, now);
 
         mediaAssetService.createForMovie(movieId, dto.getPosterKey(), dto.getCoverKey(), dto.getGalleryKeys(), operatorId, now);
+    }
+
+    @Override
+    public List<MovieTitleVO> getTitles(Long merchantId) {
+        return lambdaQuery()
+                .select(Movie::getId, Movie::getTitle)
+                .eq(Movie::getCreateBy, merchantId)
+                .list()
+                .stream()
+                .map(m -> new MovieTitleVO(m.getId(), m.getTitle()))
+                .toList();
     }
 }
 

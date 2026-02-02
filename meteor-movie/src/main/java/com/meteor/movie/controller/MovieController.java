@@ -4,17 +4,16 @@ package com.meteor.movie.controller;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.meteor.common.result.Result;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
+import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.service.IMovieService;
 import com.meteor.satoken.constants.RoleConst;
 import com.meteor.satoken.context.LoginContext;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 /**
  * <p>
@@ -39,6 +38,13 @@ public class MovieController {
         Long operatorId = loginContext.currentLoginId();
         movieService.createMovie(dto, operatorId);
         return Result.success();
+    }
+
+    @SaCheckRole(RoleConst.MERCHANT)
+    @GetMapping("/titles")
+    public Result<List<MovieTitleVO>> getMyMovieTitles() {
+        Long merchantId = loginContext.currentLoginId();
+        return Result.success(movieService.getTitles(merchantId));
     }
 
 
