@@ -34,8 +34,8 @@
 		<module>meteor-message</module>
         <module>meteor-id-starter</module>
         <module>meteor-merchant</module>
-        <module>meteor-product</module>
-    </modules>
+		<module>meteor-ticketing</module>
+	</modules>
 
 	<properties>
 		<java.version>17</java.version>
@@ -101,22 +101,12 @@
 			</dependency>
 			<dependency>
 				<groupId>com.meteor</groupId>
-				<artifactId>meteor-merchant</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.meteor</groupId>
 				<artifactId>meteor-common</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.meteor</groupId>
 				<artifactId>meteor-mq-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.meteor</groupId>
-				<artifactId>meteor-message</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
