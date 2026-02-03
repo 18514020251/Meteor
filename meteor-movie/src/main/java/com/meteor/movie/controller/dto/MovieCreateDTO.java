@@ -48,6 +48,7 @@ public class MovieCreateDTO {
     private String coverKey;
 
     @Schema(description = "图集URL列表(kind=GALLERY)，顺序即sort", example = "[\"http://xxx/1.png\",\"http://xxx/2.png\"]")
+    @Size(max = 9, message = "图集最多 9 张")
     private List<@NotBlank(message = "galleryUrl不能为空") @Size(max = 512, message = "galleryUrl 太长") String> galleryKeys;
 }
 

@@ -13,7 +13,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @EnableDiscoveryClient
 @SpringBootApplication
-@SuppressWarnings("squid:S1135")
 public class MeteorGatewayApplication {
 
     public static void main(String[] args) {

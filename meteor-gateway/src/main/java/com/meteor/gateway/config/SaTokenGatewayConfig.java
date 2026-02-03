@@ -36,6 +36,7 @@ public class SaTokenGatewayConfig {
                         "/user/register",
                         "/user/phone/code",
                         "/merchant/getInfo",
+                        "/movies/categories",
                         "/error"
                 )
                 .setAuth(obj -> {
