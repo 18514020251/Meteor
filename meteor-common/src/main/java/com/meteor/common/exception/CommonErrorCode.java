@@ -62,6 +62,7 @@ public enum CommonErrorCode implements IErrorCode {
     MERCHANT_NOT_EXIST(5005, "商家不存在", HttpStatus.NOT_FOUND),
     MERCHANT_STATUS_INVALID(5006, "商家状态无效", HttpStatus.BAD_REQUEST),
 
+
     //MQ
     INVALID_MQ_MESSAGE(6001, "消息体不合法", HttpStatus.BAD_REQUEST),
     MQ_SEND_FAILED(6002, "消息发送失败", HttpStatus.INTERNAL_SERVER_ERROR),

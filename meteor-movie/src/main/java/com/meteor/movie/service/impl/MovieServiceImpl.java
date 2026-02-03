@@ -2,6 +2,7 @@ package com.meteor.movie.service.impl;
 
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.movie.constants.MovieMediaConstants;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
 import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.domain.entity.Movie;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>
@@ -40,6 +41,8 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     @Transactional(rollbackFor = Exception.class)
     public void createMovie(MovieCreateDTO dto, Long operatorId) {
 
+        validateAndNormalizeMedia(dto);
+
         LocalDateTime now = LocalDateTime.now();
 
         Movie movie = assembler.create(dto , operatorId, now);
@@ -58,6 +61,81 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
 
         mediaAssetService.createForMovie(movieId, dto.getPosterKey(), dto.getCoverKey(), dto.getGalleryKeys(), operatorId, now);
     }
+
+
+    private void validateAndNormalizeMedia(MovieCreateDTO dto) {
+
+        String poster = trimToNull(dto.getPosterKey());
+        String cover  = trimToNull(dto.getCoverKey());
+        List<String> gallery = normalizeGallery(dto.getGalleryKeys());
+
+        dto.setPosterKey(poster);
+        dto.setCoverKey(cover);
+        dto.setGalleryKeys(gallery);
+
+        assertNoDuplicateMedia(poster, cover, gallery);
+    }
+
+    private String trimToNull(String s) {
+        if (s == null) {
+            return null;
+        }
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    /**
+     * 图集标准化：
+     * - null -> 空列表
+     * - trim + 去空
+     * - 去重（保持顺序）
+     * - 校验最大数量
+     */
+    private List<String> normalizeGallery(List<String> galleryKeys) {
+
+        if (galleryKeys == null || galleryKeys.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        LinkedHashSet<String> dedup = new LinkedHashSet<>();
+        for (String key : galleryKeys) {
+            String k = trimToNull(key);
+            if (k != null) {
+                dedup.add(k);
+            }
+        }
+
+        if (dedup.size() > MovieMediaConstants.MAX_GALLERY) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+
+        return new ArrayList<>(dedup);
+    }
+
+    /**
+     * 重复校验：
+     */
+    private void assertNoDuplicateMedia(String poster, String cover, List<String> gallery) {
+
+        List<String> all = new ArrayList<>();
+        addIfNotNull(all, poster);
+        addIfNotNull(all, cover);
+        if (gallery != null && !gallery.isEmpty()) {
+            all.addAll(gallery);
+        }
+
+        int uniqueCount = new HashSet<>(all).size();
+        if (uniqueCount != all.size()) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID);
+        }
+    }
+
+    private void addIfNotNull(List<String> list, String val) {
+        if (val != null) {
+            list.add(val);
+        }
+    }
+
 
     @Override
     public List<MovieTitleVO> getTitles(Long merchantId) {

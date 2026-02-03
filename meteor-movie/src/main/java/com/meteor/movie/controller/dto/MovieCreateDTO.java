@@ -37,7 +37,10 @@ public class MovieCreateDTO {
     private LocalDate releaseDate;
 
     @Schema(description = "分类ID列表", example = "[1,3,7]")
+    @NotEmpty(message = "至少选择一个电影类型")
+    @Size(max = 3, message = "电影类型最多选择 3 个")
     private List<@NotNull(message = "分类ID不能为空") Long> categoryIds;
+
 
     @Schema(description = "海报URL(kind=POSTER)", example = "xxx/poster.png")
     @Size(max = 512, message = "posterUrl 太长")
@@ -47,8 +50,13 @@ public class MovieCreateDTO {
     @Size(max = 512, message = "coverUrl 太长")
     private String coverKey;
 
-    @Schema(description = "图集URL列表(kind=GALLERY)，顺序即sort", example = "[\"http://xxx/1.png\",\"http://xxx/2.png\"]")
+    @Schema(description = "图集URL列表(kind=GALLERY)，顺序即sort", example = "[\"xxx/1.png\",\"xxx/2.png\"]")
     @Size(max = 9, message = "图集最多 9 张")
-    private List<@NotBlank(message = "galleryUrl不能为空") @Size(max = 512, message = "galleryUrl 太长") String> galleryKeys;
+    private List<
+            @NotBlank(message = "galleryKey不能为空")
+            @Size(max = 512, message = "galleryKey 太长")
+                    String
+            > galleryKeys;
+
 }
 

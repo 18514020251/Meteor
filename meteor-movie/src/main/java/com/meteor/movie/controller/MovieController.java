@@ -40,12 +40,12 @@ public class MovieController {
         return Result.success();
     }
 
+
     @SaCheckRole(RoleConst.MERCHANT)
     @GetMapping("/titles")
     public Result<List<MovieTitleVO>> getMyMovieTitles() {
         Long merchantId = loginContext.currentLoginId();
         return Result.success(movieService.getTitles(merchantId));
     }
-
 
 }

@@ -28,6 +28,9 @@ public interface IMovieService extends IService<Movie> {
 
     /**
      *  获取电影标题列表
+     *
+     * @param merchantId 商家ID
+     * @return 电影标题列表
      * */
     List<MovieTitleVO> getTitles(Long merchantId);
 }
