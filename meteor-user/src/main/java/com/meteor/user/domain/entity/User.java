@@ -60,7 +60,7 @@ public class User implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
-    private UserPreferenceInitEnum userPreferenceInitEnum;
+    private UserPreferenceInitEnum preferenceInited;
 
 
     /**

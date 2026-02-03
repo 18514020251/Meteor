@@ -1,10 +1,13 @@
 package com.meteor.user.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.constants.AvatarConstants;
+import com.meteor.common.constants.MovieCategoryConstants;
 import com.meteor.common.dto.UserProfileDTO;
 import com.meteor.common.enums.system.DeleteStatus;
+import com.meteor.common.enums.user.UserPreferenceSourceEnum;
 import com.meteor.common.enums.user.VerifyCodeSceneEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
@@ -16,6 +19,10 @@ import com.meteor.minio.util.MinioUtil;
 import com.meteor.satoken.constants.RoleConst;
 import com.meteor.user.controller.dto.*;
 import com.meteor.user.controller.vo.UserLoginVO;
+import com.meteor.user.domain.entity.UserCategoryPreference;
+import com.meteor.user.enums.UserPreferenceInitEnum;
+import com.meteor.user.service.IUserCategoryPreferenceService;
+import com.meteor.user.service.assembler.UserCategoryPreferenceAssembler;
 import com.meteor.user.service.assembler.UserInfoAssembler;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.controller.vo.UserInfoVO;
@@ -38,6 +45,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static com.meteor.common.constants.AvatarConstants.ALLOWED_TYPES;
@@ -64,6 +74,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final UserInfoAssembler userInfoAssembler;
     private final MerchantApplyEventPublisher eventPublisher;
     private final MessageApplyEventPublisher messageApplyEventPublisher;
+    private final IUserCategoryPreferenceService merchantService;
+    private final UserCategoryPreferenceAssembler userCategoryPreferenceAssembler;
 
     /**
      * 用户注册
@@ -539,5 +551,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException(CommonErrorCode.USER_NOT_EXIST);
         }
         return userInfoAssembler.toProfile(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveManualCategories(Long userId, List<Long> categoryIds) {
+
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            throw new BizException(CommonErrorCode.PARAM_ERROR);
+        }
+
+        for (Long cid : categoryIds) {
+            if (cid == null || cid < MovieCategoryConstants.MOVIE_CATEGORY_MIN || cid > MovieCategoryConstants.MOVIE_CATEGORY_MAX) {
+                throw new BizException(CommonErrorCode.PARAM_ERROR);
+            }
+        }
+
+        List<Long> uniqueIds = categoryIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (uniqueIds.isEmpty()) {
+            throw new BizException(CommonErrorCode.PARAM_ERROR);
+        }
+
+        merchantService.deleteByUserIdAndSource(userId, UserPreferenceSourceEnum.MANUAL.getCode());
+
+        List<UserCategoryPreference> list =
+                userCategoryPreferenceAssembler.toManualEntities(userId, uniqueIds);
+
+        merchantService.saveBatch(list);
+
+
+        userMapper.update(
+                null,
+                Wrappers.<User>lambdaUpdate()
+                        .eq(User::getId, userId)
+                        .eq(User::getIsDeleted, DeleteStatus.NORMAL.getCode())
+                        .set(User::getPreferenceInited, UserPreferenceInitEnum.INITED)
+        );
     }
 }

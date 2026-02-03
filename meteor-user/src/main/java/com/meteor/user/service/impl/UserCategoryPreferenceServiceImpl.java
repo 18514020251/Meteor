@@ -1,5 +1,7 @@
 package com.meteor.user.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.meteor.user.domain.entity.UserCategoryPreference;
 import com.meteor.user.mapper.UserCategoryPreferenceMapper;
 import com.meteor.user.service.IUserCategoryPreferenceService;
@@ -17,4 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserCategoryPreferenceServiceImpl extends ServiceImpl<UserCategoryPreferenceMapper, UserCategoryPreference> implements IUserCategoryPreferenceService {
 
+    @Override
+    public void deleteByUserIdAndSource(Long userId, int sourceCode) {
+
+        LambdaQueryWrapper<UserCategoryPreference> qw = Wrappers.<UserCategoryPreference>lambdaQuery()
+                .eq(UserCategoryPreference::getUserId, userId)
+                .eq(UserCategoryPreference::getSource, sourceCode);
+
+        baseMapper.delete(qw);
+    }
 }

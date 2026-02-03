@@ -1,5 +1,6 @@
 package com.meteor.user.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -22,6 +23,7 @@ public enum UserPreferenceInitEnum {
      */
     INITED(1);
 
+    @EnumValue
     private final int code;
 
     public static UserPreferenceInitEnum of(Integer code) {

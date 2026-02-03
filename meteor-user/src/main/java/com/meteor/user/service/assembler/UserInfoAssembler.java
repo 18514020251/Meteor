@@ -46,8 +46,8 @@ public class UserInfoAssembler {
         RoleEnum roleEnum = RoleEnum.fromCode(user.getRole());
         vo.setRole(roleEnum == null ? RoleEnum.USER.getDesc() : roleEnum.getDesc());
         vo.setNeedOnboarding(
-                user.getUserPreferenceInitEnum() == null
-                        || user.getUserPreferenceInitEnum() == UserPreferenceInitEnum.NOT_INIT
+                user.getPreferenceInited() == null
+                        || user.getPreferenceInited() == UserPreferenceInitEnum.NOT_INIT
         );
         vo.setUserId(user.getId());
         return vo;

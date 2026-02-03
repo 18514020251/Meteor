@@ -7,7 +7,11 @@ import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.controller.vo.UserInfoVO;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 /**
  * 用户服务接口。
@@ -106,4 +110,12 @@ public interface IUserService extends IService<User> {
      * @return 用户信息DTO
      * */
     UserProfileDTO getUserProfile(Long userId);
+
+    /**
+     *  用户喜好保存
+     *
+     * @param userId 用户Id
+     * @param categoryIds 分类Id
+     * */
+    void saveManualCategories(Long userId, @NotEmpty(message = "请选择至少一个分类") @Size(max = 4, message = "一次最多选择 4 个分类") List<Long> categoryIds);
 }

@@ -111,4 +111,15 @@ public class UserController {
         return Result.success();
     }
 
+    @Operation(
+            summary = "保存用户偏好分类",
+            description = "用户手动保存偏好分类"
+    )
+    @PostMapping("/preference/categories")
+    public Result<Void> savePreferenceCategories(@Valid @RequestBody UserPreferenceCategoryDTO req) {
+        Long userId = loginContext.currentLoginId();
+        userService.saveManualCategories(userId, req.getCategoryIds());
+        return Result.success();
+    }
+
 }

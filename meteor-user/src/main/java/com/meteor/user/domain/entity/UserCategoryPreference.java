@@ -31,7 +31,7 @@ public class UserCategoryPreference implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "主键")
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     @Schema(description = "用户ID")

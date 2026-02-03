@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserCategoryPreferenceService extends IService<UserCategoryPreference> {
 
+    void deleteByUserIdAndSource(Long userId, int code);
 }

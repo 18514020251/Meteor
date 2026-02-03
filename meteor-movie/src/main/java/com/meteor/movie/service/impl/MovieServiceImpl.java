@@ -1,5 +1,6 @@
 package com.meteor.movie.service.impl;
 
+import com.meteor.common.constants.MovieCategoryConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.movie.constants.MovieMediaConstants;
@@ -69,6 +70,8 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         String cover  = trimToNull(dto.getCoverKey());
         List<String> gallery = normalizeGallery(dto.getGalleryKeys());
 
+        movieTypeJudge(dto.getCategoryIds());
+
         dto.setPosterKey(poster);
         dto.setCoverKey(cover);
         dto.setGalleryKeys(gallery);
@@ -133,6 +136,17 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     private void addIfNotNull(List<String> list, String val) {
         if (val != null) {
             list.add(val);
+        }
+    }
+
+    /**
+     *  电影类型判断
+     * */
+    private void movieTypeJudge(List<Long> list) {
+        for (Long cid : list) {
+            if (cid == null || cid < MovieCategoryConstants.MOVIE_CATEGORY_MIN || cid > MovieCategoryConstants.MOVIE_CATEGORY_MAX) {
+                throw new BizException(CommonErrorCode.PARAM_ERROR);
+            }
         }
     }
 
