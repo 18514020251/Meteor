@@ -204,4 +204,14 @@ public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserM
 
         return msg;
     }
+
+    @Override
+    public long getUnreadCount(Long userId) {
+        return lambdaQuery()
+                .eq(UserMessage::getUserId, userId)
+                .eq(UserMessage::getReadStatus, ReadStatusQueryEnum.UNREAD)
+                .eq(UserMessage::getDeleted, false)
+                .count();
+    }
+
 }

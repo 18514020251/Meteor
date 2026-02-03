@@ -70,5 +70,10 @@ public class UserMessageController {
         return Result.success(count);
     }
 
+    @GetMapping("/unread/count")
+    public Result<Long> getUnreadCount() {
+        Long userId = loginContext.currentLoginId();
+        return Result.success(userMessageService.getUnreadCount(userId));
+    }
 
 }

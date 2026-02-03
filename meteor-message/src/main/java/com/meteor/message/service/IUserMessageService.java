@@ -72,4 +72,12 @@ public interface IUserMessageService extends IService<UserMessage> {
      * @return 实际删除的消息数量
      */
     int deleteAll(Long userId);
+
+    /**
+     *  查询未读消息数量
+     *
+     *  @param userId 用户ID
+     *  @return 未读消息数
+     * */
+    long getUnreadCount(Long userId);
 }
