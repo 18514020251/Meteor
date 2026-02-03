@@ -5,6 +5,7 @@ import com.meteor.common.utils.IpUtils;
 import com.meteor.satoken.context.LoginContext;
 import com.meteor.user.controller.dto.*;
 import com.meteor.user.controller.vo.UserInfoVO;
+import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,9 +43,9 @@ public class UserController {
 
     @Operation(summary = "用户登录", description = "用户通过用户名、密码进行登录")
     @PostMapping("/login")
-    public Result<String> login(@Valid @RequestBody UserLoginReq req) {
-        String token = userService.login(req);
-        return Result.success(token);
+    public Result<UserLoginVO> login(@Valid @RequestBody UserLoginReq req) {
+        UserLoginVO res = userService.login(req);
+        return Result.success(res);
     }
 
     @Operation(summary = "获取用户信息", description = "获取当前登录用户的个人信息")

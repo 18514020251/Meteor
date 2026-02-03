@@ -3,6 +3,7 @@ package com.meteor.user.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.meteor.common.dto.UserProfileDTO;
 import com.meteor.user.controller.dto.*;
+import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.controller.vo.UserInfoVO;
 import jakarta.validation.Valid;
@@ -30,10 +31,10 @@ public interface IUserService extends IService<User> {
      * 用户登录。
      *
      * @param req 登录请求参数（用户名、密码）
-     * @return 登录成功后的 token
+     * @return 用户id 、 用户名 、 用户身份 、 用户是否首次登录
      * @throws com.meteor.common.exception.BizException 当账号不存在、密码错误、账号状态异常等业务异常时抛出
      */
-    String login(@Valid UserLoginReq req);
+    UserLoginVO login(@Valid UserLoginReq req);
 
     /**
      * 获取当前登录用户的个人信息。

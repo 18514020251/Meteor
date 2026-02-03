@@ -8,6 +8,7 @@ import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.utils.PasswordUtil;
 import com.meteor.user.enums.RoleEnum;
+import com.meteor.user.enums.UserPreferenceInitEnum;
 import com.meteor.user.enums.UserStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -58,6 +59,8 @@ public class User implements Serializable {
 
     @TableLogic
     private Integer isDeleted;
+
+    private UserPreferenceInitEnum userPreferenceInitEnum;
 
 
     /**

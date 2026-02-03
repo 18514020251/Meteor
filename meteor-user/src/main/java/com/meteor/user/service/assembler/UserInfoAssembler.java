@@ -3,8 +3,10 @@ package com.meteor.user.service.assembler;
 import com.meteor.common.dto.UserProfileDTO;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.controller.vo.UserInfoVO;
+import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.enums.RoleEnum;
+import com.meteor.user.enums.UserPreferenceInitEnum;
 import com.meteor.user.service.cache.model.UserInfoCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,5 +38,18 @@ public class UserInfoAssembler {
         dto.setPhone(user.getPhone());
         dto.setAvatar(minioUtil.buildPresignedUrl(user.getAvatar()));
         return dto;
+    }
+
+    public UserLoginVO toLoginVo(String tokenValue, User user) {
+        UserLoginVO vo = new UserLoginVO();
+        vo.setToken(tokenValue);
+        RoleEnum roleEnum = RoleEnum.fromCode(user.getRole());
+        vo.setRole(roleEnum == null ? RoleEnum.USER.getDesc() : roleEnum.getDesc());
+        vo.setNeedOnboarding(
+                user.getUserPreferenceInitEnum() == null
+                        || user.getUserPreferenceInitEnum() == UserPreferenceInitEnum.NOT_INIT
+        );
+        vo.setUserId(user.getId());
+        return vo;
     }
 }

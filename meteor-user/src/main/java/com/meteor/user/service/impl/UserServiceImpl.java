@@ -15,6 +15,7 @@ import com.meteor.minio.enums.MinioPathEnum;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.satoken.constants.RoleConst;
 import com.meteor.user.controller.dto.*;
+import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.service.assembler.UserInfoAssembler;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.controller.vo.UserInfoVO;
@@ -104,7 +105,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @throws BizException 用户名或密码错误
      */
     @Override
-    public String login(UserLoginReq req) {
+    public UserLoginVO login(UserLoginReq req) {
 
         User user = userDomainService.getNormalUserByUsername(req.getUsername());
 
@@ -121,7 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userCacheService.cacheUserRole(user.getId(), role);
 
         StpUtil.login(user.getId());
-        return StpUtil.getTokenValue();
+        return userInfoAssembler.toLoginVo(StpUtil.getTokenValue(),user);
     }
 
     /**
