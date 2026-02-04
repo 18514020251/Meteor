@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>meteor-merchant</artifactId>
-    <description>商家模块</description>
+    <description>商家模块 port:8084</description>
 
     <dependencies>
         <dependency>

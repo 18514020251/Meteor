@@ -7,7 +7,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <description>票务模块</description>
+    <description>票务模块 port:8085</description>
 
     <artifactId>meteor-ticketing</artifactId>
 

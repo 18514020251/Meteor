@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>meteor-gateway</artifactId>
-    <description>网关模块</description>
+    <description>网关模块 port:8080</description>
     <dependencies>
 
         <dependency>

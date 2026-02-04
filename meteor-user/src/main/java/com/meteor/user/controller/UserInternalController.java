@@ -1,6 +1,8 @@
 package com.meteor.user.controller;
 
 import com.meteor.common.dto.UserProfileDTO;
+import com.meteor.user.controller.dto.UserPreferenceCategoryListDTO;
+import com.meteor.user.service.IUserCategoryPreferenceService;
 import com.meteor.user.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,10 +25,22 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserInternalController {
 
     private final IUserService userService;
+    private final IUserCategoryPreferenceService userPreferenceService;
 
     @Operation(summary = "内部-根据用户ID获取基础信息")
     @GetMapping("/profile")
     public UserProfileDTO getProfile(@RequestParam Long userId) {
         return userService.getUserProfile(userId);
     }
+
+    @Operation(summary = "内部-获取用户喜好分类列表")
+    @GetMapping("/preference")
+    public UserPreferenceCategoryListDTO listPreferenceCategories(
+            @RequestParam Long userId,
+            @RequestParam(required = false, defaultValue = "10") Integer limit,
+            @RequestParam(required = false) Integer source
+    ) {
+        return userPreferenceService.listPreferenceCategories(userId, limit, source);
+    }
+
 }

@@ -7,7 +7,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <description>消息模块</description>
+    <description>消息模块 port:8083</description>
 
     <artifactId>meteor-message</artifactId>
 

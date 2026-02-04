@@ -7,7 +7,7 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <description>管理员模块</description>
+    <description>管理员模块 port:8082</description>
 
     <artifactId>meteor-admin</artifactId>
 
