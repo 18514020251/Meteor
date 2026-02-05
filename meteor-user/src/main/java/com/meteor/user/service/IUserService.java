@@ -1,7 +1,7 @@
 package com.meteor.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.meteor.common.dto.UserProfileDTO;
+import com.meteor.api.contract.user.dto.UserProfileDTO;
 import com.meteor.user.controller.dto.*;
 import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.domain.entity.User;

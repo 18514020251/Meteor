@@ -1,10 +1,10 @@
 package com.meteor.ticketing.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.ticketing.controller.dto.TicketingMovieInfoListDTO;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.ticketing.controller.enums.ScreeningStatusEnum;
 import com.meteor.ticketing.domain.entity.Screening;

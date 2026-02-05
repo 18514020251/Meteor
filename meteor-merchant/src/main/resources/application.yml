@@ -100,6 +100,9 @@ meteor:
     bucket: ${programmer.minio.bucket:meteor}
     path-style: true
     presigned-url-expire-minutes: 5
+  remote:
+    user-base-url: http://localhost:8081
+    ticketing-base-url: http://localhost:8085
 
 message:
   cleanup:
@@ -108,3 +111,4 @@ message:
     batch-size: 1000
     max-rounds: 5
     retention-days: 15
+

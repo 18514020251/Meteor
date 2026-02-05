@@ -1,11 +1,11 @@
-package com.meteor.ticketing.controller.dto;
+package com.meteor.api.contract.ticketing.dto;
 
 import lombok.Data;
 
 import java.util.List;
 
 /**
- *  票务-电影信息 DTO
+ *  ticketing 服务：电影票务信息批量查询返回 DTO（内部接口）
  *
  * @author Programmer
  * @date 2026-02-04 16:52
@@ -23,4 +23,3 @@ public class TicketingMovieInfoListDTO {
         private Integer hotScore;
     }
 }
-

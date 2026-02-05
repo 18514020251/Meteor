@@ -1,6 +1,6 @@
 package com.meteor.ticketing.controller;
 
-import com.meteor.ticketing.controller.dto.TicketingMovieInfoListDTO;
+import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.ticketing.service.IScreeningService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;

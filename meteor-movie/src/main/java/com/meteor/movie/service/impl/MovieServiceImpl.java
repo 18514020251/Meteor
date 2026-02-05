@@ -1,13 +1,13 @@
 package com.meteor.movie.service.impl;
 
+import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.common.constants.MovieCategoryConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.util.MinioUtil;
-import com.meteor.movie.client.UserPreferenceClient;
+import com.meteor.api.contract.user.client.UserPreferenceClient;
 import com.meteor.movie.constants.MovieMediaConstants;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
-import com.meteor.movie.controller.dto.TicketingMovieInfoListDTO;
 import com.meteor.movie.controller.vo.HomeMovieCardVO;
 import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.domain.entity.Movie;
@@ -178,6 +178,11 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 .toList();
     }
 
+    /**
+     * 首页聚合核心链路（稳定版本）
+     * 当前行为依赖多模块返回结构，请勿随意调整流程顺序。
+     * 如需优化，仅允许在子方法内部重构。
+     */
     @Override
     public List<HomeMovieCardVO> home(Long uid) {
         var pref = userPreferenceClient.getUserPreference(uid);

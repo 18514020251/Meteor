@@ -3,9 +3,10 @@ package com.meteor.user.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.meteor.api.contract.user.dto.UserProfileDTO;
 import com.meteor.common.constants.AvatarConstants;
 import com.meteor.common.constants.MovieCategoryConstants;
-import com.meteor.common.dto.UserProfileDTO;
+
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.enums.user.UserPreferenceSourceEnum;
 import com.meteor.common.enums.user.VerifyCodeSceneEnum;

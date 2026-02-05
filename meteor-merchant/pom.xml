@@ -61,6 +61,10 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-api-contract</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

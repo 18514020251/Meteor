@@ -13,7 +13,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * @author Programmer
  * @date 2026-01-31 15:41
  */
-@EnableFeignClients
+@EnableFeignClients(clients = {
+        com.meteor.api.contract.user.client.UserClient.class
+})
 @EnableMeteorMyBatisPlus
 @SpringBootApplication
 @MapperScan("com.meteor.merchant.mapper")

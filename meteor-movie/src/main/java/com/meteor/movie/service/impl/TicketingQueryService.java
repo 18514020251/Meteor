@@ -1,7 +1,7 @@
 package com.meteor.movie.service.impl;
 
-import com.meteor.movie.client.TicketingClient;
-import com.meteor.movie.controller.dto.TicketingMovieInfoListDTO;
+import com.meteor.api.contract.ticketing.client.TicketingClient;
+import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *   ticketing 查询服务
+ *
  * @author Programmer
  * @date 2026-02-04 17:16
  */

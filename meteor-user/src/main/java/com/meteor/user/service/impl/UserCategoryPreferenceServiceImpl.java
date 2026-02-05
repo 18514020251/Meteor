@@ -3,12 +3,11 @@ package com.meteor.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.meteor.api.contract.user.dto.UserPreferenceCategorySummaryDTO;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.enums.user.UserPreferenceSourceEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.user.controller.dto.UserPreferenceCategoryListDTO;
-import com.meteor.user.controller.dto.UserPreferenceCategorySummaryDTO;
 import com.meteor.user.domain.entity.User;
 import com.meteor.user.domain.entity.UserCategoryPreference;
 import com.meteor.user.enums.UserPreferenceInitEnum;
@@ -52,7 +51,7 @@ public class UserCategoryPreferenceServiceImpl extends ServiceImpl<UserCategoryP
     }
 
     @Override
-    public UserPreferenceCategoryListDTO listPreferenceCategories(Long userId, Integer limit, Integer source) {
+    public com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO listPreferenceCategories(Long userId, Integer limit, Integer source) {
 
         // 参数校验
         validateParams(userId , limit , source);

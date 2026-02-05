@@ -1,6 +1,6 @@
 package com.meteor.merchant.service.assembler;
 
-import com.meteor.common.dto.UserProfileDTO;
+import com.meteor.api.contract.user.dto.UserProfileDTO;
 import com.meteor.merchant.controller.vo.MerchantMeVO;
 import com.meteor.merchant.domain.entity.Merchant;
 import org.springframework.stereotype.Component;

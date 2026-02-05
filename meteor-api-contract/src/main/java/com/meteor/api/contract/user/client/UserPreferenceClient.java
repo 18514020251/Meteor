@@ -1,6 +1,6 @@
-package com.meteor.movie.client;
+package com.meteor.api.contract.user.client;
 
-import com.meteor.movie.remote.user.dto.UserPreferenceCategoryListDTO;
+import com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @FeignClient(
         name = "meteor-user",
+        contextId = "userPreferenceClient",
         url = "${meteor.remote.user-base-url}"
 )
 public interface UserPreferenceClient {

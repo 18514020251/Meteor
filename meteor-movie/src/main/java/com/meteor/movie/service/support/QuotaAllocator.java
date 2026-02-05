@@ -1,6 +1,6 @@
 package com.meteor.movie.service.support;
 
-import com.meteor.movie.remote.user.dto.UserPreferenceCategorySummaryDTO;
+import com.meteor.api.contract.user.dto.UserPreferenceCategorySummaryDTO;
 
 import java.util.*;
 

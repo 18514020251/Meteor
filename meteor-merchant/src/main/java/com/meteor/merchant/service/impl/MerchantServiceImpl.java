@@ -1,9 +1,9 @@
 package com.meteor.merchant.service.impl;
 
-import com.meteor.common.dto.UserProfileDTO;
+import com.meteor.api.contract.user.client.UserClient;
+import com.meteor.api.contract.user.dto.UserProfileDTO;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.merchant.client.UserClient;
 import com.meteor.merchant.controller.vo.MerchantMeVO;
 import com.meteor.merchant.domain.entity.Merchant;
 import com.meteor.merchant.mapper.MerchantMapper;

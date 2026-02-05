@@ -1,7 +1,6 @@
 package com.meteor.user.controller;
 
-import com.meteor.common.dto.UserProfileDTO;
-import com.meteor.user.controller.dto.UserPreferenceCategoryListDTO;
+import com.meteor.api.contract.user.dto.UserProfileDTO;
 import com.meteor.user.service.IUserCategoryPreferenceService;
 import com.meteor.user.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +34,7 @@ public class UserInternalController {
 
     @Operation(summary = "内部-获取用户喜好分类列表")
     @GetMapping("/preference")
-    public UserPreferenceCategoryListDTO listPreferenceCategories(
+    public com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO listPreferenceCategories(
             @RequestParam Long userId,
             @RequestParam(required = false, defaultValue = "10") Integer limit,
             @RequestParam(required = false) Integer source

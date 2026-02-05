@@ -1,6 +1,6 @@
 package com.meteor.ticketing.service;
 
-import com.meteor.ticketing.controller.dto.TicketingMovieInfoListDTO;
+import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.ticketing.domain.entity.Screening;
 import com.baomidou.mybatisplus.extension.service.IService;

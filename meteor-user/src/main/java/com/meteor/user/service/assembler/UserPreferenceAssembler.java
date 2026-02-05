@@ -1,7 +1,6 @@
 package com.meteor.user.service.assembler;
 
-import com.meteor.user.controller.dto.UserPreferenceCategoryListDTO;
-import com.meteor.user.controller.dto.UserPreferenceCategorySummaryDTO;
+import com.meteor.api.contract.user.dto.UserPreferenceCategorySummaryDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,11 +19,11 @@ public class UserPreferenceAssembler {
     /**
      * 组装用户偏好分类列表DTO
      */
-    public static UserPreferenceCategoryListDTO toPreferenceCategoryListDTO(
+    public static com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO toPreferenceCategoryListDTO(
             boolean preferenceInited,
             List<UserPreferenceCategorySummaryDTO> items
     ) {
-        UserPreferenceCategoryListDTO result = new UserPreferenceCategoryListDTO();
+        com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO result = new com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO();
         result.setPreferenceInited(preferenceInited);
         result.setItems(items);
         return result;

@@ -1,14 +1,14 @@
-package com.meteor.user.controller.dto;
+package com.meteor.api.contract.user.dto;
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 /**
- *  用户手动选择喜好分类列表摘要 DTO  远程调用
+ *  用户手动选择喜好分类列表 DTO
  *
  * @author Programmer
- * @date 2026-02-04 10:19
+ * @date 2026-02-04 12:53
  */
 @Data
 public class UserPreferenceCategorySummaryDTO {

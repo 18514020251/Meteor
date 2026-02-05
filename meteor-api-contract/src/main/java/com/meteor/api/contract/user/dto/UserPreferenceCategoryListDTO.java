@@ -1,15 +1,14 @@
-package com.meteor.user.controller.dto;
+package com.meteor.api.contract.user.dto;
 
 import lombok.Data;
 
 import java.util.List;
 
-
 /**
- *  用户手动选择喜好分类列表 DTO  远程调用
+ *  用户手动选择喜好分类列表 DTO
  *
  * @author Programmer
- * @date 2026-02-04 10:13
+ * @date 2026-02-04 12:53
  */
 @Data
 public class UserPreferenceCategoryListDTO {
@@ -25,5 +24,3 @@ public class UserPreferenceCategoryListDTO {
      */
     private List<UserPreferenceCategorySummaryDTO> items;
 }
-
-

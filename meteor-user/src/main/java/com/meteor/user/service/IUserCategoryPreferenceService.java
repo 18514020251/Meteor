@@ -1,6 +1,5 @@
 package com.meteor.user.service;
 
-import com.meteor.user.controller.dto.UserPreferenceCategoryListDTO;
 import com.meteor.user.domain.entity.UserCategoryPreference;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -27,5 +26,5 @@ public interface IUserCategoryPreferenceService extends IService<UserCategoryPre
      *  @param limit 数量限制
      *  @param source 来源
      * */
-    UserPreferenceCategoryListDTO listPreferenceCategories(Long userId, Integer limit, Integer source);
+    com.meteor.api.contract.user.dto.UserPreferenceCategoryListDTO listPreferenceCategories(Long userId, Integer limit, Integer source);
 }

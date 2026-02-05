@@ -1,4 +1,4 @@
-package com.meteor.common.dto;
+package com.meteor.api.contract.user.dto;
 
 import lombok.Data;
 
@@ -11,7 +11,10 @@ import lombok.Data;
  */
 @Data
 public class UserProfileDTO {
+    // 用户名
     private String username;
+    // 手机号
     private String phone;
+    // 头像
     private String avatar;
 }

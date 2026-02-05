@@ -1,6 +1,6 @@
 package com.meteor.user.service.assembler;
 
-import com.meteor.common.dto.UserProfileDTO;
+import com.meteor.api.contract.user.dto.UserProfileDTO;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.user.controller.vo.UserInfoVO;
 import com.meteor.user.controller.vo.UserLoginVO;

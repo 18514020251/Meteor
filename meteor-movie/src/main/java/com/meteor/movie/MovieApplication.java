@@ -16,7 +16,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 @SpringBootApplication
 @MapperScan("com.meteor.movie.mapper")
-@EnableFeignClients(basePackages = "com.meteor.movie.client")
+@EnableFeignClients(clients = {
+        com.meteor.api.contract.user.client.UserPreferenceClient.class,
+        com.meteor.api.contract.ticketing.client.TicketingClient.class
+})
 public class MovieApplication {
     public static void main(String[] args) {
         SpringApplication.run(MovieApplication.class , args);

@@ -36,6 +36,7 @@
         <module>meteor-merchant</module>
 		<module>meteor-ticketing</module>
         <module>meteor-movie</module>
+        <module>meteor-api-contract</module>
     </modules>
 
 	<properties>
@@ -83,6 +84,11 @@
 			<dependency>
 				<groupId>com.meteor</groupId>
 				<artifactId>meteor-id-starter</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.meteor</groupId>
+				<artifactId>meteor-api-contract</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
