@@ -18,6 +18,11 @@ public class MovieCategoryConstants {
     public static final Integer MAX_MOVIE_PER = 8;
 
     /**
+     *  最新电影返回数
+     * */
+    public static final Integer LATEST_SIZE = 20;
+
+    /**
      *  默认金额
      * */
     public static final Integer DEFAULT_PRICE = 0;

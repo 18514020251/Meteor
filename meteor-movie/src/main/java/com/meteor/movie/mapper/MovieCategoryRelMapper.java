@@ -18,4 +18,9 @@ public interface MovieCategoryRelMapper extends BaseMapper<MovieCategoryRel> {
 
     List<Long> selectMovieIdsByCategoryId(@Param("categoryId") Long categoryId,
                                           @Param("limit") Integer limit);
+
+    List<MovieCategoryRow> listMovieCategoriesByMovieIds(@Param("movieIds") List<Long> movieIds);
+
+
+    record MovieCategoryRow(Long movieId, String categoryName) {}
 }

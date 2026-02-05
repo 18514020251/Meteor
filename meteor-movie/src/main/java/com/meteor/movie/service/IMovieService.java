@@ -39,6 +39,14 @@ public interface IMovieService extends IService<Movie> {
      *  获取用户首页推荐列表
      *
      *  @param uid 用户ID
+     *  @return 电影数据列表
      * */
     List<HomeMovieCardVO> home(Long uid);
+
+    /**
+     *  获取最新20部电影
+     *
+     * @return 电影数据列表
+     * */
+    List<HomeMovieCardVO> latest20();
 }

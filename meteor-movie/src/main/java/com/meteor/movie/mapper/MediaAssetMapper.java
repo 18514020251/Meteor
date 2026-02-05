@@ -31,4 +31,15 @@ public interface MediaAssetMapper extends BaseMapper<MediaAsset> {
     Integer existsByObjectKey(String objectKey);
 
     List<MoviePosterRow> selectPosterObjectKeyByMovieIds(@Param("movieIds") List<Long> movieIds);
+
+    @Select("""
+        SELECT biz_id AS movieId, object_key AS objectKey, sort
+        FROM media_asset
+        WHERE deleted = 0
+          AND biz_type = 1
+          AND kind = 1
+          AND biz_id IN (${ids})
+        ORDER BY biz_id ASC, sort ASC
+        """)
+    List<MoviePosterRow> listMoviePosters(@Param("ids") String ids);
 }

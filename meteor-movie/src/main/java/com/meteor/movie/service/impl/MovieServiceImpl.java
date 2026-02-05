@@ -1,7 +1,9 @@
 package com.meteor.movie.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.common.constants.MovieCategoryConstants;
+import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.util.MinioUtil;
@@ -11,7 +13,11 @@ import com.meteor.movie.controller.dto.MovieCreateDTO;
 import com.meteor.movie.controller.vo.HomeMovieCardVO;
 import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.domain.entity.Movie;
+import com.meteor.movie.enums.MovieStatusEnum;
+import com.meteor.movie.mapper.MediaAssetMapper;
+import com.meteor.movie.mapper.MovieCategoryRelMapper;
 import com.meteor.movie.mapper.MovieMapper;
+import com.meteor.movie.mapper.row.MoviePosterRow;
 import com.meteor.movie.service.IMediaAssetService;
 import com.meteor.movie.service.IMovieCategoryRelService;
 import com.meteor.movie.service.IMovieService;
@@ -26,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.meteor.common.constants.AvatarConstants.DEFAULT_POSTER;
 import static com.meteor.common.constants.MovieCategoryConstants.*;
@@ -53,6 +60,8 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     private final MovieQueryServiceImpl mediaAssetQueryService;
     private final TicketingQueryService ticketingQueryService;
     private final MinioUtil minioUtil;
+    private final MediaAssetMapper mediaAssetMapper;
+    private final MovieCategoryRelMapper movieCategoryRelMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -207,57 +216,40 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap =
                 ticketingQueryService.getInfoMap(movieIds);
 
-        return cards.stream()
-                .map(c -> {
-                    var t = ticketingMap.get(c.movieId());
-                    if (t == null) {
-                        return normalize(c);
-                    }
-
-                    return normalize(new HomeMovieCardVO(
-                            c.movieId(),
-                            c.title(),
-                            c.posterUrl(),
-                            c.categories(),
-                            t.getPrice() != null ? t.getPrice() : c.price(),
-                            t.getInGrabPeriod() != null ? t.getInGrabPeriod() : c.inGrabPeriod(),
-                            t.getHotScore() != null ? t.getHotScore() : c.hotScore()
-                    ));
-                })
-                .filter(vo -> {
-                    Integer price = vo.price();
-                    Integer hot = vo.hotScore();
-                    boolean priceZero = (price == null || price.equals(DEFAULT_PRICE));
-                    boolean hotZero = (hot == null || hot.equals(DEFAULT_HOT_SCORE));
-                    return !(priceZero && hotZero);
-                })
+        List<HomeMovieCardVO> main = cards.stream()
+                .map(c -> buildHomeCardOrNull(c, ticketingMap))
+                .flatMap(Optional::stream)
                 .toList();
 
-    }
-
-    private HomeMovieCardVO normalize(HomeMovieCardVO vo) {
-        Integer price = vo.price();
-        Integer hotScore = vo.hotScore();
-
-        if (price != null && price.equals(DEFAULT_PRICE)) {
-            price = null;
-        }
-        if (hotScore != null && hotScore.equals(DEFAULT_HOT_SCORE)) {
-            hotScore = null;
+        if (main.size() >= MAX_MOVIE_PER) {
+            return main.subList(0, MAX_MOVIE_PER);
         }
 
-        return new HomeMovieCardVO(
-                vo.movieId(),
-                vo.title(),
-                vo.posterUrl(),
-                vo.categories(),
-                price,
-                vo.inGrabPeriod(),
-                hotScore
-        );
+        Set<Long> exists = main.stream()
+                .map(HomeMovieCardVO::movieId)
+                .collect(Collectors.toSet());
+
+        List<HomeMovieCardVO> latest = latest20();
+
+        List<HomeMovieCardVO> merged = new ArrayList<>(MAX_MOVIE_PER);
+        merged.addAll(main);
+
+        int need = MAX_MOVIE_PER - merged.size();
+        if (need <= 0) {
+            return merged;
+        }
+
+        List<HomeMovieCardVO> fills = latest.stream()
+                .filter(Objects::nonNull)
+                .filter(x -> exists.add(x.movieId()))
+                .limit(need)
+                .toList();
+
+        merged.addAll(fills);
+        return merged;
+
+
     }
-
-
 
     private List<HomeMovieCardVO> buildBaseCards(
             List<Long> movieIds,
@@ -287,5 +279,156 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         return list;
     }
 
+    /**
+     * 最新电影（按上映日期，固定 20 条），并远程补齐票务字段
+     */
+    @Override
+    public List<HomeMovieCardVO> latest20() {
+
+        List<Movie> movies = queryLatestMovies();
+        if (movies == null || movies.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> movieIds = movies.stream()
+                .map(Movie::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<Long, String> posterUrlMap = queryPosterUrlMap(movieIds);
+        Map<Long, List<String>> categoryMap = queryCategoryMap(movieIds);
+
+        Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap =
+                ticketingQueryService.getInfoMap(movieIds);
+
+        return movies.stream()
+                .map(m -> buildHomeCardOrNull(m, posterUrlMap, categoryMap, ticketingMap))
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    private Optional<HomeMovieCardVO> buildHomeCardOrNull(
+            HomeMovieCardVO base,
+            Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap
+    ) {
+        Long id = base.movieId();
+        TicketingMovieInfoListDTO.Item t = ticketingMap.get(id);
+
+        Integer price = t == null ? base.price() : defaultIfNull(t.getPrice(), base.price());
+        Boolean inGrab = t == null ? base.inGrabPeriod() : defaultIfNull(t.getInGrabPeriod(), base.inGrabPeriod());
+        Integer hotScore = t == null ? base.hotScore() : defaultIfNull(t.getHotScore(), base.hotScore());
+
+        if (bothZero(price, hotScore)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new HomeMovieCardVO(
+                id,
+                base.title(),
+                base.posterUrl(),
+                base.categories(),
+                zeroToNull(price),
+                inGrab != null && inGrab,
+                zeroToNull(hotScore)
+        ));
+    }
+
+    private Optional<HomeMovieCardVO> buildHomeCardOrNull(
+            Movie m,
+            Map<Long, String> posterUrlMap,
+            Map<Long, List<String>> categoryMap,
+            Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap
+    ) {
+        Long id = m.getId();
+        if (id == null) {
+            return Optional.empty();
+        }
+
+        HomeMovieCardVO base = new HomeMovieCardVO(
+                id,
+                m.getTitle(),
+                posterUrlMap.getOrDefault(id, ""),
+                categoryMap.getOrDefault(id, List.of()),
+                DEFAULT_PRICE,
+                false,
+                DEFAULT_HOT_SCORE
+        );
+
+        // ✅ 复用你 home 用的那套规则（同一份过滤/0->null）
+        return buildHomeCardOrNull(base, ticketingMap);
+    }
+
+
+    private boolean bothZero(Integer price, Integer hotScore) {
+        return isZero(price) && isZero(hotScore);
+    }
+
+    private boolean isZero(Integer v) {
+        return v == null || v == 0;
+    }
+
+    private Integer zeroToNull(Integer v) {
+        return isZero(v) ? null : v;
+    }
+
+    private static <T> T defaultIfNull(T val, T defaultVal) {
+        return val != null ? val : defaultVal;
+    }
+
+
+    /**
+     * 查询最新电影（按上映日期）
+     */
+    private List<Movie> queryLatestMovies() {
+        return baseMapper.selectList(
+                Wrappers.<Movie>lambdaQuery()
+                        .eq(Movie::getDeleted, DeleteStatus.NORMAL)
+                        .in(Movie::getStatus, List.of(MovieStatusEnum.COMING, MovieStatusEnum.SHOWING))
+                        .orderByDesc(Movie::getReleaseDate)
+                        .orderByDesc(Movie::getId)
+                        .last("LIMIT " + LATEST_SIZE)
+        );
+    }
+
+    /**
+     * movieId -> posterUrl（每个 movie 取 sort 最小的一张）
+     */
+    private Map<Long, String> queryPosterUrlMap(List<Long> movieIds) {
+        if (movieIds == null || movieIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<MoviePosterRow> posters = mediaAssetMapper.selectPosterObjectKeyByMovieIds(movieIds);
+
+        Map<Long, String> map = new HashMap<>(movieIds.size() * 2);
+        for (MoviePosterRow row : posters) {
+            if (row == null || row.movieId() == null) {
+                continue;
+            }
+            map.putIfAbsent(row.movieId(), minioUtil.buildPublicUrl(row.objectKey()));
+        }
+        return map;
+    }
+
+    /**
+     * movieId -> categories
+     */
+    private Map<Long, List<String>> queryCategoryMap(List<Long> movieIds) {
+        if (movieIds == null || movieIds.isEmpty()) {
+            return Map.of();
+        }
+
+
+        var rows = movieCategoryRelMapper.listMovieCategoriesByMovieIds(movieIds);
+
+        Map<Long, List<String>> map = new HashMap<>(movieIds.size() * 2);
+        for (var row : rows) {
+            if (row == null || row.movieId() == null) {
+                continue;
+            }
+            map.computeIfAbsent(row.movieId(), k -> new ArrayList<>()).add(row.categoryName());
+        }
+        return map;
+    }
 }
 

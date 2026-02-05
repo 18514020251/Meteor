@@ -59,4 +59,10 @@ public class MovieController {
         return Result.success(movieService.home(uid));
     }
 
+    @Operation(summary = "获取最新电影列表20")
+    @GetMapping("/latest")
+    public Result<List<HomeMovieCardVO>> latest() {
+        return Result.success(movieService.latest20());
+    }
+
 }

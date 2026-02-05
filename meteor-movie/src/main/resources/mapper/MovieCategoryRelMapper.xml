@@ -10,4 +10,17 @@
         order by create_time desc, id desc
             limit #{limit}
     </select>
+    <select id="listMovieCategoriesByMovieIds"
+            resultType="com.meteor.movie.mapper.row.MovieCategoryRow">
+        SELECT r.movie_id AS movieId, c.name AS categoryName
+        FROM movie_category_rel r
+        JOIN movie_category c ON c.id = r.category_id AND c.deleted = 0
+        WHERE r.deleted = 0
+        AND r.movie_id IN
+        <foreach collection="movieIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY r.movie_id ASC, c.sort ASC, c.id ASC
+    </select>
+
 </mapper>

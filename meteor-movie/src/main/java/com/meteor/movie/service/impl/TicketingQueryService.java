@@ -27,12 +27,18 @@ public class TicketingQueryService {
             return Map.of();
         }
 
-        TicketingMovieInfoListDTO dto = ticketingClient.getMovieInfo(movieIds);
-        if (dto == null || dto.getItems() == null) {
+        final TicketingMovieInfoListDTO dto;
+        try {
+            dto = ticketingClient.getMovieInfo(movieIds);
+        } catch (Exception e) {
             return Map.of();
         }
 
-        Map<Long, TicketingMovieInfoListDTO.Item> map = new HashMap<>();
+        if (dto == null || dto.getItems() == null || dto.getItems().isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, TicketingMovieInfoListDTO.Item> map = new HashMap<>(dto.getItems().size() * 2);
         for (var item : dto.getItems()) {
             if (item != null && item.getMovieId() != null) {
                 map.put(item.getMovieId(), item);
