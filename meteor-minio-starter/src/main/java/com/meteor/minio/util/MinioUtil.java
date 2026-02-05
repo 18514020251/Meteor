@@ -184,6 +184,18 @@ public class MinioUtil {
         }
     }
 
-
+    /**
+     *  构建公开访问 URL
+     * */
+    public String buildPublicUrl(String objectName) {
+        if (objectName == null || objectName.isBlank()) {
+            return null;
+        }
+        return properties.getEndpoint()
+                + "/"
+                + properties.getBucket()
+                + "/"
+                + objectName;
+    }
 
 }

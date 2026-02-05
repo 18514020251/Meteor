@@ -2,4 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meteor.movie.mapper.MovieCategoryMapper">
 
+    <select id="selectCategoryNamesByMovieIds"
+            resultType="com.meteor.movie.mapper.row.MovieCategoryNameRow">
+
+        select
+        r.movie_id as movieId,
+        c.name as categoryName
+        from movie_category_rel r
+        join movie_category c
+        on c.id = r.category_id
+        where r.deleted = 0
+        and c.deleted = 0
+        and r.movie_id in
+        <foreach collection="movieIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by r.create_time desc, r.id desc
+
+    </select>
 </mapper>

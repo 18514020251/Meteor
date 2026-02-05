@@ -11,4 +11,19 @@ public class MovieCategoryConstants {
 
     public static final Integer MOVIE_CATEGORY_MIN = 1;
     public static final Integer MOVIE_CATEGORY_MAX = 15;
+
+    /**
+     *  主页最多电影数
+     * */
+    public static final Integer MAX_MOVIE_PER = 8;
+
+    /**
+     *  默认金额
+     * */
+    public static final Integer DEFAULT_PRICE = 0;
+
+    /**
+     *  默认热度
+     * */
+    public static final Integer DEFAULT_HOT_SCORE = 0;
 }

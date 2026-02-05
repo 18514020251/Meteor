@@ -47,4 +47,5 @@ public class MeteorMinioProperties {
     *  头像有效期
     * */
     private int presignedUrlExpireMinutes = DEFAULT_EXPIRE_MINUTES;
+
 }

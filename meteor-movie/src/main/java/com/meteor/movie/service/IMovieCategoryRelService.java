@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -25,4 +26,14 @@ public interface IMovieCategoryRelService extends IService<MovieCategoryRel> {
      * @param now 当前时间
      * */
     void bindCategories(Long movieId, List<Long> categoryIds, Long operatorId, LocalDateTime now);
+
+
+    /**
+     * 按 quotaMap 从分类中挑选候选 movieId（去重后最多返回 size 个）
+     *
+     * @param quotaMap categoryId -> quota（例如 {14=5, 6=3}）
+     * @param size 目标数量（固定8）
+     * @return 电影id数组
+     */
+    List<Long> pickCandidateMovieIds(Map<Long, Integer> quotaMap, int size);
 }

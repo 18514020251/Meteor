@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 
 import java.io.Serial;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,17 +33,11 @@ public class HotRank implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @Schema(description = "1=DAY 2=WEEK 3=MONTH")
-    private Integer period;
-
-    @Schema(description = "统计周期起始日")
-    private LocalDate statDate;
-
     @Schema(description = "场次ID")
     private Long screeningId;
 
     @Schema(description = "热度分")
-    private Long score;
+    private Integer score;
 
     @Schema(description = "售出票数")
     private Integer soldCnt;
@@ -61,11 +54,6 @@ public class HotRank implements Serializable {
     @Schema(description = "创建人")
     private Long createBy;
 
-    @Schema(description = "更新人")
-    private Long updateBy;
-
     @Schema(description = "是否删除 0=否 1=是")
     private Integer deleted;
-
-
 }

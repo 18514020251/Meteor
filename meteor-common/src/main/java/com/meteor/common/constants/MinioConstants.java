@@ -17,4 +17,11 @@ public final class MinioConstants {
 
     /** MinIO 分片上传最小 Part Size（5MB） */
     public static final long MIN_PART_SIZE = 5L * 1024 * 1024;
+
+    public static final String BUCKET_METEOR_MOVIE = "meteor-movie";
+
+    public static final String DEFAULT_POSTER_CLASSPATH  = "static/avatar/default.png";
+
+    public static final String DEFAULT_POSTER = "static/default/movie-poster.jpg";
+
 }

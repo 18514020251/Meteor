@@ -2,6 +2,10 @@ package com.meteor.movie.mapper;
 
 import com.meteor.movie.domain.entity.Movie;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.meteor.movie.mapper.row.MovieIdTitleRow;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface MovieMapper extends BaseMapper<Movie> {
 
+    List<MovieIdTitleRow> selectIdTitleByIds(@Param("ids") List<Long> ids);
 }

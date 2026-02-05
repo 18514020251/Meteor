@@ -15,6 +15,10 @@ public final class AvatarConstants {
     /** 默认用户头像 */
     public static final String DEFAULT_AVATAR = "avatar/default.png";
 
+    public static final String DEFAULT_POSTER =
+            "http://127.0.0.1:9000/meteor-movie/movie/default.png";
+
+
     /** 头像最大大小：5MB */
     // NOTE：本地环境可以5MB，项目上限或者简历时一定改了
     public static final long MAX_SIZE = 5L * 1024 * 1024;

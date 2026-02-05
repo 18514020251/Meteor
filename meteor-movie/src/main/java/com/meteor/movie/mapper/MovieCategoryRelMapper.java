@@ -2,6 +2,9 @@ package com.meteor.movie.mapper;
 
 import com.meteor.movie.domain.entity.MovieCategoryRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface MovieCategoryRelMapper extends BaseMapper<MovieCategoryRel> {
 
+    List<Long> selectMovieIdsByCategoryId(@Param("categoryId") Long categoryId,
+                                          @Param("limit") Integer limit);
 }

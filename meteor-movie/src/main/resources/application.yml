@@ -91,6 +91,9 @@ meteor:
     endpoint: ${programmer.minio.endpoint}
     access-key: ${programmer.minio.access-key}
     secret-key: ${programmer.minio.secret-key}
-    bucket: ${programmer.minio.bucket:meteor}
+    bucket: ${programmer.minio.bucket:meteor-movie}
     path-style: true
     presigned-url-expire-minutes: 5
+  remote:
+    user-base-url: http://localhost:8081
+    ticketing-base-url: http://localhost:8085

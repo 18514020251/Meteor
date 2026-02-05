@@ -7,6 +7,8 @@ import lombok.Getter;
 import java.util.Arrays;
 
 /**
+ *  电影状态枚举
+ *
  * @author Programmer
  * @date 2026-02-02 16:34
  */

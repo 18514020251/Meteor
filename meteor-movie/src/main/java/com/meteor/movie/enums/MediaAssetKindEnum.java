@@ -6,6 +6,8 @@ import lombok.Getter;
 
 
 /**
+ *  媒体资源类型
+ *
  * @author Programmer
  * @date 2026-02-02 16:31
  */

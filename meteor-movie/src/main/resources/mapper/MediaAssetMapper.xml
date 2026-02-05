@@ -2,4 +2,29 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meteor.movie.mapper.MediaAssetMapper">
 
+    <select id="selectPosterObjectKeyByMovieIds"
+            resultType="com.meteor.movie.mapper.row.MoviePosterRow">
+
+        select biz_id as movieId,
+        object_key as objectKey
+        from (
+        select
+        biz_id,
+        object_key,
+        row_number() over (
+        partition by biz_id
+        order by sort asc, create_time desc, id desc
+        ) as rn
+        from media_asset
+        where deleted = 0
+        and biz_type = 1
+        and kind = 1
+        and biz_id in
+        <foreach collection="movieIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        ) t
+        where t.rn = 1
+
+    </select>
 </mapper>

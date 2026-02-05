@@ -6,7 +6,7 @@ import java.util.List;
 
 
 /**
- *  用户手动选择喜好分类列表 DTO
+ *  用户手动选择喜好分类列表 DTO  远程调用
  *
  * @author Programmer
  * @date 2026-02-04 10:13

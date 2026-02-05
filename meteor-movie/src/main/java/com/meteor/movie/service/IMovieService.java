@@ -1,6 +1,7 @@
 package com.meteor.movie.service;
 
 import com.meteor.movie.controller.dto.MovieCreateDTO;
+import com.meteor.movie.controller.vo.HomeMovieCardVO;
 import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.domain.entity.Movie;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -33,4 +34,11 @@ public interface IMovieService extends IService<Movie> {
      * @return 电影标题列表
      * */
     List<MovieTitleVO> getTitles(Long merchantId);
+
+    /**
+     *  获取用户首页推荐列表
+     *
+     *  @param uid 用户ID
+     * */
+    List<HomeMovieCardVO> home(Long uid);
 }

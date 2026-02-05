@@ -1,0 +1,41 @@
+package com.meteor.movie.service.impl;
+
+import com.meteor.movie.client.TicketingClient;
+import com.meteor.movie.controller.dto.TicketingMovieInfoListDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author Programmer
+ * @date 2026-02-04 17:16
+ */
+@Service
+@RequiredArgsConstructor
+public class TicketingQueryService {
+
+    private final TicketingClient ticketingClient;
+
+    public Map<Long, TicketingMovieInfoListDTO.Item> getInfoMap(List<Long> movieIds) {
+
+        if (movieIds == null || movieIds.isEmpty()) {
+            return Map.of();
+        }
+
+        TicketingMovieInfoListDTO dto = ticketingClient.getMovieInfo(movieIds);
+        if (dto == null || dto.getItems() == null) {
+            return Map.of();
+        }
+
+        Map<Long, TicketingMovieInfoListDTO.Item> map = new HashMap<>();
+        for (var item : dto.getItems()) {
+            if (item != null && item.getMovieId() != null) {
+                map.put(item.getMovieId(), item);
+            }
+        }
+        return map;
+    }
+}

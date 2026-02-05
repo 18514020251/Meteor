@@ -1,5 +1,6 @@
 package com.meteor.movie.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 
@@ -54,6 +55,6 @@ public class MovieCategory implements Serializable {
     private Long updateBy;
 
     @Schema(description = "是否删除 0=否 1=是")
+    @TableLogic
     private DeleteStatus deleted;
-
 }

@@ -2,4 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meteor.movie.mapper.MovieCategoryRelMapper">
 
+    <select id="selectMovieIdsByCategoryId" resultType="java.lang.Long">
+        select movie_id
+        from movie_category_rel
+        where deleted = 0
+          and category_id = #{categoryId}
+        order by create_time desc, id desc
+            limit #{limit}
+    </select>
 </mapper>
