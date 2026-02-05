@@ -7,6 +7,7 @@ import com.meteor.movie.controller.vo.MediaUploadVO;
 import com.meteor.movie.enums.MediaAssetKindEnum;
 import com.meteor.movie.service.IMediaAssetService;
 import com.meteor.satoken.constants.RoleConst;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,7 @@ public class MediaAssetController {
 
     private final IMediaAssetService mediaUploadService;
 
+    @Operation(summary = "上传图片")
     @PostMapping("/media")
     @SaCheckRole(RoleConst.MERCHANT)
     public Result<MediaUploadVO> upload(

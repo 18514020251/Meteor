@@ -207,22 +207,31 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap =
                 ticketingQueryService.getInfoMap(movieIds);
 
-        return cards.stream().map(c -> {
-            var t = ticketingMap.get(c.movieId());
-            if (t == null) {
-                return normalize(c);
-            }
+        return cards.stream()
+                .map(c -> {
+                    var t = ticketingMap.get(c.movieId());
+                    if (t == null) {
+                        return normalize(c);
+                    }
 
-            return normalize(new HomeMovieCardVO(
-                    c.movieId(),
-                    c.title(),
-                    c.posterUrl(),
-                    c.categories(),
-                    t.getPrice() != null ? t.getPrice() : c.price(),
-                    t.getInGrabPeriod() != null ? t.getInGrabPeriod() : c.inGrabPeriod(),
-                    t.getHotScore() != null ? t.getHotScore() : c.hotScore()
-            ));
-        }).toList();
+                    return normalize(new HomeMovieCardVO(
+                            c.movieId(),
+                            c.title(),
+                            c.posterUrl(),
+                            c.categories(),
+                            t.getPrice() != null ? t.getPrice() : c.price(),
+                            t.getInGrabPeriod() != null ? t.getInGrabPeriod() : c.inGrabPeriod(),
+                            t.getHotScore() != null ? t.getHotScore() : c.hotScore()
+                    ));
+                })
+                .filter(vo -> {
+                    Integer price = vo.price();
+                    Integer hot = vo.hotScore();
+                    boolean priceZero = (price == null || price.equals(DEFAULT_PRICE));
+                    boolean hotZero = (hot == null || hot.equals(DEFAULT_HOT_SCORE));
+                    return !(priceZero && hotZero);
+                })
+                .toList();
 
     }
 

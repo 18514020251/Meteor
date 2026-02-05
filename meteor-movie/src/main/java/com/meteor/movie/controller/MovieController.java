@@ -34,6 +34,7 @@ public class MovieController {
     private final IMovieService movieService;
     private final LoginContext loginContext;
 
+    @Operation(summary = "创建电影")
     @SaCheckRole(RoleConst.MERCHANT)
     @PostMapping
     public Result<Void> create(@Valid @RequestBody MovieCreateDTO dto) {
@@ -43,6 +44,7 @@ public class MovieController {
     }
 
 
+    @Operation(summary = "获取当前商家电影列表")
     @SaCheckRole(RoleConst.MERCHANT)
     @GetMapping("/titles")
     public Result<List<MovieTitleVO>> getMyMovieTitles() {
