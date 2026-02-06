@@ -12,7 +12,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class MovieTitleVO {
-    private Long id;
+    private String id;
     private String title;
+
+    public MovieTitleVO(Long id, String title) {
+        this.id = id.toString();
+        this.title = title;
+    }
 }
 

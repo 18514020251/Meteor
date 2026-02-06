@@ -11,7 +11,7 @@
             limit #{limit}
     </select>
     <select id="listMovieCategoriesByMovieIds"
-            resultType="com.meteor.movie.mapper.row.MovieCategoryRow">
+            resultType="com.meteor.movie.controller.dto.MovieCategoryRowDTO">
         SELECT r.movie_id AS movieId, c.name AS categoryName
         FROM movie_category_rel r
         JOIN movie_category c ON c.id = r.category_id AND c.deleted = 0

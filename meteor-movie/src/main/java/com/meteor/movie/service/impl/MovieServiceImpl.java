@@ -195,16 +195,16 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     @Override
     public List<HomeMovieCardVO> home(Long uid) {
         var pref = userPreferenceClient.getUserPreference(uid);
-        Map<Long,Integer> quotaMap =
-                QuotaAllocator.allocate(pref.getItems());
-        List<Long> movieIds = movieCategoryRelService.pickCandidateMovieIds(quotaMap, MAX_MOVIE_PER);
-        Map<Long, String> titleMap = movieQueryService.getTitleMap(movieIds);
 
+        Map<Long, Integer> quotaMap = QuotaAllocator.allocate(pref.getItems());
+        List<Long> movieIds = movieCategoryRelService.pickCandidateMovieIds(quotaMap, MAX_MOVIE_PER);
+
+        Map<Long, String> titleMap = movieQueryService.getTitleMap(movieIds);
 
         Map<Long, String> posterMap = mediaAssetQueryService.getPosterObjectKeyMap(movieIds)
                 .entrySet()
                 .stream()
-                .collect(java.util.stream.Collectors.toMap(
+                .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         e -> minioUtil.buildPublicUrl(e.getValue())
                 ));
@@ -213,8 +213,9 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
 
         List<HomeMovieCardVO> cards = buildBaseCards(movieIds, titleMap, posterMap, categoriesMap);
 
-        Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap =
-                ticketingQueryService.getInfoMap(movieIds);
+        // ✅ 先拿 Long-key，再转 String-key（避免到处 parseLong）
+        Map<String, TicketingMovieInfoListDTO.Item> ticketingMap =
+                toStringKeyMap(ticketingQueryService.getInfoMap(movieIds));
 
         List<HomeMovieCardVO> main = cards.stream()
                 .map(c -> buildHomeCardOrNull(c, ticketingMap))
@@ -225,7 +226,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
             return main.subList(0, MAX_MOVIE_PER);
         }
 
-        Set<Long> exists = main.stream()
+        Set<String> exists = main.stream()
                 .map(HomeMovieCardVO::movieId)
                 .collect(Collectors.toSet());
 
@@ -247,8 +248,28 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
 
         merged.addAll(fills);
         return merged;
+    }
 
+    /**
+     * Map<Long, Item> -> Map<String, Item>
+     */
+    private Map<String, TicketingMovieInfoListDTO.Item> toStringKeyMap(
+            Map<Long, TicketingMovieInfoListDTO.Item> longKeyMap
+    ) {
+        if (longKeyMap == null || longKeyMap.isEmpty()) {
+            return Map.of();
+        }
 
+        Map<String, TicketingMovieInfoListDTO.Item> map = new HashMap<>(longKeyMap.size() * 2);
+        for (var e : longKeyMap.entrySet()) {
+            Long k = e.getKey();
+            TicketingMovieInfoListDTO.Item v = e.getValue();
+            if (k == null || v == null) {
+                continue;
+            }
+            map.put(String.valueOf(k), v);
+        }
+        return map;
     }
 
     private List<HomeMovieCardVO> buildBaseCards(
@@ -267,7 +288,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
             List<String> categories = categoriesMap.getOrDefault(movieId, List.of());
 
             list.add(new HomeMovieCardVO(
-                    movieId,
+                    String.valueOf(movieId),
                     title,
                     poster,
                     categories,
@@ -298,8 +319,8 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         Map<Long, String> posterUrlMap = queryPosterUrlMap(movieIds);
         Map<Long, List<String>> categoryMap = queryCategoryMap(movieIds);
 
-        Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap =
-                ticketingQueryService.getInfoMap(movieIds);
+        Map<String, TicketingMovieInfoListDTO.Item> ticketingMap =
+                toStringKeyMap(ticketingQueryService.getInfoMap(movieIds));
 
         return movies.stream()
                 .map(m -> buildHomeCardOrNull(m, posterUrlMap, categoryMap, ticketingMap))
@@ -307,11 +328,12 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 .toList();
     }
 
+
     private Optional<HomeMovieCardVO> buildHomeCardOrNull(
             HomeMovieCardVO base,
-            Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap
+            Map<String, TicketingMovieInfoListDTO.Item> ticketingMap
     ) {
-        Long id = base.movieId();
+        String id = base.movieId();
         TicketingMovieInfoListDTO.Item t = ticketingMap.get(id);
 
         Integer price = t == null ? base.price() : defaultIfNull(t.getPrice(), base.price());
@@ -328,35 +350,38 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 base.posterUrl(),
                 base.categories(),
                 zeroToNull(price),
-                inGrab != null && inGrab,
+                Boolean.TRUE.equals(inGrab),
                 zeroToNull(hotScore)
         ));
     }
+
 
     private Optional<HomeMovieCardVO> buildHomeCardOrNull(
             Movie m,
             Map<Long, String> posterUrlMap,
             Map<Long, List<String>> categoryMap,
-            Map<Long, TicketingMovieInfoListDTO.Item> ticketingMap
+            Map<String, TicketingMovieInfoListDTO.Item> ticketingMap
     ) {
-        Long id = m.getId();
-        if (id == null) {
+        Long idLong = m.getId();
+        if (idLong == null) {
             return Optional.empty();
         }
+
+        String id = String.valueOf(idLong);
 
         HomeMovieCardVO base = new HomeMovieCardVO(
                 id,
                 m.getTitle(),
-                posterUrlMap.getOrDefault(id, ""),
-                categoryMap.getOrDefault(id, List.of()),
+                posterUrlMap.getOrDefault(idLong, ""),
+                categoryMap.getOrDefault(idLong, List.of()),
                 DEFAULT_PRICE,
                 false,
                 DEFAULT_HOT_SCORE
         );
 
-        // ✅ 复用你 home 用的那套规则（同一份过滤/0->null）
         return buildHomeCardOrNull(base, ticketingMap);
     }
+
 
 
     private boolean bothZero(Integer price, Integer hotScore) {
@@ -423,10 +448,10 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
 
         Map<Long, List<String>> map = new HashMap<>(movieIds.size() * 2);
         for (var row : rows) {
-            if (row == null || row.movieId() == null) {
+            if (row == null || row.getMovieId() == null) {
                 continue;
             }
-            map.computeIfAbsent(row.movieId(), k -> new ArrayList<>()).add(row.categoryName());
+            map.computeIfAbsent(row.getMovieId(), k -> new ArrayList<>()).add(row.getCategoryName());
         }
         return map;
     }

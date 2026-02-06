@@ -9,7 +9,7 @@ import java.util.List;
  * @date 2026-02-04 12:35
  */
 public record HomeMovieCardVO(
-        Long movieId, // 电影id
+        String movieId, // 电影id
         String title, // 电影名称
         String posterUrl,// 海报地址
         List<String>categories, //  分类
