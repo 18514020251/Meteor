@@ -12,6 +12,7 @@ import com.meteor.common.enums.user.UserPreferenceSourceEnum;
 import com.meteor.common.enums.user.VerifyCodeSceneEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.common.utils.IpUtils;
 import com.meteor.common.utils.PasswordUtil;
 import com.meteor.common.utils.PhoneUtil;
 import com.meteor.common.utils.image.ImageCropUtil;
@@ -42,6 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -133,7 +136,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userCacheService.cacheUserRole(user.getId(), role);
 
         StpUtil.login(user.getId());
-        return userInfoAssembler.toLoginVo(StpUtil.getTokenValue(),user);
+
+        String token = StpUtil.getTokenValue();
+        String ip = currentIp();
+        userCacheService.cacheOnlineUser(user.getId(), token, ip, role);
+
+        return userInfoAssembler.toLoginVo(token, user);
+    }
+
+    /**
+     *  获取当前登录用户IP
+     * */
+    private String currentIp() {
+        ServletRequestAttributes attrs =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) return "unknown";
+        return IpUtils.getClientIp(attrs.getRequest());
     }
 
     /**
@@ -285,6 +303,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         StpUtil.logout();
         userCacheService.evictUserAll(userId);
+        userCacheService.removeOnlineUser(userId);
 
         userMapper.deleteById(userId);
         deleteUserAvatar(user);

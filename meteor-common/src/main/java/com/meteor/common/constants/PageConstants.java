@@ -13,4 +13,6 @@ public class PageConstants {
     public static final int ADMIN_FIXED_PAGE_SIZE = 20;
 
     public static final int USER_FIXED_PAGE_SIZE = 12;
+
+
 }

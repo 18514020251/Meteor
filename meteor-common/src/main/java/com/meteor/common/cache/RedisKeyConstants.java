@@ -16,7 +16,6 @@ public class RedisKeyConstants {
     }
 
     // 用户模块
-
     private static final String USER_INFO_KEY = "user:info:%d";
     private static final String PHONE_CODE_PREFIX = "sms:code:%s:%s";
     private static final String PHONE_CODE_LIMIT_PREFIX = "sms:limit:%s:%s";
@@ -24,16 +23,29 @@ public class RedisKeyConstants {
     private static final String USER_ROLE_KEY = "user:role:%s";
     private static final String SCREENING_HOT_KEY = "screening:hot:%d";
 
+    private static final String ONLINE_USER_ZSET_KEY = "online:user:zset";
+
+    private static final String ONLINE_USER_DETAIL_KEY = "online:user:detail:%s";
+
     public static final Duration USER_INFO_TTL = Duration.ofHours(1);
     public static final Duration USER_INFO_NULL_TTL = Duration.ofSeconds(60);
     public static final Duration PHONE_CODE_LIMIT_TTL = Duration.ofSeconds(60);
     public static final Duration PHONE_CODE_IP_LIMIT_TTL = Duration.ofSeconds(60);
     public static final Duration USER_ROLE_TTL = Duration.ofDays(1);
 
+    public static final Duration ONLINE_USER_TTL = Duration.ofHours(24);
+
+
     public static final String CACHE_NULL_VALUE = "__NULL__";
 
     public static final String LIMIT_FLAG = "1";
     public static final int PHONE_CODE_IP_LIMIT_COUNT = 5;
+
+
+    public static final String ONLINE_USER_FIELD_TOKEN = "token";
+    public static final String ONLINE_USER_FIELD_IP = "ip";
+    public static final String ONLINE_USER_FIELD_LOGIN_TIME = "loginTime";
+    public static final String ONLINE_USER_FIELD_ROLE = "role";
 
 
     /**
@@ -63,5 +75,13 @@ public class RedisKeyConstants {
 
     public static String buildScreeningHotKey(Long movieId) {
         return String.format(SCREENING_HOT_KEY, movieId);
+    }
+
+    public static String onlineUserZsetKey() {
+        return ONLINE_USER_ZSET_KEY;
+    }
+
+    public static String buildOnlineUserDetailKey(Object userId) {
+        return String.format(ONLINE_USER_DETAIL_KEY, userId);
     }
 }

@@ -58,5 +58,22 @@ public interface IUserCacheService {
     *  删除用户所有缓存
     * */
     void evictUserAll(Long userId);
-    }
+
+    /**
+     *  缓存在线用户
+     *
+     * @param id 用户ID
+     * @param token 用户token
+     * @param ip 用户ip
+     * @param role 用户角色
+     * */
+    void cacheOnlineUser(Long id, String token, String ip, String role);
+
+    /**
+     * 删除在线用户
+     *
+     * @param userId 用户ID
+     * */
+    void removeOnlineUser(Long userId);
+}
 

@@ -1,6 +1,7 @@
 package com.meteor.user.service.cache.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.common.utils.RedisTtlUtil;
 import com.meteor.user.service.cache.IUserCacheService;
 import com.meteor.user.service.cache.model.UserInfoCache;
@@ -137,6 +138,39 @@ public class UserCacheServiceImpl implements IUserCacheService {
     public void evictUserAll(Long userId) {
         evictUserInfo(userId);
         evictUserRole(userId);
+    }
+
+    @Override
+    public void cacheOnlineUser(Long userId, String token, String ip, String role) {
+        String zsetKey = RedisKeyConstants.onlineUserZsetKey();
+        String detailKey = RedisKeyConstants.buildOnlineUserDetailKey(userId);
+
+        long now = System.currentTimeMillis();
+
+        try {
+            redisTemplate.opsForZSet().add(zsetKey, String.valueOf(userId), now);
+
+            redisTemplate.opsForHash().put(detailKey, RedisKeyConstants.ONLINE_USER_FIELD_TOKEN, token);
+            redisTemplate.opsForHash().put(detailKey, RedisKeyConstants.ONLINE_USER_FIELD_IP, ip);
+            redisTemplate.opsForHash().put(detailKey, RedisKeyConstants.ONLINE_USER_FIELD_LOGIN_TIME, String.valueOf(now));
+            redisTemplate.opsForHash().put(detailKey, RedisKeyConstants.ONLINE_USER_FIELD_ROLE, role);
+
+            redisTemplate.expire(detailKey, RedisKeyConstants.ONLINE_USER_TTL);
+        } catch (Exception e) {
+            log.warn("写入在线用户缓存失败, userId={}", userId, e);
+        }
+    }
+
+    @Override
+    public void removeOnlineUser(Long userId) {
+        String zsetKey = RedisKeyConstants.onlineUserZsetKey();
+        String detailKey = RedisKeyConstants.buildOnlineUserDetailKey(userId);
+        try {
+            redisTemplate.opsForZSet().remove(zsetKey, String.valueOf(userId));
+            redisTemplate.delete(detailKey);
+        } catch (Exception e) {
+            log.warn("删除在线用户缓存失败, userId={}", userId, e);
+        }
     }
 
 }
