@@ -100,7 +100,7 @@ public class Screening implements Serializable {
     private Long updateBy;
 
     @Schema(description = "是否删除 0=否 1=是")
-    private Integer deleted;
+    private DeleteStatus deleted;
 
     public Screening initForCreate(Long operatorId, LocalDateTime now) {
         this.setMinPrice(this.getBasePrice());
@@ -109,7 +109,7 @@ public class Screening implements Serializable {
         this.setSoldTickets(TicketingConstants.DEFAULT_TICKETING_SOLD_TICKETS);
         this.setHotScore(TicketingConstants.DEFAULT_TICKETING_HOT_RANK);
         this.setVersion(VersionEnum.INIT.getValue());
-        this.setDeleted(DeleteStatus.NORMAL.getCode());
+        this.setDeleted(DeleteStatus.NORMAL);
 
         this.setCreateBy(operatorId);
         this.setUpdateBy(operatorId);

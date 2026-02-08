@@ -419,3 +419,7 @@ CREATE TABLE media_asset (
 
 
 set FOREIGN_KEY_CHECKS = 1;
+
+use  meteor_ticketing;
+
+select * from screening where movie_id = 9000000000000000001 and deleted  = 0 and status in(1 , 2)

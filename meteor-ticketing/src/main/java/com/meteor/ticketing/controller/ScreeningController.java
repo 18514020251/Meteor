@@ -6,17 +6,16 @@ import com.meteor.common.result.Result;
 import com.meteor.satoken.constants.RoleConst;
 import com.meteor.satoken.context.LoginContext;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
+import com.meteor.ticketing.controller.vo.MovieScreeningVO;
 import com.meteor.ticketing.service.IScreeningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 /**
  * <p>
@@ -45,4 +44,11 @@ public class ScreeningController {
         return Result.success();
     }
 
+    @Operation(summary = "获取电影场次列表")
+    @GetMapping("/movie/{movieId}")
+    public Result<List<MovieScreeningVO>> getScreeningsByMovie(
+            @PathVariable Long movieId) {
+            List<MovieScreeningVO> screenings = screeningService.getScreeningsByMovieId(movieId);
+            return Result.success(screenings);
+    }
 }

@@ -32,7 +32,6 @@ public class NacosConnectionChecker implements ApplicationListener<ApplicationRe
         String namespace  = env.getProperty("spring.cloud.nacos.config.namespace", "");
         String group      = env.getProperty("spring.cloud.nacos.config.group", "DEFAULT_GROUP");
 
-        // 没启用 Nacos，直接跳过
         if (!StringUtils.hasText(serverAddr)) {
             log.info("""
                 ======== Middleware Check (nacos) ========

@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * @author Nginx
+ *  电影详情 VO
+ *
+ * @author Programmer
  * @date 2026-02-08 9:37
  * @version 1.0
  */

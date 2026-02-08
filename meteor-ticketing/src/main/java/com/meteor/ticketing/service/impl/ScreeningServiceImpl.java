@@ -1,13 +1,17 @@
 package com.meteor.ticketing.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.api.enums.ScreeningStatusEnum;
+import com.meteor.ticketing.controller.vo.MovieScreeningVO;
 import com.meteor.ticketing.domain.entity.Screening;
+import com.meteor.ticketing.enums.SaleStateEnum;
 import com.meteor.ticketing.mapper.ScreeningMapper;
 import com.meteor.ticketing.service.IScreeningService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -16,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -285,4 +290,95 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
 
         return !now.isAfter(end);
     }
+
+    @Override
+    public List<MovieScreeningVO> getScreeningsByMovieId(Long movieId) {
+
+        List<Screening> screenings = baseMapper.selectList(
+                buildQueryWrapper(movieId)
+        );
+
+        if (CollectionUtils.isEmpty(screenings)) {
+            return Collections.emptyList();
+        }
+
+        return screenings.stream()
+                .map(screening -> buildMovieScreeningVO(screening, LocalDateTime.now()))
+                .toList();
+    }
+
+    private MovieScreeningVO buildMovieScreeningVO(Screening screening,
+                                                   LocalDateTime now) {
+
+        SaleStateEnum saleState = calculateSaleState(screening, now);
+        long remainSeconds = calculateRemainSeconds(
+                now,
+                saleState,
+                screening.getSaleStartTime()
+        );
+
+        return new MovieScreeningVO(
+                screening.getId().toString(),
+                screening.getStartTime(),
+                screening.getSaleStartTime(),
+                screening.getSaleMode(),
+                screening.getBasePrice(),
+                saleState,
+                remainSeconds
+        );
+    }
+
+    private long calculateRemainSeconds(LocalDateTime now,
+                                        SaleStateEnum saleState,
+                                        LocalDateTime saleStartTime) {
+
+        if (saleState != SaleStateEnum.NOT_STARTED) {
+            return 0L;
+        }
+
+        return Duration.between(now, saleStartTime).getSeconds();
+    }
+
+    /**
+     *  构建查询条件
+     * */
+    private LambdaQueryWrapper<Screening> buildQueryWrapper(Long movieId) {
+        return Wrappers.<Screening>lambdaQuery()
+                .eq(Screening::getMovieId, movieId)
+                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
+                .in(Screening::getStatus,
+                        ScreeningStatusEnum.SCHEDULED.getCode(),
+                        ScreeningStatusEnum.SELLING.getCode())
+                .gt(Screening::getStartTime, LocalDateTime.now())
+                .orderByAsc(Screening::getStartTime);
+    }
+
+
+    private SaleStateEnum calculateSaleState(Screening screening,
+                                             LocalDateTime now) {
+
+        if (ScreeningStatusEnum.CANCELED.equals(screening.getStatus())) {
+            return SaleStateEnum.CANCELED;
+        }
+
+        if (ScreeningStatusEnum.CLOSED.equals(screening.getStatus())) {
+            return SaleStateEnum.CLOSED;
+        }
+
+        if (screening.getAvailableTickets() <= 0) {
+            return SaleStateEnum.SOLD_OUT;
+        }
+
+        if (now.isBefore(screening.getSaleStartTime())) {
+            return SaleStateEnum.NOT_STARTED;
+        }
+
+        if (ScreeningStatusEnum.SELLING.equals(screening.getStatus())) {
+            return SaleStateEnum.SELLING;
+        }
+
+        return SaleStateEnum.CLOSED;
+    }
+
+
 }
