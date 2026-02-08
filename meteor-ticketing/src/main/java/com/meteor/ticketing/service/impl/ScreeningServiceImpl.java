@@ -10,6 +10,7 @@ import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.api.enums.ScreeningStatusEnum;
 import com.meteor.ticketing.controller.vo.MovieScreeningVO;
+import com.meteor.ticketing.controller.vo.ScreeningVO;
 import com.meteor.ticketing.domain.entity.Screening;
 import com.meteor.api.enums.SaleStateEnum;
 import com.meteor.ticketing.mapper.ScreeningMapper;
@@ -343,6 +344,42 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
     }
 
 
+    @Override
+    public ScreeningVO getRealtimeScreening(String screeningId) {
+        Screening s = baseMapper.selectById(screeningId);
+        if (s == null || DeleteStatus.DELETED.equals(s.getDeleted())) {
+            throw new BizException(CommonErrorCode.SCREENING_NOT_FOUND);
+        }
+
+        long nowMs = System.currentTimeMillis();
+        LocalDateTime now = LocalDateTime.now();
+
+        long remainSeconds = 0L;
+        LocalDateTime saleStart = s.getSaleStartTime();
+        if (saleStart != null) {
+            long diff = Duration.between(now, saleStart).getSeconds();
+            remainSeconds = Math.max(diff, 0L);
+        }
+
+        SaleStateEnum saleState = calculateSaleState(s, now);
+
+        return new ScreeningVO(
+                String.valueOf(s.getId()),
+                s.getStartTime(),
+                s.getEndTime(),
+                s.getSaleStartTime(),
+                s.getSaleEndTime(),
+                s.getMinPrice(),
+                s.getMaxPrice(),
+                s.getTotalTickets(),
+                s.getAvailableTickets(),
+                s.getSoldTickets(),
+                saleState.name(),
+                remainSeconds,
+                nowMs
+        );
+    }
+
     private SaleStateEnum calculateSaleState(Screening s, LocalDateTime now) {
 
         LocalDateTime ss = s.getSaleStartTime();
@@ -368,17 +405,12 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
             return SaleStateEnum.STOPPED;
         }
 
-        if (s.getAvailableTickets() != null && s.getAvailableTickets() <= 0) {
-            return SaleStateEnum.SOLD_OUT;
-        }
-
         if (ss != null && now.isBefore(ss)) {
             return SaleStateEnum.NOT_STARTED;
         }
 
         return SaleStateEnum.SELLING;
     }
-
 
 
 

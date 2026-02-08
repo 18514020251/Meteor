@@ -15,7 +15,6 @@ import java.util.Objects;
  */
 @Configuration
 public class SimpleRateLimitConfig {
-// todo: 后续优化代--> 优先获取并存token
     @Bean
     public KeyResolver ipKeyResolver() {
         return exchange -> {

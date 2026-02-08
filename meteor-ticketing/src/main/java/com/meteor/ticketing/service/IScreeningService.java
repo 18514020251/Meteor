@@ -3,6 +3,7 @@ package com.meteor.ticketing.service;
 import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.ticketing.controller.vo.MovieScreeningVO;
+import com.meteor.ticketing.controller.vo.ScreeningVO;
 import com.meteor.ticketing.domain.entity.Screening;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.validation.Valid;
@@ -30,4 +31,6 @@ public interface IScreeningService extends IService<Screening> {
     TicketingMovieInfoListDTO batchGetMovieInfo(List<Long> movieIds);
 
     List<MovieScreeningVO> getScreeningsByMovieId(Long movieId);
+
+    ScreeningVO getRealtimeScreening(String screeningId);
 }

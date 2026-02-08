@@ -69,6 +69,7 @@ public enum CommonErrorCode implements IErrorCode {
 
     // 票务相关
     PARAM_ERROR(7001, "参数错误", HttpStatus.BAD_REQUEST),
+    SCREENING_NOT_FOUND(7002, "场次不存在", HttpStatus.NOT_FOUND),
 
     // 电影相关异常
     CONFLICT(8001, "电影已存在", HttpStatus.BAD_REQUEST),

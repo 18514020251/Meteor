@@ -7,6 +7,7 @@ import com.meteor.satoken.constants.RoleConst;
 import com.meteor.satoken.context.LoginContext;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.ticketing.controller.vo.MovieScreeningVO;
+import com.meteor.ticketing.controller.vo.ScreeningVO;
 import com.meteor.ticketing.service.IScreeningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,5 +51,11 @@ public class ScreeningController {
             @PathVariable Long movieId) {
             List<MovieScreeningVO> screenings = screeningService.getScreeningsByMovieId(movieId);
             return Result.success(screenings);
+    }
+
+    @GetMapping("/{screeningId}")
+    @Operation(summary = "获取实时场次信息")
+    public Result<ScreeningVO> getScreening(@PathVariable String screeningId) {
+        return Result.success(screeningService.getRealtimeScreening(screeningId));
     }
 }
