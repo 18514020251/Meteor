@@ -2,6 +2,7 @@ package com.meteor.movie.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
+import com.meteor.api.enums.SaleStateEnum;
 import com.meteor.common.constants.MovieCategoryConstants;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
@@ -24,7 +25,6 @@ import com.meteor.movie.service.IMovieCategoryRelService;
 import com.meteor.movie.service.IMovieService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.movie.service.assembler.MovieAssembler;
-import com.meteor.movie.service.hot.MovieHotCounter;
 import com.meteor.movie.service.support.QuotaAllocator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +64,6 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     private final MinioUtil minioUtil;
     private final MediaAssetMapper mediaAssetMapper;
     private final MovieCategoryRelMapper movieCategoryRelMapper;
-    private final MovieHotCounter movieHotCounter;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -216,7 +215,6 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
 
         List<HomeMovieCardVO> cards = buildBaseCards(movieIds, titleMap, posterMap, categoriesMap);
 
-        // ✅ 先拿 Long-key，再转 String-key（避免到处 parseLong）
         Map<String, TicketingMovieInfoListDTO.Item> ticketingMap =
                 toStringKeyMap(ticketingQueryService.getInfoMap(movieIds));
 
@@ -296,7 +294,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                     poster,
                     categories,
                     DEFAULT_PRICE,
-                    false,
+                    SaleStateEnum.NOT_STARTED,
                     DEFAULT_HOT_SCORE
             ));
         }
@@ -339,7 +337,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         TicketingMovieInfoListDTO.Item t = ticketingMap.get(id);
 
         Integer price = t == null ? base.price() : defaultIfNull(t.getPrice(), base.price());
-        Boolean inGrab = t == null ? base.inGrabPeriod() : defaultIfNull(t.getInGrabPeriod(), base.inGrabPeriod());
+        SaleStateEnum state = t == null ? null : t.getSaleState();
         Integer hotScore = t == null ? base.hotScore() : defaultIfNull(t.getHotScore(), base.hotScore());
 
         if (bothZero(price, hotScore)) {
@@ -352,7 +350,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 base.posterUrl(),
                 base.categories(),
                 zeroToNull(price),
-                Boolean.TRUE.equals(inGrab),
+                state,
                 zeroToNull(hotScore)
         ));
     }
@@ -377,7 +375,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 posterUrlMap.getOrDefault(idLong, ""),
                 categoryMap.getOrDefault(idLong, List.of()),
                 DEFAULT_PRICE,
-                false,
+                SaleStateEnum.NOT_STARTED,
                 DEFAULT_HOT_SCORE
         );
 

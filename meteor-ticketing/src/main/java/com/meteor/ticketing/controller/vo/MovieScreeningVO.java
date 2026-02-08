@@ -1,7 +1,7 @@
 package com.meteor.ticketing.controller.vo;
 
 import com.meteor.api.enums.SaleModeEnum;
-import com.meteor.ticketing.enums.SaleStateEnum;
+import com.meteor.api.enums.SaleStateEnum;
 
 import java.time.LocalDateTime;
 

@@ -1,5 +1,6 @@
 package com.meteor.api.contract.ticketing.dto;
 
+import com.meteor.api.enums.SaleStateEnum;
 import lombok.Data;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class TicketingMovieInfoListDTO {
     public static class Item {
         private Long movieId;
         private Integer price;
-        private Boolean inGrabPeriod;
+        private SaleStateEnum saleState;
         private Integer hotScore;
     }
 }

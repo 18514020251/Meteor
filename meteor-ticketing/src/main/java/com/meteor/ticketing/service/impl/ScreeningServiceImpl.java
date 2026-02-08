@@ -11,7 +11,7 @@ import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.api.enums.ScreeningStatusEnum;
 import com.meteor.ticketing.controller.vo.MovieScreeningVO;
 import com.meteor.ticketing.domain.entity.Screening;
-import com.meteor.ticketing.enums.SaleStateEnum;
+import com.meteor.api.enums.SaleStateEnum;
 import com.meteor.ticketing.mapper.ScreeningMapper;
 import com.meteor.ticketing.service.IScreeningService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -185,10 +185,45 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
     }
 
     private Screening chooseOne(List<Screening> list, LocalDateTime now) {
-        if (list == null || list.isEmpty()) {
-            return null;
-        }
-        return chooseScreening(list, now);
+        if (list == null || list.isEmpty()) return null;
+
+        return list.stream()
+                .filter(s -> s != null && s.getId() != null)
+                // 主页卡片不展示开场后的过期场次（可选但推荐）
+                .filter(s -> s.getStartTime() != null && !now.isAfter(s.getStartTime()))
+                .min((a, b) -> {
+                    SaleStateEnum sa = calculateSaleState(a, now);
+                    SaleStateEnum sb = calculateSaleState(b, now);
+
+                    int pa = salePriority(sa);
+                    int pb = salePriority(sb);
+                    if (pa != pb) return Integer.compare(pa, pb);
+
+                    // 同状态内再按“更接近可买”排序
+                    if (sa == SaleStateEnum.NOT_STARTED) {
+                        return nullSafeCompare(a.getSaleStartTime(), b.getSaleStartTime());
+                    }
+                    return nullSafeCompare(a.getStartTime(), b.getStartTime());
+                })
+                .orElse(null);
+    }
+
+    private int salePriority(SaleStateEnum s) {
+        return switch (s) {
+            case SELLING -> 1;
+            case NOT_STARTED -> 2;
+            case SOLD_OUT -> 3;
+            case STOPPED -> 4;
+            case CLOSED -> 5;
+            case CANCELED -> 6;
+        };
+    }
+
+    private int nullSafeCompare(LocalDateTime a, LocalDateTime b) {
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a.compareTo(b);
     }
 
     private Map<Long, Integer> queryHotScores(List<Long> screeningIds) {
@@ -225,7 +260,9 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
         TicketingMovieInfoListDTO.Item item = new TicketingMovieInfoListDTO.Item();
         item.setMovieId(movieId);
         item.setPrice(chosen.getMinPrice());
-        item.setInGrabPeriod(isInGrabPeriod(chosen, now));
+
+        SaleStateEnum state = calculateSaleState(chosen, now);
+        item.setSaleState(state);
 
         Integer hotScore = hotScoreByScreeningId.get(chosen.getId());
         item.setHotScore(hotScore == null ? DEFAULT_HOT_SCORE : hotScore);
@@ -233,65 +270,6 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
         return item;
     }
 
-
-    private Screening chooseScreening(List<Screening> list, LocalDateTime now) {
-
-        List<Screening> selling = list.stream()
-                .filter(s -> isInGrabPeriod(s, now))
-                .toList();
-
-        if (!selling.isEmpty()) {
-            return selling.stream()
-                    .min(Comparator
-                            .comparing(Screening::getMinPrice)
-                            .thenComparing(Screening::getSaleEndTime, Comparator.nullsLast(Comparator.reverseOrder()))
-                            .thenComparing(Screening::getId, Comparator.nullsLast(Comparator.reverseOrder()))
-                    )
-                    .orElse(null);
-        }
-
-        Optional<Screening> upcoming = list.stream()
-                .filter(s -> s.getSaleStartTime() != null && s.getSaleStartTime().isAfter(now))
-                .min(Comparator
-                        .comparing(Screening::getSaleStartTime)
-                        .thenComparing(Screening::getMinPrice)
-                        .thenComparing(Screening::getId, Comparator.nullsLast(Comparator.reverseOrder()))
-                );
-
-        return upcoming.orElseGet(() -> list.stream()
-                .filter(s -> s.getSaleEndTime() != null && s.getSaleEndTime().isBefore(now))
-                .max(Comparator
-                        .comparing(Screening::getSaleEndTime)
-                        .thenComparing(Screening::getId, Comparator.nullsLast(Comparator.reverseOrder()))
-                )
-                .orElse(null));
-
-
-
-    }
-
-    private boolean isInGrabPeriod(Screening s, LocalDateTime now) {
-        if (s == null) {
-            return false;
-        }
-
-        LocalDateTime start = s.getSaleStartTime();
-        if (start == null) {
-            return false;
-        }
-
-        LocalDateTime end = s.getSaleEndTime();
-
-        if (now.isBefore(start)) {
-            return false;
-        }
-
-        if (end == null) {
-            return true;
-        }
-
-        return !now.isAfter(end);
-    }
 
     @Override
     public List<MovieScreeningVO> getScreeningsByMovieId(Long movieId) {
@@ -367,6 +345,13 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
 
     private SaleStateEnum calculateSaleState(Screening s, LocalDateTime now) {
 
+        LocalDateTime ss = s.getSaleStartTime();
+        LocalDateTime se = s.getSaleEndTime();
+
+        if (ss != null && se != null && se.isBefore(ss)) {
+            se = null;
+        }
+
         if (ScreeningStatusEnum.CANCELED.equals(s.getStatus())) {
             return SaleStateEnum.CANCELED;
         }
@@ -375,28 +360,26 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
             return SaleStateEnum.CLOSED;
         }
 
-        if (now.isAfter(s.getStartTime())) {
+        if (s.getStartTime() != null && now.isAfter(s.getStartTime())) {
             return SaleStateEnum.CLOSED;
         }
 
-        if (s.getSaleEndTime() != null && now.isAfter(s.getSaleEndTime())) {
+        if (se != null && now.isAfter(se)) {
             return SaleStateEnum.STOPPED;
         }
 
-        if (s.getAvailableTickets() <= 0) {
+        if (s.getAvailableTickets() != null && s.getAvailableTickets() <= 0) {
             return SaleStateEnum.SOLD_OUT;
         }
 
-        if (now.isBefore(s.getSaleStartTime())) {
+        if (ss != null && now.isBefore(ss)) {
             return SaleStateEnum.NOT_STARTED;
         }
 
-        if (ScreeningStatusEnum.SELLING.equals(s.getStatus())) {
-            return SaleStateEnum.SELLING;
-        }
-
-        return SaleStateEnum.CLOSED;
+        return SaleStateEnum.SELLING;
     }
+
+
 
 
 }

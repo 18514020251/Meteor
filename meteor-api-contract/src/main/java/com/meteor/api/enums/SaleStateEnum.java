@@ -1,8 +1,10 @@
-package com.meteor.ticketing.enums;
+package com.meteor.api.enums;
 
 import lombok.Getter;
 
 /**
+ *  售出状态枚举
+ *
  * @author Programmer
  * @version 1.0
  * @date 2026-02-08 11:34

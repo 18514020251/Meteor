@@ -1,5 +1,7 @@
 package com.meteor.movie.controller.vo;
 
+import com.meteor.api.enums.SaleStateEnum;
+
 import java.util.List;
 
 /**
@@ -14,7 +16,7 @@ public record HomeMovieCardVO(
         String posterUrl,// 海报地址
         List<String>categories, //  分类
         Integer price, // 价格
-        Boolean inGrabPeriod, // 是否处于抢票期间
+        SaleStateEnum saleState, // 是否处于抢票期间
         Integer hotScore // 热度
 ) {
 }
