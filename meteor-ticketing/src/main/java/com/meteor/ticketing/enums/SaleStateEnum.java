@@ -14,6 +14,7 @@ public enum SaleStateEnum {
     SELLING("可购买"),
     SOLD_OUT("已售罄"),
     CLOSED("已停售"),
+    STOPPED("已停售"),
     CANCELED("已取消");
 
     private final String desc;

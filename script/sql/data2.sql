@@ -217,6 +217,9 @@ USE meteor_ticketing;
 -- =========================================
 -- DEMO SCREENINGS (ADD 30) 0021 ~ 0050
 -- =========================================
+
+USE meteor_ticketing;
+
 INSERT INTO screening
 (id, merchant_id, movie_id,
  start_time, end_time,
@@ -226,43 +229,114 @@ INSERT INTO screening
  total_tickets, available_tickets, sold_tickets,
  hot_score, version,
  create_time, update_time, create_by, update_by, deleted)
-VALUES
-    (8000000000000000021,1,9000000000000000021, NOW() + INTERVAL 21 DAY, NOW() + INTERVAL 21 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 15 MINUTE, NULL, 2,1, 3600,2600,4600, 80,55,25, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000022,1,9000000000000000022, NOW() + INTERVAL 22 DAY, NOW() + INTERVAL 22 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 2 HOUR, NULL, 1,1, 4200,3200,5200, 90,90,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000023,1,9000000000000000023, NOW() + INTERVAL 23 DAY, NOW() + INTERVAL 23 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 40 MINUTE, NULL, 2,1, 4900,3900,5900, 100,70,30, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000024,1,9000000000000000024, NOW() + INTERVAL 24 DAY, NOW() + INTERVAL 24 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 6 HOUR, NULL, 1,1, 3800,2800,4800, 90,90,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000025,1,9000000000000000025, NOW() + INTERVAL 25 DAY, NOW() + INTERVAL 25 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 2 HOUR, NULL, 2,1, 4100,3100,5100, 120,40,80, 0,0, NOW(),NOW(),1,1,0),
+SELECT
+    (8000000000000000000 + n) AS id,
+    1 AS merchant_id,
+    (9000000000000000000 + n) AS movie_id,
 
-    (8000000000000000026,1,9000000000000000026, NOW() + INTERVAL 26 DAY, NOW() + INTERVAL 26 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 1 DAY, NULL, 1,1, 5600,4600,6600, 110,110,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000027,1,9000000000000000027, NOW() + INTERVAL 27 DAY, NOW() + INTERVAL 27 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 10 MINUTE, NULL, 2,1, 3300,2300,4300, 70,35,35, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000028,1,9000000000000000028, NOW() + INTERVAL 28 DAY, NOW() + INTERVAL 28 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 3 HOUR, NULL, 1,1, 5200,4200,6200, 80,80,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000029,1,9000000000000000029, NOW() + INTERVAL 29 DAY, NOW() + INTERVAL 29 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 1 HOUR, NULL, 2,1, 4000,3000,5000, 100,65,35, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000030,1,9000000000000000030, NOW() + INTERVAL 30 DAY, NOW() + INTERVAL 30 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 8 HOUR, NULL, 1,1, 3700,2700,4700, 80,80,0, 0,0, NOW(),NOW(),1,1,0),
+    st AS start_time,
+    (st + INTERVAL dur MINUTE) AS end_time,
 
-    (8000000000000000031,1,9000000000000000031, NOW() + INTERVAL 31 DAY, NOW() + INTERVAL 31 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 30 MINUTE, NULL, 2,1, 5900,4900,6900, 150,120,30, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000032,1,9000000000000000032, NOW() + INTERVAL 32 DAY, NOW() + INTERVAL 32 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 12 HOUR, NULL, 1,1, 4800,3800,5800, 110,110,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000033,1,9000000000000000033, NOW() + INTERVAL 33 DAY, NOW() + INTERVAL 33 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 20 MINUTE, NULL, 2,1, 6700,5700,7700, 200,140,60, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000034,1,9000000000000000034, NOW() + INTERVAL 34 DAY, NOW() + INTERVAL 34 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 1 DAY, NULL, 1,1, 3200,2200,4200, 90,90,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000035,1,9000000000000000035, NOW() + INTERVAL 35 DAY, NOW() + INTERVAL 35 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 45 MINUTE, NULL, 2,1, 3000,2000,4000, 120,60,60, 0,0, NOW(),NOW(),1,1,0),
+    ss AS sale_start_time,
+    se AS sale_end_time,
 
-    (8000000000000000036,1,9000000000000000036, NOW() + INTERVAL 36 DAY, NOW() + INTERVAL 36 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 6 HOUR, NULL, 1,1, 5200,4200,6200, 100,100,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000037,1,9000000000000000037, NOW() + INTERVAL 37 DAY, NOW() + INTERVAL 37 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 2 HOUR, NULL, 2,1, 6100,5100,7100, 150,90,60, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000038,1,9000000000000000038, NOW() + INTERVAL 38 DAY, NOW() + INTERVAL 38 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 10 HOUR, NULL, 1,1, 2600,1600,3600, 80,80,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000039,1,9000000000000000039, NOW() + INTERVAL 39 DAY, NOW() + INTERVAL 39 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 30 MINUTE, NULL, 2,1, 4400,3400,5400, 100,40,60, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000040,1,9000000000000000040, NOW() + INTERVAL 40 DAY, NOW() + INTERVAL 40 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 1 DAY, NULL, 1,1, 4600,3600,5600, 90,90,0, 0,0, NOW(),NOW(),1,1,0),
+    stt AS status,
+    sm  AS sale_mode,
 
-    (8000000000000000041,1,9000000000000000041, NOW() + INTERVAL 41 DAY, NOW() + INTERVAL 41 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 10 MINUTE, NULL, 2,1, 2400,1400,3400, 70,50,20, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000042,1,9000000000000000042, NOW() + INTERVAL 42 DAY, NOW() + INTERVAL 42 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 3 HOUR, NULL, 1,1, 3900,2900,4900, 100,100,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000043,1,9000000000000000043, NOW() + INTERVAL 43 DAY, NOW() + INTERVAL 43 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 1 HOUR, NULL, 2,1, 5800,4800,6800, 120,80,40, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000044,1,9000000000000000044, NOW() + INTERVAL 44 DAY, NOW() + INTERVAL 44 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 20 MINUTE, NULL, 2,1, 5100,4100,6100, 120,75,45, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000045,1,9000000000000000045, NOW() + INTERVAL 45 DAY, NOW() + INTERVAL 45 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 6 HOUR, NULL, 1,1, 5600,4600,6600, 110,110,0, 0,0, NOW(),NOW(),1,1,0),
+    bp AS base_price,
+    GREATEST(bp - (800 + FLOOR(RAND(n*53)*500)), 900) AS min_price,
+    (bp + (600 + FLOOR(RAND(n*59)*700))) AS max_price,
 
-    (8000000000000000046,1,9000000000000000046, NOW() + INTERVAL 46 DAY, NOW() + INTERVAL 46 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 30 MINUTE, NULL, 2,1, 3300,2300,4300, 90,30,60, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000047,1,9000000000000000047, NOW() + INTERVAL 47 DAY, NOW() + INTERVAL 47 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 2 HOUR, NULL, 2,1, 4200,3200,5200, 120,60,60, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000048,1,9000000000000000048, NOW() + INTERVAL 48 DAY, NOW() + INTERVAL 48 DAY + INTERVAL 2 HOUR, NOW() + INTERVAL 8 HOUR, NULL, 1,1, 2800,1800,3800, 100,100,0, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000049,1,9000000000000000049, NOW() + INTERVAL 49 DAY, NOW() + INTERVAL 49 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 15 MINUTE, NULL, 2,1, 4000,3000,5000, 100,55,45, 0,0, NOW(),NOW(),1,1,0),
-    (8000000000000000050,1,9000000000000000050, NOW() + INTERVAL 50 DAY, NOW() + INTERVAL 50 DAY + INTERVAL 2 HOUR, NOW() - INTERVAL 1 HOUR, NULL, 2,1, 6200,5200,7200, 180,130,50, 0,0, NOW(),NOW(),1,1,0)
-    ON DUPLICATE KEY UPDATE id=id;
+    tt AS total_tickets,
+
+    GREATEST(tt - sold, 0) AS available_tickets,
+    sold AS sold_tickets,
+
+    0 AS hot_score,
+    0 AS version,
+
+    NOW(), NOW(), 1, 1, 0
+FROM (
+         -- 这一层先把 stt / sm / tt 等算出来
+         SELECT
+             x.*,
+             -- 再在外层用 stt 来计算 sold（这里 stt 已经是“真实字段”了）
+             (CASE
+                  WHEN x.stt = 3 THEN x.tt
+                  WHEN x.stt = 2 THEN FLOOR(x.tt * (0.10 + RAND(x.n*61) * 0.75))
+                  WHEN x.stt = 1 THEN FLOOR(x.tt * (RAND(x.n*67) * 0.25))
+                  WHEN x.stt = 4 THEN FLOOR(x.tt * (0.30 + RAND(x.n*71) * 0.60))
+                  ELSE 0
+                 END) AS sold
+         FROM (
+                  SELECT
+                      n,
+
+                      (DATE(NOW() + INTERVAL FLOOR(RAND(n) * 8) DAY)
+                          + INTERVAL (10 + FLOOR(RAND(n*3) * 13)) HOUR
+                          + INTERVAL (FLOOR(RAND(n*7) * 2) * 30) MINUTE
+                          ) AS st,
+
+                      (100 + FLOOR(RAND(n*11) * 61)) AS dur,
+                      (2600 + FLOOR(RAND(n*13) * 4300)) AS bp,
+                      (60 + FLOOR(RAND(n*17) * 141)) AS tt,
+
+                      (CASE
+                           WHEN RAND(n*19) < 0.75 THEN 1
+                           WHEN RAND(n*19) < 0.90 THEN 2
+                           ELSE 3
+                          END) AS sm,
+
+                      (CASE
+                           WHEN RAND(n*23) < 0.55 THEN 1
+                           WHEN RAND(n*23) < 0.88 THEN 2
+                           WHEN RAND(n*23) < 0.94 THEN 3
+                           WHEN RAND(n*23) < 0.98 THEN 4
+                           ELSE 5
+                          END) AS stt,
+
+                      (CASE
+                           WHEN RAND(n*29) < 0.40 THEN NOW() - INTERVAL (5 + FLOOR(RAND(n*31) * 86)) MINUTE
+                           WHEN RAND(n*29) < 0.85 THEN NOW() + INTERVAL (1 + FLOOR(RAND(n*37) * 180)) MINUTE
+                           ELSE NOW() + INTERVAL (6 + FLOOR(RAND(n*41) * 43)) HOUR
+                          END) AS ss,
+
+                      (CASE
+                           WHEN RAND(n*43) < 0.55 THEN (NOW() + INTERVAL (2 + FLOOR(RAND(n*47) * 11)) HOUR)
+                           ELSE NULL
+                          END) AS se
+
+                  FROM (
+                           SELECT 21 n UNION ALL SELECT 22 UNION ALL SELECT 23 UNION ALL SELECT 24 UNION ALL SELECT 25
+                           UNION ALL SELECT 26 UNION ALL SELECT 27 UNION ALL SELECT 28 UNION ALL SELECT 29 UNION ALL SELECT 30
+                           UNION ALL SELECT 31 UNION ALL SELECT 32 UNION ALL SELECT 33 UNION ALL SELECT 34 UNION ALL SELECT 35
+                           UNION ALL SELECT 36 UNION ALL SELECT 37 UNION ALL SELECT 38 UNION ALL SELECT 39 UNION ALL SELECT 40
+                           UNION ALL SELECT 41 UNION ALL SELECT 42 UNION ALL SELECT 43 UNION ALL SELECT 44 UNION ALL SELECT 45
+                           UNION ALL SELECT 46 UNION ALL SELECT 47 UNION ALL SELECT 48 UNION ALL SELECT 49 UNION ALL SELECT 50
+                       ) nums
+              ) x
+     ) t
+ON DUPLICATE KEY UPDATE
+                     merchant_id = VALUES(merchant_id),
+                     movie_id = VALUES(movie_id),
+                     start_time = VALUES(start_time),
+                     end_time = VALUES(end_time),
+                     sale_start_time = VALUES(sale_start_time),
+                     sale_end_time = VALUES(sale_end_time),
+                     status = VALUES(status),
+                     sale_mode = VALUES(sale_mode),
+                     base_price = VALUES(base_price),
+                     min_price = VALUES(min_price),
+                     max_price = VALUES(max_price),
+                     total_tickets = VALUES(total_tickets),
+                     available_tickets = VALUES(available_tickets),
+                     sold_tickets = VALUES(sold_tickets),
+                     update_time = NOW(),
+                     update_by = 1,
+                     deleted = 0;
+
+
+
 
 -- =========================================
 -- DEMO HOT RANK (ADD 30) 0021 ~ 0050

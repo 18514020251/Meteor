@@ -13,12 +13,25 @@ import java.time.LocalDateTime;
  * @date 2026-02-08 10:51
  */
 public record MovieScreeningVO(
-        String screeningId,        // 场次ID
-        LocalDateTime startTime,   // 开始时间
-        LocalDateTime saleStartTime, // 开售时间
-        SaleModeEnum saleMode,     // 销售模式
-        Integer basePrice,         // 基础价格（分）
+        String screeningId,
+        LocalDateTime startTime,
+        LocalDateTime endTime,
 
-        SaleStateEnum canBuy,            // 是否可以购买
-        Long remainSeconds         // 距离开售剩余秒数
+        LocalDateTime saleStartTime,
+        LocalDateTime saleEndTime,
+
+        SaleModeEnum saleMode,
+
+        Integer basePrice,
+        Integer minPrice,
+        Integer maxPrice,
+
+        Integer totalTickets,
+        Integer availableTickets,
+        Integer soldTickets,
+
+        SaleStateEnum canBuy,
+        Long remainSeconds,
+
+        Long serverTime
 ) {}

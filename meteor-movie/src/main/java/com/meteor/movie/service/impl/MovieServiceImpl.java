@@ -24,6 +24,7 @@ import com.meteor.movie.service.IMovieCategoryRelService;
 import com.meteor.movie.service.IMovieService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.movie.service.assembler.MovieAssembler;
+import com.meteor.movie.service.hot.MovieHotCounter;
 import com.meteor.movie.service.support.QuotaAllocator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     private final MinioUtil minioUtil;
     private final MediaAssetMapper mediaAssetMapper;
     private final MovieCategoryRelMapper movieCategoryRelMapper;
+    private final MovieHotCounter movieHotCounter;
 
     @Override
     @Transactional(rollbackFor = Exception.class)

@@ -22,6 +22,7 @@ public class RedisKeyConstants {
     private static final String PHONE_CODE_LIMIT_PREFIX = "sms:limit:%s:%s";
     private static final String PHONE_CODE_IP_LIMIT_KEY = "sms:ip:limit:%s:%s";
     private static final String USER_ROLE_KEY = "user:role:%s";
+    private static final String SCREENING_HOT_KEY = "screening:hot:%d";
 
     public static final Duration USER_INFO_TTL = Duration.ofHours(1);
     public static final Duration USER_INFO_NULL_TTL = Duration.ofSeconds(60);
@@ -60,4 +61,7 @@ public class RedisKeyConstants {
         return String.format(USER_ROLE_KEY, userId);
     }
 
+    public static String buildScreeningHotKey(Long movieId) {
+        return String.format(SCREENING_HOT_KEY, movieId);
+    }
 }
