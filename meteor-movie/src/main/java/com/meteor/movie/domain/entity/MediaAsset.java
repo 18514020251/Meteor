@@ -9,9 +9,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 
+import com.meteor.api.enums.MediaAssetKindEnum;
 import com.meteor.common.enums.system.DeleteStatus;
-import com.meteor.movie.enums.MediaAssetKindEnum;
-import com.meteor.movie.enums.MediaBizTypeEnum;
+import com.meteor.api.enums.MediaBizTypeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

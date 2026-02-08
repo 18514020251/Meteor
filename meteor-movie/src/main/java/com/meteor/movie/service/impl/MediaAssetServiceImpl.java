@@ -1,12 +1,15 @@
 package com.meteor.movie.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.meteor.api.enums.MediaAssetKindEnum;
 import com.meteor.common.constants.MediaConstants;
+import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.minio.util.MinioUtil;
 import com.meteor.movie.controller.vo.MediaUploadVO;
 import com.meteor.movie.domain.entity.MediaAsset;
-import com.meteor.movie.enums.MediaAssetKindEnum;
+import com.meteor.api.enums.MediaBizTypeEnum;
 import com.meteor.movie.mapper.MediaAssetMapper;
 import com.meteor.movie.service.IMediaAssetService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -137,10 +140,26 @@ public class MediaAssetServiceImpl extends ServiceImpl<MediaAssetMapper, MediaAs
 
         String previewUrl = minioUtil.buildPresignedUrl(objectKey);
 
-        MediaUploadVO vo = new MediaUploadVO();
-        vo.setObjectKey(objectKey);
-        vo.setPreviewUrl(previewUrl);
-        return vo;
+        return new MediaUploadVO(objectKey, previewUrl);
+    }
+
+    /**
+     * 根据电影ID查询海报URL列表
+     */
+    @Override
+    public List<String> getPosterUrlsetPosterUrls(Long movieId) {
+        LambdaQueryWrapper<MediaAsset> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MediaAsset::getBizType, MediaBizTypeEnum.MOVIE)
+                .eq(MediaAsset::getBizId, movieId)
+                .eq(MediaAsset::getKind, MediaAssetKindEnum.POSTER)
+                .eq(MediaAsset::getDeleted, DeleteStatus.NORMAL)
+                .orderByAsc(MediaAsset::getSort);
+
+        List<MediaAsset> assets = baseMapper.selectList(wrapper);
+
+        return assets.stream()
+                .map(MediaAsset::getObjectKey)
+                .toList();
     }
 
 

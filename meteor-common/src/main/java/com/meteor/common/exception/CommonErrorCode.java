@@ -71,8 +71,8 @@ public enum CommonErrorCode implements IErrorCode {
     PARAM_ERROR(7001, "参数错误", HttpStatus.BAD_REQUEST),
 
     // 电影相关异常
-    CONFLICT(8001, "电影已存在", HttpStatus.BAD_REQUEST);
-
+    CONFLICT(8001, "电影已存在", HttpStatus.BAD_REQUEST),
+    MOVIE_NOT_FOUND(8002, "电影不存在", HttpStatus.NOT_FOUND);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

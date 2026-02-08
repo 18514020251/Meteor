@@ -23,13 +23,13 @@ public class UserInfoAssembler {
     private final MinioUtil minioUtil;
 
     public UserInfoVO toVO(UserInfoCache cache) {
-        UserInfoVO vo = new UserInfoVO();
-        vo.setUserId(cache.getUserId());
-        vo.setUsername(cache.getUsername());
-        vo.setRole(RoleEnum.fromCode(cache.getRole()));
-        vo.setAvatar(minioUtil.buildPresignedUrl(cache.getAvatarObject()));
-        vo.setPhone(cache.getPhone());
-        return vo;
+        return new UserInfoVO(
+                cache.getUserId(),
+                cache.getUsername(),
+                RoleEnum.fromCode(cache.getRole()),
+                minioUtil.buildPresignedUrl(cache.getAvatarObject()),
+                cache.getPhone()
+        );
     }
 
     public UserProfileDTO toProfile(User user) {
@@ -41,15 +41,13 @@ public class UserInfoAssembler {
     }
 
     public UserLoginVO toLoginVo(String tokenValue, User user) {
-        UserLoginVO vo = new UserLoginVO();
-        vo.setToken(tokenValue);
         RoleEnum roleEnum = RoleEnum.fromCode(user.getRole());
-        vo.setRole(roleEnum == null ? RoleEnum.USER.getDesc() : roleEnum.getDesc());
-        vo.setNeedOnboarding(
+        return new UserLoginVO(
+                tokenValue,
+                user.getId(),
+                roleEnum == null ? RoleEnum.USER.getDesc() : roleEnum.getDesc(),
                 user.getPreferenceInited() == null
-                        || user.getPreferenceInited() == UserPreferenceInitEnum.NOT_INIT
+                        || user.getPreferenceInited() == UserPreferenceInitEnum.NOT_INIT  // needOnboarding 对应第四个参数
         );
-        vo.setUserId(user.getId());
-        return vo;
     }
 }

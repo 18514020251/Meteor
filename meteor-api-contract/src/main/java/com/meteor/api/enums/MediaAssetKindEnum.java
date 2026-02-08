@@ -1,9 +1,7 @@
-package com.meteor.movie.enums;
+package com.meteor.api.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
-
 
 /**
  *  媒体资源类型
@@ -13,7 +11,6 @@ import lombok.Getter;
  */
 
 @Getter
-@Schema(description = "媒体资源类型")
 public enum MediaAssetKindEnum {
 
     POSTER(1, "poster", "海报"),
@@ -33,4 +30,3 @@ public enum MediaAssetKindEnum {
         this.desc = desc;
     }
 }
-

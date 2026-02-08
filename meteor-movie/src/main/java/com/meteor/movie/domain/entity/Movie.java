@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.meteor.common.enums.system.DeleteStatus;
-import com.meteor.movie.enums.MovieStatusEnum;
+import com.meteor.api.enums.MovieStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

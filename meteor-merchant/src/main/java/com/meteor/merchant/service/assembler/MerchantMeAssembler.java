@@ -14,19 +14,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class MerchantMeAssembler {
     public MerchantMeVO toVO(Merchant merchant, UserProfileDTO profile) {
-        MerchantMeVO vo = new MerchantMeVO();
-        vo.setMerchantId(merchant.getId());
-        vo.setUserId(merchant.getUserId());
-        vo.setShopName(merchant.getShopName());
-        vo.setNotice(merchant.getNotice());
-        vo.setStatus(merchant.getStatus());
-        vo.setVerifiedTime(merchant.getVerifiedTime());
-
-        if (profile != null) {
-            vo.setUsername(profile.getUsername());
-            vo.setPhone(profile.getPhone());
-            vo.setAvatar(profile.getAvatar());
-        }
-        return vo;
+        return new MerchantMeVO(
+                merchant.getId(),
+                merchant.getUserId(),
+                merchant.getShopName(),
+                merchant.getNotice(),
+                merchant.getStatus(),
+                merchant.getVerifiedTime(),
+                profile != null ? profile.getUsername() : null,
+                profile != null ? profile.getPhone() : null,
+                profile != null ? profile.getAvatar() : null
+        );
     }
 }

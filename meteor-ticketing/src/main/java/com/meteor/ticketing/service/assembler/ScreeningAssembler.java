@@ -1,7 +1,7 @@
 package com.meteor.ticketing.service.assembler;
 
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
-import com.meteor.ticketing.controller.enums.ScreeningStatusEnum;
+import com.meteor.api.enums.ScreeningStatusEnum;
 import com.meteor.ticketing.domain.entity.Screening;
 
 import java.time.LocalDateTime;

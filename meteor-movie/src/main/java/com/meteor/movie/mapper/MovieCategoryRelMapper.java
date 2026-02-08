@@ -22,4 +22,5 @@ public interface MovieCategoryRelMapper extends BaseMapper<MovieCategoryRel> {
 
     List<MovieCategoryRowDTO> listMovieCategoriesByMovieIds(@Param("movieIds") List<Long> movieIds);
 
+    List<String> listMovieCategoriesByMovieId(Long id);
 }

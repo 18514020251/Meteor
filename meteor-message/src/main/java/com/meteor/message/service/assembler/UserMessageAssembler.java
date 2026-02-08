@@ -15,14 +15,14 @@ public class UserMessageAssembler {
         if (e == null) {
             return null;
         }
-        UserMessageVO vo = new UserMessageVO();
-        vo.setId(e.getId());
-        vo.setType(e.getType());
-        vo.setTitle(e.getTitle());
-        vo.setContent(e.getContent());
-        vo.setReadStatus(e.getReadStatus().getCode());
-        vo.setCreateTime(e.getCreateTime());
-        vo.setReadTime(e.getReadTime());
-        return vo;
+        return new UserMessageVO(
+                e.getId(),
+                e.getType(),
+                e.getTitle(),
+                e.getContent(),
+                e.getReadStatus().getCode(),
+                e.getCreateTime(),
+                e.getReadTime()
+        );
     }
 }

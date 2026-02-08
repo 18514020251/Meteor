@@ -1,11 +1,14 @@
 package com.meteor.user;
 
+import com.meteor.common.startup.NacosConnectionChecker;
 import com.meteor.common.utils.PrintMeteor;
 import com.meteor.mp.annotation.EnableMeteorMyBatisPlus;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 
 /**
  * 用户模块启动类
@@ -21,6 +24,11 @@ public class UserApplication {
     public static void main(String[] args) {
         SpringApplication.run(UserApplication.class, args);
         PrintMeteor.printWelcomeBanner();
+    }
+
+    @Bean
+    public NacosConnectionChecker nacosConnectionChecker(Environment env) {
+        return new NacosConnectionChecker(env);
     }
 
 }

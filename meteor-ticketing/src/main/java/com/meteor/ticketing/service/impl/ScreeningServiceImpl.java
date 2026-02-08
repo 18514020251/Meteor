@@ -6,7 +6,7 @@ import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
-import com.meteor.ticketing.controller.enums.ScreeningStatusEnum;
+import com.meteor.api.enums.ScreeningStatusEnum;
 import com.meteor.ticketing.domain.entity.Screening;
 import com.meteor.ticketing.mapper.ScreeningMapper;
 import com.meteor.ticketing.service.IScreeningService;

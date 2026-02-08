@@ -3,7 +3,7 @@ package com.meteor.movie.service.assembler;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
 import com.meteor.movie.domain.entity.Movie;
-import com.meteor.movie.enums.MovieStatusEnum;
+import com.meteor.api.enums.MovieStatusEnum;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

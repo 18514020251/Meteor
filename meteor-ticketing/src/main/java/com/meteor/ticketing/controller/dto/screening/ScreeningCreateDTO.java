@@ -1,6 +1,6 @@
 package com.meteor.ticketing.controller.dto.screening;
 
-import com.meteor.ticketing.controller.enums.SaleModeEnum;
+import com.meteor.api.enums.SaleModeEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;

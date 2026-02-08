@@ -1,6 +1,5 @@
 package com.meteor.message.controller.vo;
 
-import lombok.Data;
 
 import java.time.LocalDateTime;
 
@@ -10,13 +9,12 @@ import java.time.LocalDateTime;
  * @author Programmer
  * @date 2026-01-29 17:55
  */
-@Data
-public class UserMessageVO {
-    private Long id;
-    private Integer type;
-    private String title;
-    private String content;
-    private Integer readStatus;
-    private LocalDateTime createTime;
-    private LocalDateTime readTime;
-}
+public record UserMessageVO(
+    Long id,
+    Integer type,
+    String title,
+    String content,
+    Integer readStatus,
+    LocalDateTime createTime,
+    LocalDateTime readTime
+){}

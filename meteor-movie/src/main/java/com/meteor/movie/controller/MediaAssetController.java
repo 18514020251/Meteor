@@ -1,10 +1,9 @@
 package com.meteor.movie.controller;
 
-
 import cn.dev33.satoken.annotation.SaCheckRole;
+import com.meteor.api.enums.MediaAssetKindEnum;
 import com.meteor.common.result.Result;
 import com.meteor.movie.controller.vo.MediaUploadVO;
-import com.meteor.movie.enums.MediaAssetKindEnum;
 import com.meteor.movie.service.IMediaAssetService;
 import com.meteor.satoken.constants.RoleConst;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +39,5 @@ public class MediaAssetController {
         MediaUploadVO vo = mediaUploadService.upload(file, kind);
         return Result.success(vo);
     }
-
 
 }

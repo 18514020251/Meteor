@@ -5,6 +5,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import com.meteor.common.result.Result;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
 import com.meteor.movie.controller.vo.HomeMovieCardVO;
+import com.meteor.movie.controller.vo.MovieDetailVO;
 import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.service.IMovieService;
 import com.meteor.satoken.constants.RoleConst;
@@ -65,4 +66,11 @@ public class MovieController {
         return Result.success(movieService.latest20());
     }
 
+
+    @Operation(summary = "根据ID查询电影详情（含场次、分类、海报、热度）")
+    @GetMapping("/{id}")
+    public Result<MovieDetailVO> getMovieDetail(@PathVariable Long id) {
+        MovieDetailVO detail = movieService.getMovieDetail(id);
+        return Result.success(detail);
+    }
 }

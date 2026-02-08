@@ -1,9 +1,9 @@
 package com.meteor.movie.service.assembler;
 
+import com.meteor.api.enums.MediaAssetKindEnum;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.movie.domain.entity.MediaAsset;
-import com.meteor.movie.enums.MediaAssetKindEnum;
-import com.meteor.movie.enums.MediaBizTypeEnum;
+import com.meteor.api.enums.MediaBizTypeEnum;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

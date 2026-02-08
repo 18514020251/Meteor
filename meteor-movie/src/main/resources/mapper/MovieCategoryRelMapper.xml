@@ -22,5 +22,13 @@
         </foreach>
         ORDER BY r.movie_id ASC, c.sort ASC, c.id ASC
     </select>
+    <select id="listMovieCategoriesByMovieId" resultType="java.lang.String" parameterType="java.lang.Long">
+        select c.name
+        from movie_category_rel r
+        join movie_category c on c.id = r.category_id and c.deleted = 0
+        where r.deleted = 0
+        and r.movie_id = #{movieId}
+        order by c.sort asc, c.id asc
+    </select>
 
 </mapper>

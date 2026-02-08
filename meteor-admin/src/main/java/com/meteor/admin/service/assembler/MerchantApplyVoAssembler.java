@@ -14,16 +14,16 @@ import org.springframework.stereotype.Component;
 public class MerchantApplyVoAssembler {
 
     public MerchantApplyUnsentVO toUnsentVO(MerchantApply a) {
-        MerchantApplyUnsentVO vo = new MerchantApplyUnsentVO();
-        vo.setApplyId(a.getApplyId());
-        vo.setUserId(a.getUserId());
-        vo.setShopName(a.getShopName());
-        vo.setStatus(a.getStatus().getCode());
-        vo.setReviewedBy(a.getReviewedBy());
-        vo.setReviewedTime(a.getReviewedTime());
-        vo.setReviewedMsgSent(a.getReviewedMsgSent());
-        vo.setReviewedMsgSentTime(a.getReviewedMsgSentTime());
-        vo.setRejectReason(a.getRejectReason());
-        return vo;
+        return new MerchantApplyUnsentVO(
+                a.getApplyId(),
+                a.getUserId(),
+                a.getShopName(),
+                a.getStatus().getCode(),
+                a.getReviewedBy(),
+                a.getReviewedTime(),
+                a.getReviewedMsgSent(),
+                a.getReviewedMsgSentTime(),
+                a.getRejectReason()
+        );
     }
 }

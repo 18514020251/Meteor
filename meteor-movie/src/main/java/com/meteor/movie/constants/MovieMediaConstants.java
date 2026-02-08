@@ -1,6 +1,8 @@
 package com.meteor.movie.constants;
 
 /**
+ *  媒体资源常量
+ *
  * @author Programmer
  * @date 2026-02-03 19:31
  */

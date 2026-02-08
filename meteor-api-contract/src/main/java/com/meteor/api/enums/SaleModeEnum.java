@@ -1,7 +1,6 @@
-package com.meteor.ticketing.controller.enums;
+package com.meteor.api.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 /**
@@ -11,7 +10,6 @@ import lombok.Getter;
  * @date 2026-02-02 11:29
  */
 @Getter
-@Schema(description = "销售模式")
 public enum SaleModeEnum {
 
     AUTO(1, "抢票模式"),

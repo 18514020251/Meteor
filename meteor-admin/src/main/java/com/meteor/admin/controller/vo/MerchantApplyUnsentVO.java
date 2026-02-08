@@ -1,7 +1,5 @@
 package com.meteor.admin.controller.vo;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
 
 /**
@@ -10,18 +8,17 @@ import java.time.LocalDateTime;
  * @author Programmer
  * @date 2026-01-29 12:08
  */
-@Data
-public class MerchantApplyUnsentVO {
-    private Long applyId;
-    private Long userId;
-    private String shopName;
-    private Integer status;
+public record MerchantApplyUnsentVO(
+    Long applyId,
+    Long userId,
+    String shopName,
+    Integer status,
 
-    private Long reviewedBy;
-    private LocalDateTime reviewedTime;
+    Long reviewedBy,
+    LocalDateTime reviewedTime,
 
-    private Integer reviewedMsgSent;
-    private LocalDateTime reviewedMsgSentTime;
+    Integer reviewedMsgSent,
+    LocalDateTime reviewedMsgSentTime,
 
-    private String rejectReason;
-}
+    String rejectReason
+){}

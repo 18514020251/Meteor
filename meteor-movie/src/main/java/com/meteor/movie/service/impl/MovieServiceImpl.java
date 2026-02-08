@@ -11,9 +11,10 @@ import com.meteor.api.contract.user.client.UserPreferenceClient;
 import com.meteor.movie.constants.MovieMediaConstants;
 import com.meteor.movie.controller.dto.MovieCreateDTO;
 import com.meteor.movie.controller.vo.HomeMovieCardVO;
+import com.meteor.movie.controller.vo.MovieDetailVO;
 import com.meteor.movie.controller.vo.MovieTitleVO;
 import com.meteor.movie.domain.entity.Movie;
-import com.meteor.movie.enums.MovieStatusEnum;
+import com.meteor.api.enums.MovieStatusEnum;
 import com.meteor.movie.mapper.MediaAssetMapper;
 import com.meteor.movie.mapper.MovieCategoryRelMapper;
 import com.meteor.movie.mapper.MovieMapper;
@@ -328,7 +329,6 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 .toList();
     }
 
-
     private Optional<HomeMovieCardVO> buildHomeCardOrNull(
             HomeMovieCardVO base,
             Map<String, TicketingMovieInfoListDTO.Item> ticketingMap
@@ -454,6 +454,41 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
             map.computeIfAbsent(row.getMovieId(), k -> new ArrayList<>()).add(row.getCategoryName());
         }
         return map;
+    }
+
+    @Override
+    public MovieDetailVO getMovieDetail(Long id) {
+        Movie movie = baseMapper.selectById(id);
+        if (movie == null || movie.getDeleted() == DeleteStatus.DELETED) {
+            throw new BizException(CommonErrorCode.MOVIE_NOT_FOUND);
+        }
+
+        List<String> categories = movieCategoryRelMapper.listMovieCategoriesByMovieId(id);
+
+        List<String> posters = getPosterUrlsWithFullUrl(id);
+
+
+        return new MovieDetailVO(
+                String.valueOf(movie.getId()),
+                movie.getTitle(),
+                movie.getAlias(),
+                movie.getIntro(),
+                movie.getDurationMin(),
+                movie.getReleaseDate(),
+                movie.getStatus(),
+                categories,
+                posters,
+                System.currentTimeMillis()
+        );
+    }
+
+    private List<String> getPosterUrlsWithFullUrl(Long movieId) {
+        List<String> objectKeys = mediaAssetService.getPosterUrlsetPosterUrls(movieId);
+
+        return objectKeys.stream()
+                .map(minioUtil::buildPublicUrl)
+                .filter(Objects::nonNull)
+                .toList();
     }
 }
 
