@@ -3,7 +3,7 @@ package com.meteor.ticketing.controller.vo;
 import java.time.LocalDateTime;
 
 /**
- *  影片排期信息
+ *  影片排期信息VO
  *
  * @author Programmer
  * @version 1.0
