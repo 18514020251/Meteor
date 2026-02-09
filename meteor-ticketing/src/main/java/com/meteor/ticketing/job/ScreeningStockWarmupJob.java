@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -104,7 +105,8 @@ public class ScreeningStockWarmupJob {
         }
 
         stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(available), ttlSeconds, TimeUnit.SECONDS);
-        stringRedisTemplate.opsForValue().set(readyKey, "READY", ttlSeconds, TimeUnit.SECONDS);
+        long saleStartEpoch = s.getSaleStartTime().atZone(ZoneId.systemDefault()).toEpochSecond();
+        stringRedisTemplate.opsForValue().set(readyKey, String.valueOf(saleStartEpoch), ttlSeconds, TimeUnit.SECONDS);
 
         log.info("[WarmupOK] id={} stockKey={} value={} ttl={}s", screeningId, stockKey, available, ttlSeconds);
     }

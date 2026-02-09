@@ -80,4 +80,38 @@ public class TicketOrderTopologyAutoConfiguration {
                 .to(ticketOrderDlxExchange)
                 .with(TicketOrderContract.RoutingKey.TICKET_ORDER_CREATE_DLX);
     }
+
+    @Bean
+    public Queue ticketOrderDbReservedQueue() {
+        return new Queue(
+                TicketOrderContract.Queue.TICKET_ORDER_DB_RESERVED,
+                true
+        );
+    }
+
+    @Bean
+    public Binding ticketOrderDbReservedBinding(
+            Queue ticketOrderDbReservedQueue,
+            DirectExchange ticketOrderExchange
+    ) {
+        return BindingBuilder.bind(ticketOrderDbReservedQueue)
+                .to(ticketOrderExchange)
+                .with(TicketOrderContract.RoutingKey.TICKET_ORDER_DB_RESERVED);
+    }
+
+    @Bean
+    public Queue ticketStockReleaseQueue() {
+        return new Queue(TicketOrderContract.Queue.TICKET_STOCK_RELEASE, true);
+    }
+
+    @Bean
+    public Binding ticketStockReleaseBinding(
+            Queue ticketStockReleaseQueue,
+            DirectExchange ticketOrderExchange
+    ) {
+        return BindingBuilder.bind(ticketStockReleaseQueue)
+                .to(ticketOrderExchange)
+                .with(TicketOrderContract.RoutingKey.TICKET_STOCK_RELEASE);
+    }
+
 }

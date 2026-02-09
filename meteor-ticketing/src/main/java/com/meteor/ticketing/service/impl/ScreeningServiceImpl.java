@@ -7,6 +7,7 @@ import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.ticketing.controller.dto.ScreeningOrderSnapshot;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.api.enums.ScreeningStatusEnum;
 import com.meteor.ticketing.controller.vo.MovieScreeningVO;
@@ -14,6 +15,7 @@ import com.meteor.ticketing.controller.vo.ScreeningVO;
 import com.meteor.ticketing.domain.entity.Screening;
 import com.meteor.api.enums.SaleStateEnum;
 import com.meteor.ticketing.mapper.ScreeningMapper;
+import com.meteor.ticketing.redis.ScreeningConstants;
 import com.meteor.ticketing.service.IScreeningService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.ticketing.service.assembler.ScreeningAssembler;
@@ -413,5 +415,85 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
     }
 
 
+    @Override
+    public boolean decrStockAndIncrSold(Long screeningId) {
+        return lambdaUpdate()
+                .setSql("available_tickets = available_tickets - 1")
+                .setSql("sold_tickets = sold_tickets + 1")
+                .setSql("version = version + 1")
+                .set(Screening::getUpdateTime, LocalDateTime.now())
+                .eq(Screening::getId, screeningId)
+                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
+                .gt(Screening::getAvailableTickets, ScreeningConstants.STOCK_EMPTY)
+                .update();
+    }
 
+    @Override
+    public void markSoldOutIfNeeded(Long screeningId) {
+        lambdaUpdate()
+                .set(Screening::getStatus, ScreeningStatusEnum.SOLD_OUT)
+                .set(Screening::getUpdateTime, LocalDateTime.now())
+                .eq(Screening::getId, screeningId)
+                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
+                .eq(Screening::getAvailableTickets, ScreeningConstants.STOCK_EMPTY)
+                .ne(Screening::getStatus, ScreeningStatusEnum.SOLD_OUT)
+                .update();
+    }
+
+
+    @Override
+    public ScreeningOrderSnapshot getOrderSnapshot(Long screeningId) {
+        Screening s = lambdaQuery()
+                .select(
+                        Screening::getId,
+                        Screening::getMerchantId,
+                        Screening::getMovieId,
+                        Screening::getBasePrice,
+                        Screening::getStartTime
+                )
+                .eq(Screening::getId, screeningId)
+                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
+                .one();
+
+        if (s == null) return null;
+
+        ScreeningOrderSnapshot snap = new ScreeningOrderSnapshot();
+        snap.setId(s.getId());
+        snap.setMerchantId(s.getMerchantId());
+        snap.setMovieId(s.getMovieId());
+        snap.setBasePrice(s.getBasePrice());
+        snap.setStartTime(s.getStartTime());
+        return snap;
+    }
+
+    /**
+     * 订单超时回滚库存
+     */
+    @Override
+    public boolean incrStockAndDecrSold(Long screeningId, Integer cnt) {
+        return lambdaUpdate()
+                .setSql("available_tickets = available_tickets + " + cnt)
+                .setSql("sold_tickets = sold_tickets - " + cnt)
+                .setSql("version = version + 1")
+                .set(Screening::getUpdateTime, LocalDateTime.now())
+                .eq(Screening::getId, screeningId)
+                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
+                .ge(Screening::getSoldTickets, cnt)
+                .update();
+    }
+
+    /**
+     * 售罄 → 恢复售卖
+     */
+    @Override
+    public void markSellingIfHasStock(Long screeningId) {
+        lambdaUpdate()
+                .set(Screening::getStatus, ScreeningStatusEnum.SELLING)
+                .set(Screening::getUpdateTime, LocalDateTime.now())
+                .eq(Screening::getId, screeningId)
+                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
+                .eq(Screening::getStatus, ScreeningStatusEnum.SOLD_OUT)
+                .gt(Screening::getAvailableTickets, ScreeningConstants.STOCK_EMPTY)
+                .update();
+    }
 }

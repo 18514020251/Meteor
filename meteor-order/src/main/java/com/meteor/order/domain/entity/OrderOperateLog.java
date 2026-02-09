@@ -8,6 +8,9 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.meteor.order.enums.OperatorTypeEnum;
+import com.meteor.order.enums.OrderOperateTypeEnum;
+import com.meteor.order.enums.OrderStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -45,13 +48,13 @@ public class OrderOperateLog implements Serializable {
     private Integer fromStatus;
 
     @Schema(description = "变更后状态")
-    private Integer toStatus;
+    private OrderStatusEnum toStatus;
 
     @Schema(description = "1=CREATE 2=PAY_SUCCESS 3=CANCEL 4=CLOSE_TIMEOUT 5=REFUND")
-    private Integer operateType;
+    private OrderOperateTypeEnum operateType;
 
     @Schema(description = "1=USER 2=SYSTEM 3=ADMIN")
-    private Integer operatorType;
+    private OperatorTypeEnum operatorType;
 
     @Schema(description = "操作人ID")
     private Long operatorId;

@@ -6,6 +6,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import java.io.Serial;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.meteor.common.enums.system.DeleteStatus;
+import com.meteor.order.enums.OrderBizTypeEnum;
+import com.meteor.order.enums.OrderStatusEnum;
+import com.meteor.order.enums.PayChannelEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,7 +28,7 @@ import java.io.Serializable;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("order")
+@TableName("t_order")
 @Schema(description="Order对象")
 public class Order implements Serializable {
 
@@ -45,10 +49,10 @@ public class Order implements Serializable {
     private Long merchantId;
 
     @Schema(description = "0=WAIT_PAY 1=PAID 2=CANCELED 3=CLOSED_TIMEOUT 4=REFUNDING 5=REFUNDED")
-    private Integer status;
+    private OrderStatusEnum status;
 
     @Schema(description = "业务类型 1=电影票")
-    private Integer bizType;
+    private OrderBizTypeEnum bizType;
 
     @Schema(description = "总金额(分)")
     private Integer totalAmount;
@@ -72,9 +76,9 @@ public class Order implements Serializable {
     private String cancelReason;
 
     @Schema(description = "0=NONE 1=ALIPAY 2=WECHAT")
-    private Integer payChannel;
+    private PayChannelEnum payChannel;
 
-    @Schema(description = "支付单号(本系统生成，可为空待创建)")
+    @Schema(description = "支付单号")
     private String payNo;
 
     @Schema(description = "幂等键(防重复下单)")
@@ -99,7 +103,7 @@ public class Order implements Serializable {
     private Long updateBy;
 
     @Schema(description = "是否删除 0=否 1=是")
-    private Integer deleted;
+    private DeleteStatus deleted;
 
 
 }

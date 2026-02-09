@@ -27,4 +27,5 @@ public enum ScreeningStatusEnum {
         this.code = code;
         this.desc = desc;
     }
+
 }

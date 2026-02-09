@@ -34,6 +34,28 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mq-contract</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mq-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mq-topology-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-id-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.carrotsearch.thirdparty</groupId>
+            <artifactId>simple-xml-safe</artifactId>
+            <version>2.7.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

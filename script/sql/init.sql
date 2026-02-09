@@ -437,8 +437,8 @@ CREATE TABLE media_asset (
 
 USE meteor_order;
 
-DROP TABLE IF EXISTS `order`;
-CREATE TABLE `order` (
+DROP TABLE IF EXISTS `t_order`;
+CREATE TABLE `t_order` (
     id              BIGINT PRIMARY KEY COMMENT '订单ID（雪花算法生成）',
     order_no        VARCHAR(32) NOT NULL COMMENT '订单号(业务唯一)',
 
@@ -563,6 +563,14 @@ CREATE TABLE order_operate_log (
     KEY idx_ct (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单操作日志';
 
+
+CREATE TABLE order_mq_consume_log (
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键',
+    msg_key      VARCHAR(64) NOT NULL COMMENT '消息唯一键(orderNo/eventId)',
+    topic        VARCHAR(64) NOT NULL COMMENT '消息主题(ticket.order.db_reserved)',
+    create_time  DATETIME NOT NULL COMMENT '创建时间',
+    UNIQUE KEY uk_topic_msg (topic, msg_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MQ消费去重表';
 
 
 set FOREIGN_KEY_CHECKS = 1;

@@ -12,18 +12,32 @@ public final class LuaScripts {
     private LuaScripts() {}
 
     public static final String DECR_STOCK_1 = """
-        local stock = tonumber(redis.call('GET', KEYS[1]))
-        if not stock then
-            return -3
-        end
+    local stock = redis.call('GET', KEYS[1])
+    if not stock then
+        return -3
+    end
 
-        if stock <= 0 then
-            return -1
-        end
+    stock = tonumber(stock)
+    if stock <= 0 then
+        return -1
+    end
 
-        stock = stock - 1
-        redis.call('SET', KEYS[1], stock)
+    local left = redis.call('DECR', KEYS[1])
+    return left
+    """;
 
-        return stock
-        """;
+    public static final String INCR_STOCK_N = """
+    local stock = redis.call('GET', KEYS[1])
+    if not stock then
+        return -3
+    end
+
+    local n = tonumber(ARGV[1])
+    if not n or n <= 0 then
+        return -2
+    end
+
+    local left = redis.call('INCRBY', KEYS[1], n)
+    return left
+    """;
 }

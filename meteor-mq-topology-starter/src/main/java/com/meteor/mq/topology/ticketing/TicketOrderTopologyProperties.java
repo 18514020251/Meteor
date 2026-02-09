@@ -1,6 +1,6 @@
 package com.meteor.mq.topology.ticketing;
 
-import lombok.Getter;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -10,13 +10,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @version 1.0
  * @date 2026-02-09 12:02
  */
-@Getter
+@Data
 @ConfigurationProperties(prefix = "meteor.mq.topology.ticket-order")
 public class TicketOrderTopologyProperties {
 
     private boolean enabled = true;
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 }

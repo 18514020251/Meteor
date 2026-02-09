@@ -51,8 +51,11 @@ public class RedisKeyConstants {
     public static final Duration WARMUP_WINDOW = Duration.ofMinutes(5);
     public static final Duration EXTRA_TTL = Duration.ofSeconds(300);
 
-
-
+    /**
+     * Redis库存补偿重建TTL（当key已过期时）
+     * 不是业务TTL，仅用于防止库存补偿后key永久缺失
+     */
+    public static final Duration STOCK_RECOVER_REBUILD_TTL = Duration.ofMinutes(10);
 
     public static final String LIMIT_FLAG = "1";
     public static final int PHONE_CODE_IP_LIMIT_COUNT = 5;

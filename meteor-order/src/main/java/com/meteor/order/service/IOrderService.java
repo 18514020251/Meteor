@@ -1,5 +1,6 @@
 package com.meteor.order.service;
 
+import com.meteor.mq.contract.ticketing.TicketOrderDbReservedMessage;
 import com.meteor.order.domain.entity.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderService extends IService<Order> {
 
+    void createOrderFromTicket(TicketOrderDbReservedMessage message);
 }

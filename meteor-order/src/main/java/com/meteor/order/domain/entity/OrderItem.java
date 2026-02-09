@@ -8,6 +8,8 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.meteor.common.enums.system.DeleteStatus;
+import com.meteor.order.enums.OrderStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -66,7 +68,7 @@ public class OrderItem implements Serializable {
     private String extra;
 
     @Schema(description = "0=WAIT_PAY 1=PAID 2=CANCELED 3=CLOSED_TIMEOUT 4=REFUNDING 5=REFUNDED")
-    private Integer status;
+    private OrderStatusEnum status;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
@@ -81,7 +83,7 @@ public class OrderItem implements Serializable {
     private Long updateBy;
 
     @Schema(description = "是否删除 0=否 1=是")
-    private Integer deleted;
+    private DeleteStatus deleted;
 
 
 }

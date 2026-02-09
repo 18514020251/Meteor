@@ -2,3 +2,4 @@ com.meteor.mq.topology.merchant.MerchantApplyTopologyAutoConfiguration
 com.meteor.mq.topology.merchant.MerchantTopologyAutoConfiguration
 com.meteor.mq.topology.message.UserMessageTopologyAutoConfiguration
 com.meteor.mq.topology.ticketing.TicketOrderTopologyAutoConfiguration
+com.meteor.mq.topology.order.OrderPayTimeoutTopologyAutoConfiguration

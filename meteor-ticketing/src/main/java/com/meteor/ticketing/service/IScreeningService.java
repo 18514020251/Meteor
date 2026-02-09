@@ -1,6 +1,7 @@
 package com.meteor.ticketing.service;
 
 import com.meteor.api.contract.ticketing.dto.TicketingMovieInfoListDTO;
+import com.meteor.ticketing.controller.dto.ScreeningOrderSnapshot;
 import com.meteor.ticketing.controller.dto.screening.ScreeningCreateDTO;
 import com.meteor.ticketing.controller.vo.MovieScreeningVO;
 import com.meteor.ticketing.controller.vo.ScreeningVO;
@@ -33,4 +34,26 @@ public interface IScreeningService extends IService<Screening> {
     List<MovieScreeningVO> getScreeningsByMovieId(Long movieId);
 
     ScreeningVO getRealtimeScreening(String screeningId);
+
+    /**
+     *  扣减库存并增加已售
+     * */
+    boolean decrStockAndIncrSold(Long screeningId);
+
+    void markSoldOutIfNeeded(Long screeningId);
+
+    /**
+     *  获取订单信息
+     * */
+    ScreeningOrderSnapshot getOrderSnapshot(Long screeningId);
+
+    /**
+     *  恢复库存 并标记可售
+     * */
+    boolean incrStockAndDecrSold(Long screeningId, Integer cnt);
+
+    /**
+     *  恢复库存 并标记可售
+     * */
+    void markSellingIfHasStock(Long screeningId);
 }

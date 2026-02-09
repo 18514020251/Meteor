@@ -13,18 +13,19 @@ public final class RedisScripts {
 
     private RedisScripts() {}
 
-    /**
-     * 扣减库存（扣1）
-     * return:
-     *  >=0  剩余库存
-     *  -1   库存不足
-     *  -3   库存不存在（未预热）
-     */
     public static final DefaultRedisScript<Long> DECR_STOCK_1;
 
     static {
         DECR_STOCK_1 = new DefaultRedisScript<>();
         DECR_STOCK_1.setScriptText(LuaScripts.DECR_STOCK_1);
         DECR_STOCK_1.setResultType(Long.class);
+    }
+
+    public static final DefaultRedisScript<Long> INCR_STOCK_N;
+
+    static {
+        INCR_STOCK_N = new DefaultRedisScript<>();
+        INCR_STOCK_N.setScriptText(LuaScripts.INCR_STOCK_N);
+        INCR_STOCK_N.setResultType(Long.class);
     }
 }
