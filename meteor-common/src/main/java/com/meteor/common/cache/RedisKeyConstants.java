@@ -15,7 +15,7 @@ public class RedisKeyConstants {
     private RedisKeyConstants() {
     }
 
-    // 用户模块
+    // ================== 用户相关 ==================
     private static final String USER_INFO_KEY = "user:info:%d";
     private static final String PHONE_CODE_PREFIX = "sms:code:%s:%s";
     private static final String PHONE_CODE_LIMIT_PREFIX = "sms:limit:%s:%s";
@@ -37,6 +37,22 @@ public class RedisKeyConstants {
 
 
     public static final String CACHE_NULL_VALUE = "__NULL__";
+
+    // ================== 订单/抢票库存 ==================
+    private static final String SCREENING_STOCK_KEY = "screening:stock:%d";
+    private static final String SCREENING_STOCK_READY_KEY = "screening:stock:ready:%d";
+    private static final String SCREENING_STOCK_WARM_LOCK_KEY = "lock:screening:stock:warm:%d";
+
+    /**
+     * 预热锁 TTL：避免死锁
+     */
+    public static final Duration SCREENING_STOCK_WARM_LOCK_TTL = Duration.ofSeconds(60);
+
+    public static final Duration WARMUP_WINDOW = Duration.ofMinutes(5);
+    public static final Duration EXTRA_TTL = Duration.ofSeconds(300);
+
+
+
 
     public static final String LIMIT_FLAG = "1";
     public static final int PHONE_CODE_IP_LIMIT_COUNT = 5;
@@ -83,5 +99,17 @@ public class RedisKeyConstants {
 
     public static String buildOnlineUserDetailKey(Object userId) {
         return String.format(ONLINE_USER_DETAIL_KEY, userId);
+    }
+
+    public static String buildScreeningStockKey(Long screeningId) {
+        return String.format(SCREENING_STOCK_KEY, screeningId);
+    }
+
+    public static String buildScreeningStockReadyKey(Long screeningId) {
+        return String.format(SCREENING_STOCK_READY_KEY, screeningId);
+    }
+
+    public static String buildScreeningStockWarmLockKey(Long screeningId) {
+        return String.format(SCREENING_STOCK_WARM_LOCK_KEY, screeningId);
     }
 }

@@ -15,15 +15,21 @@ import java.util.Objects;
  */
 @Configuration
 public class SimpleRateLimitConfig {
+
     @Bean
-    public KeyResolver ipKeyResolver() {
+    public KeyResolver tokenOrIpKeyResolver() {
         return exchange -> {
-            String ip = Objects.requireNonNull(exchange.getRequest()
-                            .getRemoteAddress())
-                    .getAddress()
-                    .getHostAddress();
-            return Mono.just(ip);
+            String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+            if (token != null && !token.isBlank()) {
+                if (token.startsWith("Bearer ")) {
+                    token = token.substring(7);
+                }
+                return Mono.just("tk:" + token);
+            }
+            String ip = Objects.requireNonNull(exchange.getRequest().getRemoteAddress())
+                    .getAddress().getHostAddress();
+            return Mono.just("ip:" + ip);
         };
     }
-}
 
+}

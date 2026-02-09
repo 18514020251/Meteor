@@ -34,6 +34,10 @@ CREATE DATABASE IF NOT EXISTS meteor_movie
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_general_ci;
 
+CREATE DATABASE IF NOT EXISTS meteor_order
+    DEFAULT CHARACTER SET utf8mb4
+    DEFAULT COLLATE utf8mb4_general_ci;
+
 -- =========================================================
 -- meteor_user
 -- =========================================================
@@ -416,6 +420,142 @@ CREATE TABLE media_asset (
                              KEY idx_object_key (object_key),
                              KEY idx_biz (biz_type, biz_id, kind, sort)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片资源表';
+
+
+-- =========================================================
+-- meteor_order
+-- =========================================================
+
+USE meteor_order;
+
+DROP TABLE IF EXISTS t_order;
+CREATE TABLE t_order (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '订单ID',
+    order_no        VARCHAR(32) NOT NULL COMMENT '订单号(业务唯一)',
+
+    user_id         BIGINT NOT NULL COMMENT '用户ID',
+    merchant_id     BIGINT NOT NULL COMMENT '商家ID(影院方/售票方)',
+
+    status          TINYINT NOT NULL DEFAULT 0 COMMENT '0=WAIT_PAY 1=PAID 2=CANCELED 3=CLOSED_TIMEOUT 4=REFUNDING 5=REFUNDED',
+    biz_type        TINYINT NOT NULL DEFAULT 1 COMMENT '业务类型 1=电影票',
+
+    total_amount    INT NOT NULL COMMENT '总金额(分)',
+    pay_amount      INT NOT NULL COMMENT '实付金额(分)',
+    discount_amount INT NOT NULL DEFAULT 0 COMMENT '优惠金额(分)',
+
+    expire_time     DATETIME NOT NULL COMMENT '支付截止时间',
+    pay_time        DATETIME NULL COMMENT '支付成功时间',
+    close_time      DATETIME NULL COMMENT '关闭时间(取消/超时)',
+    cancel_reason   VARCHAR(128) NULL COMMENT '取消原因(用户取消/超时等)',
+
+    pay_channel     TINYINT NOT NULL DEFAULT 0 COMMENT '0=NONE 1=ALIPAY 2=WECHAT',
+    pay_no          VARCHAR(40) NULL COMMENT '支付单号(本系统生成，可为空待创建)',
+
+    idempotent_key  VARCHAR(64) NULL COMMENT '幂等键(防重复下单)',
+    request_id      VARCHAR(64) NULL COMMENT '请求追踪ID(可选)',
+
+    extra           JSON NULL COMMENT '扩展字段',
+
+    create_time     DATETIME NOT NULL COMMENT '创建时间',
+    update_time     DATETIME NOT NULL COMMENT '更新时间',
+    create_by       BIGINT NULL COMMENT '创建人',
+    update_by       BIGINT NULL COMMENT '更新人',
+    deleted         TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
+
+    UNIQUE KEY uk_order_no (order_no),
+    KEY idx_user_ct (user_id, create_time),
+    KEY idx_status_expire (status, expire_time),
+    KEY idx_merchant_ct (merchant_id, create_time),
+    UNIQUE KEY uk_user_idempotent (user_id, idempotent_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单主表';
+
+
+DROP TABLE IF EXISTS t_order_item;
+CREATE TABLE t_order_item (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '明细ID',
+    order_id        BIGINT NOT NULL COMMENT '订单ID',
+    order_no        VARCHAR(32) NOT NULL COMMENT '订单号',
+
+    screening_id    BIGINT NOT NULL COMMENT '场次ID(screening.id)',
+    movie_id        BIGINT NOT NULL COMMENT '电影ID(movie.id)',
+    merchant_id     BIGINT NOT NULL COMMENT '商家ID',
+
+    ticket_count    INT NOT NULL COMMENT '购票张数',
+    unit_price      INT NOT NULL COMMENT '单价(分)',
+    amount          INT NOT NULL COMMENT '小计(分)',
+
+    snapshot        JSON NOT NULL COMMENT '快照(片名/海报/开场时间/售卖方式等)',
+    extra           JSON NULL COMMENT '扩展字段(未来座位/服务费等)',
+
+    create_time     DATETIME NOT NULL COMMENT '创建时间',
+    update_time     DATETIME NOT NULL COMMENT '更新时间',
+    create_by       BIGINT NULL COMMENT '创建人',
+    update_by       BIGINT NULL COMMENT '更新人',
+    deleted         TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
+
+    KEY idx_order_id (order_id),
+    KEY idx_order_no (order_no),
+    KEY idx_screening (screening_id),
+    KEY idx_movie (movie_id),
+    KEY idx_merchant (merchant_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单明细表(按张数)';
+
+
+DROP TABLE IF EXISTS t_payment;
+CREATE TABLE t_payment (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '支付记录ID',
+    pay_no          VARCHAR(40) NOT NULL COMMENT '支付单号(系统生成唯一)',
+    order_id        BIGINT NOT NULL COMMENT '订单ID',
+    order_no        VARCHAR(32) NOT NULL COMMENT '订单号',
+
+    channel         TINYINT NOT NULL COMMENT '1=ALIPAY 2=WECHAT',
+    status          TINYINT NOT NULL DEFAULT 0 COMMENT '0=INIT 1=SUCCESS 2=FAIL 3=CLOSED',
+    amount          INT NOT NULL COMMENT '支付金额(分)',
+
+    third_trade_no  VARCHAR(64) NULL COMMENT '第三方交易号',
+    pay_time        DATETIME NULL COMMENT '支付时间',
+
+    request_body    JSON NULL COMMENT '请求报文(可选)',
+    notify_body     JSON NULL COMMENT '回调报文(可选)',
+
+    create_time     DATETIME NOT NULL COMMENT '创建时间',
+    update_time     DATETIME NOT NULL COMMENT '更新时间',
+    create_by       BIGINT NULL COMMENT '创建人',
+    update_by       BIGINT NULL COMMENT '更新人',
+    deleted         TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
+
+    UNIQUE KEY uk_pay_no (pay_no),
+    KEY idx_order_no (order_no),
+    KEY idx_third_trade_no (third_trade_no),
+    KEY idx_status_ct (status, create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付记录表';
+
+
+
+DROP TABLE IF EXISTS t_order_operate_log;
+CREATE TABLE t_order_operate_log (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
+    order_id        BIGINT NOT NULL COMMENT '订单ID',
+    order_no        VARCHAR(32) NOT NULL COMMENT '订单号',
+
+    from_status     TINYINT NULL COMMENT '变更前状态',
+    to_status       TINYINT NOT NULL COMMENT '变更后状态',
+    operate_type    TINYINT NOT NULL COMMENT '1=CREATE 2=PAY_SUCCESS 3=CANCEL 4=CLOSE_TIMEOUT 5=REFUND',
+    operator_type   TINYINT NOT NULL COMMENT '1=USER 2=SYSTEM 3=ADMIN',
+    operator_id     BIGINT NULL COMMENT '操作人ID',
+    remark          VARCHAR(256) NULL COMMENT '备注',
+
+    create_time     DATETIME NOT NULL COMMENT '创建时间',
+    update_time     DATETIME NOT NULL COMMENT '更新时间',
+    create_by       BIGINT NULL COMMENT '创建人',
+    update_by       BIGINT NULL COMMENT '更新人',
+    deleted         TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
+
+    KEY idx_order_no (order_no),
+    KEY idx_order_id (order_id),
+    KEY idx_ct (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单操作日志';
+
 
 
 set FOREIGN_KEY_CHECKS = 1;

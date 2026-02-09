@@ -28,7 +28,7 @@ public class MovieHotFlushJob {
     /**
      * 每分钟执行一次
      */
-    @Scheduled(fixedRate = 1_000)
+    @Scheduled(fixedRate = 60_000)
     public void flushMovieHot() {
 
         Set<String> keys = redisTemplate.keys("movie:hot:*");
