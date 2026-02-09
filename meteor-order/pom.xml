@@ -1,0 +1,39 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.meteor</groupId>
+        <artifactId>meteor</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <description>用户模块 port:8087</description>
+
+    <artifactId>meteor-order</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mp-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>

@@ -37,6 +37,7 @@
 		<module>meteor-ticketing</module>
         <module>meteor-movie</module>
         <module>meteor-api-contract</module>
+        <module>meteor-order</module>
     </modules>
 
 	<properties>

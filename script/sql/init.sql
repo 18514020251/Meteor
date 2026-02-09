@@ -335,6 +335,15 @@ CREATE TABLE hot_rank (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='场次热度榜';
 
 
+CREATE TABLE ticket_mq_consume_log (
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键',
+    msg_key      VARCHAR(64) NOT NULL COMMENT '消息唯一键(orderNo/eventId)',
+    topic        VARCHAR(64) NOT NULL COMMENT '消息主题(ticket.order.create)',
+    create_time  DATETIME NOT NULL COMMENT '创建时间',
+
+    UNIQUE KEY uk_topic_msg (topic, msg_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MQ消费去重表';
+
 
 -- =========================================================
 -- meteor_movie
@@ -428,9 +437,9 @@ CREATE TABLE media_asset (
 
 USE meteor_order;
 
-DROP TABLE IF EXISTS t_order;
-CREATE TABLE t_order (
-    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '订单ID',
+DROP TABLE IF EXISTS `order`;
+CREATE TABLE `order` (
+    id              BIGINT PRIMARY KEY COMMENT '订单ID（雪花算法生成）',
     order_no        VARCHAR(32) NOT NULL COMMENT '订单号(业务唯一)',
 
     user_id         BIGINT NOT NULL COMMENT '用户ID',
@@ -439,8 +448,8 @@ CREATE TABLE t_order (
     status          TINYINT NOT NULL DEFAULT 0 COMMENT '0=WAIT_PAY 1=PAID 2=CANCELED 3=CLOSED_TIMEOUT 4=REFUNDING 5=REFUNDED',
     biz_type        TINYINT NOT NULL DEFAULT 1 COMMENT '业务类型 1=电影票',
 
-    total_amount    INT NOT NULL COMMENT '总金额(分)',
-    pay_amount      INT NOT NULL COMMENT '实付金额(分)',
+    total_amount    INT NOT NULL DEFAULT 0 COMMENT '总金额(分)',
+    pay_amount      INT NOT NULL DEFAULT 0 COMMENT '实付金额(分)',
     discount_amount INT NOT NULL DEFAULT 0 COMMENT '优惠金额(分)',
 
     expire_time     DATETIME NOT NULL COMMENT '支付截止时间',
@@ -470,8 +479,8 @@ CREATE TABLE t_order (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单主表';
 
 
-DROP TABLE IF EXISTS t_order_item;
-CREATE TABLE t_order_item (
+DROP TABLE IF EXISTS order_item;
+CREATE TABLE order_item (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '明细ID',
     order_id        BIGINT NOT NULL COMMENT '订单ID',
     order_no        VARCHAR(32) NOT NULL COMMENT '订单号',
@@ -486,6 +495,7 @@ CREATE TABLE t_order_item (
 
     snapshot        JSON NOT NULL COMMENT '快照(片名/海报/开场时间/售卖方式等)',
     extra           JSON NULL COMMENT '扩展字段(未来座位/服务费等)',
+    status          TINYINT NOT NULL DEFAULT 0 COMMENT '0=WAIT_PAY 1=PAID 2=CANCELED 3=CLOSED_TIMEOUT 4=REFUNDING 5=REFUNDED',
 
     create_time     DATETIME NOT NULL COMMENT '创建时间',
     update_time     DATETIME NOT NULL COMMENT '更新时间',
@@ -494,15 +504,15 @@ CREATE TABLE t_order_item (
     deleted         TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
 
     KEY idx_order_id (order_id),
-    KEY idx_order_no (order_no),
+    UNIQUE KEY uk_order_no_item (order_no),
     KEY idx_screening (screening_id),
     KEY idx_movie (movie_id),
     KEY idx_merchant (merchant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单明细表(按张数)';
 
 
-DROP TABLE IF EXISTS t_payment;
-CREATE TABLE t_payment (
+DROP TABLE IF EXISTS payment;
+CREATE TABLE payment (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '支付记录ID',
     pay_no          VARCHAR(40) NOT NULL COMMENT '支付单号(系统生成唯一)',
     order_id        BIGINT NOT NULL COMMENT '订单ID',
@@ -514,9 +524,6 @@ CREATE TABLE t_payment (
 
     third_trade_no  VARCHAR(64) NULL COMMENT '第三方交易号',
     pay_time        DATETIME NULL COMMENT '支付时间',
-
-    request_body    JSON NULL COMMENT '请求报文(可选)',
-    notify_body     JSON NULL COMMENT '回调报文(可选)',
 
     create_time     DATETIME NOT NULL COMMENT '创建时间',
     update_time     DATETIME NOT NULL COMMENT '更新时间',
@@ -532,8 +539,8 @@ CREATE TABLE t_payment (
 
 
 
-DROP TABLE IF EXISTS t_order_operate_log;
-CREATE TABLE t_order_operate_log (
+DROP TABLE IF EXISTS order_operate_log;
+CREATE TABLE order_operate_log (
     id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
     order_id        BIGINT NOT NULL COMMENT '订单ID',
     order_no        VARCHAR(32) NOT NULL COMMENT '订单号',

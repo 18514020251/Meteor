@@ -73,6 +73,11 @@ spring:
           predicates:
             - Path=/movies/**
 
+        - id: meteor-order
+          uri: lb://meteor-order
+          predicates:
+            - Path=/order/**
+
       globalcors:
         corsConfigurations:
           '[/**]':

@@ -20,15 +20,19 @@ public final class TicketOrderContract {
     public static final class Exchange {
         private Exchange() {}
         public static final String TICKET_ORDER = "ticket.order.exchange";
+        public static final String TICKET_ORDER_DLX = "ticket.order.exchange.dlx";
     }
 
     public static final class Queue {
         private Queue() {}
         public static final String TICKET_ORDER_CREATE = "ticket.order.create.queue";
+        public static final String TICKET_ORDER_CREATE_DLX = "ticket.order.create.dlx.queue";
     }
 
     public static final class RoutingKey {
         private RoutingKey() {}
         public static final String TICKET_ORDER_CREATE = "ticket.order.create";
+        public static final String TICKET_ORDER_CREATE_DLX = "ticket.order.create.dlx";
     }
 }
+
