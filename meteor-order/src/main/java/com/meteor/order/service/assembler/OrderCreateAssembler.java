@@ -6,7 +6,7 @@ import com.meteor.order.domain.entity.Order;
 import com.meteor.order.domain.entity.OrderItem;
 import com.meteor.order.domain.entity.OrderOperateLog;
 import com.meteor.order.enums.*;
-import com.meteor.order.redis.OrderBizConstants;
+import com.meteor.order.constants.OrderBizConstants;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;

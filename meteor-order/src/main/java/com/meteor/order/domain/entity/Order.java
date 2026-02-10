@@ -7,6 +7,7 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.meteor.common.enums.system.DeleteStatus;
+import com.meteor.order.enums.CancelReasonEnum;
 import com.meteor.order.enums.OrderBizTypeEnum;
 import com.meteor.order.enums.OrderStatusEnum;
 import com.meteor.order.enums.PayChannelEnum;
@@ -36,7 +37,7 @@ public class Order implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "订单ID（雪花算法生成）")
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.INPUT)
     private Long id;
 
     @Schema(description = "订单号(业务唯一)")
@@ -73,22 +74,13 @@ public class Order implements Serializable {
     private LocalDateTime closeTime;
 
     @Schema(description = "取消原因(用户取消/超时等)")
-    private String cancelReason;
+    private CancelReasonEnum cancelReason;
 
     @Schema(description = "0=NONE 1=ALIPAY 2=WECHAT")
     private PayChannelEnum payChannel;
 
     @Schema(description = "支付单号")
     private String payNo;
-
-    @Schema(description = "幂等键(防重复下单)")
-    private String idempotentKey;
-
-    @Schema(description = "请求追踪ID(可选)")
-    private String requestId;
-
-    @Schema(description = "扩展字段")
-    private String extra;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;

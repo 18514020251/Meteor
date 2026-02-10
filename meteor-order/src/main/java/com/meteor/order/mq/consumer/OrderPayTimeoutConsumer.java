@@ -10,6 +10,7 @@ import com.meteor.order.service.IOrderCommandService;
 import com.meteor.order.service.IOrderItemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * 订单支付超时消费者：15分钟后检查并关单
+ * 订单支付超时消费者：2分钟后检查并关单
  *
  * @author Programmer
  * @version 1.0
@@ -49,6 +50,11 @@ public class OrderPayTimeoutConsumer {
 
         boolean closed = orderCommandService.closeTimeout(orderNo, now);
         if (!closed) {
+            return;
+        }
+
+        val b = orderItemService.closeTimeoutItems(orderNo, null, now);
+        if (!b) {
             return;
         }
 

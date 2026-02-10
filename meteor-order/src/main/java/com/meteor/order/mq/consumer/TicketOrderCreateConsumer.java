@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * 抢票订单创建消费者（Order模块）
+ * 抢票订单创建消费者
  *
  * @author Programmer
  * @version 1.0

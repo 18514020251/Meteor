@@ -3,6 +3,7 @@ package com.meteor.order.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.order.domain.entity.Order;
+import com.meteor.order.enums.CancelReasonEnum;
 import com.meteor.order.enums.OrderStatusEnum;
 import com.meteor.order.mapper.OrderMapper;
 import com.meteor.order.service.IOrderCommandService;
@@ -34,14 +35,15 @@ public class OrderCommandServiceImpl
     @Override
     public boolean closeTimeout(String orderNo, LocalDateTime now) {
         return lambdaUpdate()
-                .set(Order::getStatus, OrderStatusEnum.CLOSED_TIMEOUT.getCode())
+                .set(Order::getStatus, OrderStatusEnum.CLOSED_TIMEOUT)
                 .set(Order::getCloseTime, now)
-                .set(Order::getCancelReason, "TIMEOUT")
+                .set(Order::getCancelReason, CancelReasonEnum.TIMEOUT)
                 .set(Order::getUpdateTime, now)
                 .eq(Order::getOrderNo, orderNo)
-                .eq(Order::getStatus, OrderStatusEnum.WAIT_PAY.getCode())
+                .eq(Order::getStatus, OrderStatusEnum.WAIT_PAY)
                 .eq(Order::getDeleted, DeleteStatus.NORMAL)
                 .update();
     }
+
 }
 

@@ -8,6 +8,9 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.meteor.common.enums.system.DeleteStatus;
+import com.meteor.order.enums.PayChannelEnum;
+import com.meteor.order.enums.PaymentStatusEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -45,10 +48,10 @@ public class Payment implements Serializable {
     private String orderNo;
 
     @Schema(description = "1=ALIPAY 2=WECHAT")
-    private Integer channel;
+    private PayChannelEnum channel;
 
     @Schema(description = "0=INIT 1=SUCCESS 2=FAIL 3=CLOSED")
-    private Integer status;
+    private PaymentStatusEnum status;
 
     @Schema(description = "支付金额(分)")
     private Integer amount;
@@ -72,7 +75,7 @@ public class Payment implements Serializable {
     private Long updateBy;
 
     @Schema(description = "是否删除 0=否 1=是")
-    private Integer deleted;
+    private DeleteStatus deleted;
 
 
 }

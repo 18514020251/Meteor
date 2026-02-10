@@ -85,4 +85,3 @@ sa-token:
   token-style: uuid
   is-log: true
   token-prefix: Bearer
-

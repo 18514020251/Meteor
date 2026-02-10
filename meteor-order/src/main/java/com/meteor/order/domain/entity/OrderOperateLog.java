@@ -8,6 +8,7 @@ import java.io.Serial;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.order.enums.OperatorTypeEnum;
 import com.meteor.order.enums.OrderOperateTypeEnum;
 import com.meteor.order.enums.OrderStatusEnum;
@@ -45,7 +46,7 @@ public class OrderOperateLog implements Serializable {
     private String orderNo;
 
     @Schema(description = "变更前状态")
-    private Integer fromStatus;
+    private OrderStatusEnum fromStatus;
 
     @Schema(description = "变更后状态")
     private OrderStatusEnum toStatus;
@@ -75,7 +76,7 @@ public class OrderOperateLog implements Serializable {
     private Long updateBy;
 
     @Schema(description = "是否删除 0=否 1=是")
-    private Integer deleted;
+    private DeleteStatus deleted;
 
 
 }

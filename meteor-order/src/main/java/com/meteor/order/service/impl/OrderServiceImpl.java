@@ -42,7 +42,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Transactional(rollbackFor = Exception.class)
     public void createOrderFromTicket(TicketOrderDbReservedMessage msg) {
 
-        // 幂等：订单号存在直接返回
         boolean exists = lambdaQuery()
                 .eq(Order::getOrderNo, msg.getOrderNo())
                 .eq(Order::getDeleted, DeleteStatus.NORMAL)

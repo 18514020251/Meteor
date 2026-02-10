@@ -56,6 +56,18 @@
             <version>2.7.1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-satoken-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-common-starter</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

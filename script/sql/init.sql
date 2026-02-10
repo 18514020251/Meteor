@@ -460,11 +460,6 @@ CREATE TABLE `t_order` (
     pay_channel     TINYINT NOT NULL DEFAULT 0 COMMENT '0=NONE 1=ALIPAY 2=WECHAT',
     pay_no          VARCHAR(40) NULL COMMENT '支付单号(本系统生成，可为空待创建)',
 
-    idempotent_key  VARCHAR(64) NULL COMMENT '幂等键(防重复下单)',
-    request_id      VARCHAR(64) NULL COMMENT '请求追踪ID(可选)',
-
-    extra           JSON NULL COMMENT '扩展字段',
-
     create_time     DATETIME NOT NULL COMMENT '创建时间',
     update_time     DATETIME NOT NULL COMMENT '更新时间',
     create_by       BIGINT NULL COMMENT '创建人',
@@ -474,9 +469,11 @@ CREATE TABLE `t_order` (
     UNIQUE KEY uk_order_no (order_no),
     KEY idx_user_ct (user_id, create_time),
     KEY idx_status_expire (status, expire_time),
-    KEY idx_merchant_ct (merchant_id, create_time),
-    UNIQUE KEY uk_user_idempotent (user_id, idempotent_key)
+    KEY idx_merchant_ct (merchant_id, create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单主表';
+
+
+ALTER TABLE t_order ADD UNIQUE KEY uk_pay_no (pay_no);
 
 
 DROP TABLE IF EXISTS order_item;
@@ -537,6 +534,7 @@ CREATE TABLE payment (
     KEY idx_status_ct (status, create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付记录表';
 
+ALTER TABLE payment ADD UNIQUE KEY uk_order_no (order_no);
 
 
 DROP TABLE IF EXISTS order_operate_log;

@@ -25,6 +25,7 @@ public enum CommonErrorCode implements IErrorCode {
     METHOD_NOT_ALLOWED(405, "不支持当前请求方法", HttpStatus.METHOD_NOT_ALLOWED),
     DATA_ERROR(400, "数据异常", HttpStatus.BAD_REQUEST),
     TIME_REVERSED(400, "时间逆转了，拒绝验证身份" , HttpStatus.BAD_REQUEST),
+    BIZ_ERROR(400, "业务异常", HttpStatus.BAD_REQUEST),
 
 
     // 用户模块
@@ -74,6 +75,8 @@ public enum CommonErrorCode implements IErrorCode {
     // 电影相关异常
     CONFLICT(8001, "电影已存在", HttpStatus.BAD_REQUEST),
     MOVIE_NOT_FOUND(8002, "电影不存在", HttpStatus.NOT_FOUND);
+
+
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

@@ -29,6 +29,9 @@ programmer:
     username: ${RABBIT_USERNAME:Programmer}
     password: ${RABBIT_PASSWORD:07210521}
 
+  payment:
+    mock-password: ${PAYMENT_MOCK_PASSWORD:123456}
+
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

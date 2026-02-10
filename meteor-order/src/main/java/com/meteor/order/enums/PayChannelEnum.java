@@ -1,6 +1,9 @@
 package com.meteor.order.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.meteor.common.exception.BizException;
+import com.meteor.common.exception.CommonErrorCode;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -22,4 +25,13 @@ public enum PayChannelEnum {
     @EnumValue
     private final int code;
     private final String desc;
+
+    public static PayChannelEnum of(@NotNull(message = "channel不能为空") Integer channel) {
+        for (PayChannelEnum value : values()) {
+            if (value.code == channel) {
+                return value;
+            }
+        }
+        throw new BizException(CommonErrorCode.PARAM_INVALID, "invalid pay channel");
+    }
 }

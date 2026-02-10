@@ -1,6 +1,8 @@
-package com.meteor.order.redis;
+package com.meteor.order.constants;
 
 /**
+ *  支付二维码常量
+ *
  * @author Programmer
  * @version 1.0
  * @date 2026-02-09 22:16
