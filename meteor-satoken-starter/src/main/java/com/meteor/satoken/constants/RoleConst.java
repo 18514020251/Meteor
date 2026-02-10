@@ -9,7 +9,6 @@ package com.meteor.satoken.constants;
 public final class RoleConst {
 
     private RoleConst() {
-        // 防止实例化
     }
 
     public static final String USER = "user";

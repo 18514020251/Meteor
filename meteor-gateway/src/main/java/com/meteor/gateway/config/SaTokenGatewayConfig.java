@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.common.result.Result;
 import com.meteor.satoken.constants.RoleConst;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import cn.dev33.satoken.exception.NotRoleException;
@@ -19,6 +20,7 @@ import cn.dev33.satoken.exception.NotRoleException;
  * @author Programmer
  */
 @Configuration
+@Slf4j
 public class SaTokenGatewayConfig {
 
     private final ObjectMapper objectMapper;
@@ -48,6 +50,11 @@ public class SaTokenGatewayConfig {
 
                     String path = SaHolder.getRequest().getRequestPath();
                     if (path.startsWith("/admin")) {
+                        log.info("loginId={}, roleList={}",
+                                StpUtil.getLoginIdDefaultNull(),
+                                StpUtil.getRoleList()
+                        );
+
                         StpUtil.checkRole(RoleConst.ADMIN);
                     }
                 })

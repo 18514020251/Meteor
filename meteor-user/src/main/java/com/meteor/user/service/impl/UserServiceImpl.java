@@ -183,9 +183,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         UserInfoCache newCache = UserInfoCache.fromUser(user);
 
+        RoleEnum roleEnum = Objects.requireNonNull(RoleEnum.fromCode(user.getRole()));
+
         userCacheService.cacheUserAll(
                 userId,
-                Objects.requireNonNull(RoleEnum.fromCode(user.getRole())).toString(),
+                roleEnum.getDesc(),
                 newCache
         );
 
