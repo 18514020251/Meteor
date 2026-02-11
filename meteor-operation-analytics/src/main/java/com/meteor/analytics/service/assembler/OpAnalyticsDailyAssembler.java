@@ -32,7 +32,7 @@ public class OpAnalyticsDailyAssembler {
         row.setBizScope(BizScopeEnum.GLOBAL);
         row.setBizId(BizScopeEnum.GLOBAL.getDefaultBizId());
 
-        row.setRegisterCnt(AnalyticsDefaults.INITIAL_INC);
+        row.setRegisterCnt(AnalyticsDefaults.DEFAULT_CALC_VERSION);
 
         row.setCalcTime(resolveCalcTime(calcTime));
 

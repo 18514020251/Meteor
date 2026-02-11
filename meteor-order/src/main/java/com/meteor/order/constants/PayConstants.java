@@ -13,4 +13,10 @@ public final class PayConstants {
 
     /** 支付单号前缀 */
     public static final String PAY_NO_PREFIX = "P";
+
+    /** 支付总数MQ前缀 */
+    public static final String PAY_TOTAL_MQ_PREFIX = "pc:";
+
+    /** 支付成功MQ前缀 */
+    public static final String PAY_SUCCESS_MQ_PREFIX = "ps:";
 }

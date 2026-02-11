@@ -7,6 +7,8 @@ import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.id.utils.SnowflakeIdGenerator;
+import com.meteor.mq.contract.analytics.PayCreatedMessage;
+import com.meteor.mq.contract.analytics.PaySuccessMessage;
 import com.meteor.order.constants.PayConstants;
 import com.meteor.order.constants.PayQrConstants;
 import com.meteor.order.controller.vo.pay.PayStatusVO;
@@ -14,12 +16,15 @@ import com.meteor.order.domain.entity.*;
 import com.meteor.order.controller.vo.pay.PayCreateVO;
 import com.meteor.order.enums.*;
 import com.meteor.order.mapper.*;
+import com.meteor.order.mq.publisher.OperationAnalyticsPublisher;
 import com.meteor.order.service.IPaymentService;
 import com.meteor.order.config.PaymentConfig;
 import com.meteor.order.service.assembler.PaymentAssembler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 
@@ -42,6 +47,7 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
     private final OrderItemMapper orderItemMapper;
     private final OrderOperateLogMapper operateLogMapper;
     private final PaymentConfig paymentConfig;
+    private final OperationAnalyticsPublisher operationAnalyticsPublisher;
     private final PaymentAssembler paymentAssembler;
 
 
@@ -76,6 +82,20 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
         paymentMapper.insert(payment);
 
         bindPaymentToOrder(orderNo, payNo, channel, now);
+
+        String eventId = PayConstants.PAY_TOTAL_MQ_PREFIX + snowflake.nextId();
+        PayCreatedMessage msg = new PayCreatedMessage(
+                eventId,
+                orderNo,
+                now
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                operationAnalyticsPublisher.publishPayCreated(msg);
+            }
+        });
 
         return new PayCreateVO(
                 payNo,
@@ -231,13 +251,41 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
         }
 
         markOrderPaidOrThrow(order.getOrderNo(), payNo, payment.getChannel(), uid, now);
-        tryMarkPaymentSuccess(payNo, uid, now);
+        boolean changed = tryMarkPaymentSuccess(payNo, uid, now);
 
         markOrderItemPaid(order.getOrderNo(), uid, now);
-        writePaySuccessLog(order.getId(), order.getOrderNo(), uid, now);
+        paymentAssembler.writePaySuccessLog(operateLogMapper , order.getId(), order.getOrderNo(), uid, now);
+
+        if (changed) {
+            publishPaySuccessAfterCommit(order.getOrderNo(), payment.getAmount(), now);
+        }
 
         return true;
     }
+
+    /**
+     *  发送支付成功消息
+     * */
+    private void publishPaySuccessAfterCommit(String orderNo, Integer amountCent, LocalDateTime payTime) {
+
+        String eventId = PayConstants.PAY_SUCCESS_MQ_PREFIX + snowflake.nextId();
+        long amt = amountCent == null ? 0L : amountCent.longValue();
+
+        PaySuccessMessage msg = new PaySuccessMessage(
+                eventId,
+                orderNo,
+                amt,
+                payTime
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                operationAnalyticsPublisher.publishPaySuccess(msg);
+            }
+        });
+    }
+
 
     /**
      *  确认支付参数
@@ -315,18 +363,18 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
     /**
      *  订单支付成功，修改订单状态为已支付
      * */
-    private void tryMarkPaymentSuccess(String payNo, Long uid, LocalDateTime now) {
-        paymentMapper.update(null,
-                new LambdaUpdateWrapper<Payment>()
-                        .set(Payment::getStatus, PaymentStatusEnum.SUCCESS)
-                        .set(Payment::getPayTime, now)
-                        .set(Payment::getUpdateTime, now)
-                        .set(Payment::getUpdateBy, uid)
-                        .eq(Payment::getPayNo, payNo)
-                        .eq(Payment::getStatus, PaymentStatusEnum.INIT)
-                        .eq(Payment::getDeleted, DeleteStatus.NORMAL)
-        );
+    private boolean tryMarkPaymentSuccess(String payNo, Long uid, LocalDateTime now) {
+        return this.lambdaUpdate()
+                .eq(Payment::getPayNo, payNo)
+                .eq(Payment::getDeleted, DeleteStatus.NORMAL)
+                .eq(Payment::getStatus, PaymentStatusEnum.INIT)
+                .set(Payment::getStatus, PaymentStatusEnum.SUCCESS)
+                .set(Payment::getPayTime, now)
+                .set(Payment::getUpdateBy, uid)
+                .set(Payment::getUpdateTime, now)
+                .update();
     }
+
 
     /**
      *  订单支付成功，修改订单项状态为已支付
@@ -342,26 +390,6 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
                         .eq(OrderItem::getStatus, OrderStatusEnum.WAIT_PAY)
         );
     }
-
-    private void writePaySuccessLog(Long orderId, String orderNo, Long uid, LocalDateTime now) {
-        OrderOperateLog log = new OrderOperateLog();
-        log.setOrderId(orderId);
-        log.setOrderNo(orderNo);
-        log.setFromStatus(OrderStatusEnum.WAIT_PAY);
-        log.setToStatus(OrderStatusEnum.PAID);
-        log.setOperateType(OrderOperateTypeEnum.PAY_SUCCESS);
-        log.setOperatorType(OperatorTypeEnum.USER);
-        log.setOperatorId(uid);
-        log.setRemark("mock pay success");
-        log.setCreateTime(now);
-        log.setUpdateTime(now);
-        log.setCreateBy(uid);
-        log.setUpdateBy(uid);
-        log.setDeleted(DeleteStatus.NORMAL);
-
-        operateLogMapper.insert(log);
-    }
-
 
 
     @Override
@@ -380,7 +408,7 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
         }
 
         if (isExpired(order, now)) {
-            tryClosePayment(payNo, payment.getStatus(), now);
+            paymentAssembler.tryClosePayment(paymentMapper , payNo, payment.getStatus(), now);
             return new PayStatusVO(PaymentStatusEnum.CLOSED.getCode(), payNo, order.getOrderNo());
         }
 
@@ -432,24 +460,4 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, Payment> impl
                         .eq(Payment::getDeleted, DeleteStatus.NORMAL)
         );
     }
-
-    /**
-     *  关闭支付单（仅 INIT->CLOSED，过期/关闭场景）
-     * */
-    private void tryClosePayment(String payNo, PaymentStatusEnum currentStatus, LocalDateTime now) {
-        if (currentStatus != PaymentStatusEnum.INIT) {
-            return;
-        }
-        paymentMapper.update(null,
-                new LambdaUpdateWrapper<Payment>()
-                        .set(Payment::getStatus, PaymentStatusEnum.CLOSED)
-                        .set(Payment::getUpdateTime, now)
-                        .eq(Payment::getPayNo, payNo)
-                        .eq(Payment::getStatus, PaymentStatusEnum.INIT)
-                        .eq(Payment::getDeleted, DeleteStatus.NORMAL)
-        );
-    }
-
-
-
 }

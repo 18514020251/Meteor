@@ -1,6 +1,9 @@
 package com.meteor.analytics.service;
 
+import com.meteor.analytics.controller.vo.PayTodayVO;
 import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
+import com.meteor.analytics.controller.vo.Trend7dVO;
+import com.meteor.analytics.controller.vo.TrendVO;
 import com.meteor.analytics.domain.entity.OpAnalyticsDaily;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -27,6 +30,30 @@ public interface IOpAnalyticsDailyService extends IService<OpAnalyticsDaily> {
 
     /**
      *  查询注册趋势
+     *
+     * @return 注册趋势
      * */
     RegisterTrend7dVO queryRegisterTrend7dGlobal();
+
+    /**
+     *  查询支付尝试趋势
+     *
+     *  @return 支付尝试趋势
+     * */
+    Trend7dVO getPayAttemptTrend7dGlobal();
+
+    /**
+     *  查询今日支付
+     *
+     *  @return 今日支付
+     * */
+    PayTodayVO getPayTodayGlobal();
+
+    /**
+     *  查询GMV趋势
+     *
+     *  @param days 趋势天数
+     *  @return GMV趋势
+     * */
+    TrendVO getGmvTrendGlobal(int days);
 }

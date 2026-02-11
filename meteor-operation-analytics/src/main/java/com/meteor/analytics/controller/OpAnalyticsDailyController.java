@@ -1,7 +1,10 @@
 package com.meteor.analytics.controller;
 
 
+import com.meteor.analytics.controller.vo.PayTodayVO;
 import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
+import com.meteor.analytics.controller.vo.Trend7dVO;
+import com.meteor.analytics.controller.vo.TrendVO;
 import com.meteor.analytics.service.IOpAnalyticsDailyService;
 import com.meteor.common.result.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -31,6 +35,25 @@ public class OpAnalyticsDailyController {
     @GetMapping("/trend7d")
     public Result<RegisterTrend7dVO> trend7d() {
         return Result.success(dailyService.queryRegisterTrend7dGlobal());
+    }
+
+
+    @Operation(summary = "近7日支付尝试趋势(pay_attempt_cnt)")
+    @GetMapping("/trend7d-pay")
+    public Result<Trend7dVO> payTrend7d() {
+        return Result.success(dailyService.getPayAttemptTrend7dGlobal());
+    }
+
+    @Operation(summary = "今日支付汇总(尝试/成功/成交/GMV)")
+    @GetMapping("/today")
+    public Result<PayTodayVO> today() {
+        return Result.success(dailyService.getPayTodayGlobal());
+    }
+
+    @Operation(summary = "交易额趋势(GMV) - 按天(分)")
+    @GetMapping("/trend")
+    public Result<TrendVO> trend(@RequestParam(defaultValue = "7") int days) {
+        return Result.success(dailyService.getGmvTrendGlobal(days));
     }
 
 }

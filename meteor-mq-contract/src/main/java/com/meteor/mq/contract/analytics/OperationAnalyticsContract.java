@@ -24,12 +24,20 @@ public final class OperationAnalyticsContract {
         private Queue() {}
 
         public static final String USER_REGISTERED = "analytics.user.registered.queue";
+
+        public static final String PAY_CREATED = "analytics.pay.created.queue";
+
+        public static final String PAY_SUCCESS = "analytics.pay.success.queue";
     }
 
     public static final class RoutingKey {
         private RoutingKey() {}
 
         public static final String USER_REGISTERED = "user.registered";
+
+        public static final String PAY_CREATED = "pay.created";
+
+        public static final String PAY_SUCCESS = "pay.success";
     }
 }
 

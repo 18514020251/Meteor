@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * 运营分析拓扑（用户注册统计）
+ * 运营分析拓扑
  *
  * @author Programmer
  * @version 1.0
@@ -43,5 +43,33 @@ public class OperationAnalyticsTopologyAutoConfiguration {
         return BindingBuilder.bind(userRegisteredQueue)
                 .to(analyticsExchange)
                 .with(OperationAnalyticsContract.RoutingKey.USER_REGISTERED);
+    }
+
+
+    @Bean
+    public Queue payCreatedQueue() {
+        return new Queue(OperationAnalyticsContract.Queue.PAY_CREATED, true);
+    }
+
+    @Bean
+    public Binding payCreatedBinding(Queue payCreatedQueue,
+                                     TopicExchange analyticsExchange) {
+        return BindingBuilder.bind(payCreatedQueue)
+                .to(analyticsExchange)
+                .with(OperationAnalyticsContract.RoutingKey.PAY_CREATED);
+    }
+
+
+    @Bean
+    public Queue paySuccessQueue() {
+        return new Queue(OperationAnalyticsContract.Queue.PAY_SUCCESS, true);
+    }
+
+    @Bean
+    public Binding paySuccessBinding(Queue paySuccessQueue,
+                                     TopicExchange analyticsExchange) {
+        return BindingBuilder.bind(paySuccessQueue)
+                .to(analyticsExchange)
+                .with(OperationAnalyticsContract.RoutingKey.PAY_SUCCESS);
     }
 }
