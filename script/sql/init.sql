@@ -38,6 +38,11 @@ CREATE DATABASE IF NOT EXISTS meteor_order
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_general_ci;
 
+CREATE DATABASE IF NOT EXISTS meteor_operation_analytics
+    DEFAULT CHARACTER SET utf8mb4
+    DEFAULT COLLATE utf8mb4_general_ci;
+
+
 -- =========================================================
 -- meteor_user
 -- =========================================================
@@ -569,6 +574,77 @@ CREATE TABLE order_mq_consume_log (
     create_time  DATETIME NOT NULL COMMENT '创建时间',
     UNIQUE KEY uk_topic_msg (topic, msg_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='MQ消费去重表';
+
+
+
+-- =========================================================
+-- meteor_operation_analytics
+-- =========================================================
+USE meteor_operation_analytics;
+
+DROP TABLE IF EXISTS op_analytics_daily;
+CREATE TABLE op_analytics_daily (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键',
+    stat_date DATE NOT NULL COMMENT '统计日期(自然日)',
+
+    biz_scope VARCHAR(32) NOT NULL DEFAULT 'GLOBAL' COMMENT '统计范围: GLOBAL/MERCHANT',
+    biz_id BIGINT NOT NULL DEFAULT 0 COMMENT '范围ID: 0=全局; merchant_id等',
+
+    register_cnt INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当日注册数',
+
+    pay_attempt_cnt INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当日支付尝试次数(支付单创建数)',
+    pay_success_cnt INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当日支付成功次数(支付成功数)',
+
+    deal_order_cnt INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当日成交订单数(以支付成功去重order_no)',
+    gmv_cent BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当日成交额(分)',
+
+    success_rate_bp INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '成功率(基点, 10000=100%)',
+
+    calc_version INT UNSIGNED NOT NULL DEFAULT 1 COMMENT '口径版本',
+    calc_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '计算/刷新时间',
+
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_scope_date (biz_scope, biz_id, stat_date),
+    KEY idx_date (stat_date),
+    KEY idx_scope (biz_scope, biz_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运营分析-每日KPI汇总';
+
+DROP TABLE IF EXISTS admin_mq_fail_msg;
+CREATE TABLE admin_mq_fail_msg (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    msg_id VARCHAR(64) NOT NULL COMMENT '消息唯一ID',
+    exchange_name VARCHAR(64) NULL,
+    routing_key VARCHAR(128) NOT NULL,
+    topic VARCHAR(128) NULL COMMENT '可选：业务topic',
+    name VARCHAR(64) NOT NULL COMMENT '展示名',
+    level VARCHAR(16) NOT NULL DEFAULT 'warn' COMMENT 'warn/error',
+    status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/FAILED/DONE',
+    retry_cnt INT NOT NULL DEFAULT 0,
+    last_error VARCHAR(512) NULL,
+    next_retry_time DATETIME NULL,
+    payload JSON NULL COMMENT '原始消息体(便于补发)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uk_msg_id (msg_id),
+    KEY idx_status_time (status, create_time),
+    KEY idx_routing (routing_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理端-MQ失败/待补发表';
+
+DROP TABLE IF EXISTS op_analytics_event_log;
+CREATE TABLE op_analytics_event_log (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    event_key VARCHAR(64) NOT NULL COMMENT '事件唯一键',
+    event_type VARCHAR(32) NOT NULL COMMENT 'USER_REGISTERED/PAY_CREATED/PAY_SUCCESS',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_type_key (event_type, event_key),
+    KEY idx_ct (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运营统计事件去重表';
+
 
 
 set FOREIGN_KEY_CHECKS = 1;

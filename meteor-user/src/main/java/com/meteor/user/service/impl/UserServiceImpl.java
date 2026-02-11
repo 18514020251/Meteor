@@ -23,6 +23,7 @@ import com.meteor.user.controller.dto.*;
 import com.meteor.user.controller.vo.UserLoginVO;
 import com.meteor.user.domain.entity.UserCategoryPreference;
 import com.meteor.user.enums.UserPreferenceInitEnum;
+import com.meteor.user.mq.publisher.OperationAnalyticsEventPublisher;
 import com.meteor.user.service.IUserCategoryPreferenceService;
 import com.meteor.user.service.assembler.UserCategoryPreferenceAssembler;
 import com.meteor.user.service.assembler.UserInfoAssembler;
@@ -78,6 +79,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final MessageApplyEventPublisher messageApplyEventPublisher;
     private final IUserCategoryPreferenceService merchantService;
     private final UserCategoryPreferenceAssembler userCategoryPreferenceAssembler;
+    private final OperationAnalyticsEventPublisher analyticsPublisher;
 
     /**
      * 用户注册
@@ -107,6 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         );
 
         userMapper.insert(user);
+        analyticsPublisher.publishUserRegistered(user);
     }
 
     /**

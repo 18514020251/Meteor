@@ -38,6 +38,7 @@
         <module>meteor-movie</module>
         <module>meteor-api-contract</module>
         <module>meteor-order</module>
+        <module>meteor-operation-analytics</module>
     </modules>
 
 	<properties>

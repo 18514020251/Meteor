@@ -78,6 +78,11 @@ spring:
           predicates:
             - Path=/order/**
 
+        - id: meteor-operation
+          uri: lb://meteor-operation
+          predicates:
+            - Path=/operation/**
+
       globalcors:
         corsConfigurations:
           '[/**]':
