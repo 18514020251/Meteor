@@ -81,7 +81,7 @@ spring:
         - id: meteor-operation
           uri: lb://meteor-operation
           predicates:
-            - Path=/operation/**
+            - Path=/op-analytics/**
 
       globalcors:
         corsConfigurations:

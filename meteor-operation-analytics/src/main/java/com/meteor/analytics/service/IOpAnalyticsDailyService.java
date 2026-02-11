@@ -1,5 +1,6 @@
 package com.meteor.analytics.service;
 
+import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
 import com.meteor.analytics.domain.entity.OpAnalyticsDaily;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -23,4 +24,9 @@ public interface IOpAnalyticsDailyService extends IService<OpAnalyticsDaily> {
      * @param occur 统计时间
      * */
     void incRegisterCntGlobal(LocalDate statDate, LocalDateTime occur);
+
+    /**
+     *  查询注册趋势
+     * */
+    RegisterTrend7dVO queryRegisterTrend7dGlobal();
 }
