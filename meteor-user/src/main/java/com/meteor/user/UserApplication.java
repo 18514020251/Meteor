@@ -26,6 +26,7 @@ public class UserApplication {
         PrintMeteor.printWelcomeBanner();
     }
 
+
     @Bean
     public NacosConnectionChecker nacosConnectionChecker(Environment env) {
         return new NacosConnectionChecker(env);
