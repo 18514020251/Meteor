@@ -1,10 +1,8 @@
 package com.meteor.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.mapper.MerchantApplyMapper;
-import com.meteor.common.enums.message.MessageSendStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.satoken.context.LoginContext;
@@ -46,26 +44,6 @@ public class MerchantApplyTxServiceImpl {
         MerchantApply apply = getByApplyIdOrThrow(applyId);
         return persistRejectUpdate(apply, rejectReason);
     }
-
-    /**
-     * 发送成功后标记
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void markReviewedSent(Long adminRecordId) {
-        int rows = baseMapper.update(
-                null,
-                new LambdaUpdateWrapper<MerchantApply>()
-                        .eq(MerchantApply::getId, adminRecordId)
-                        .eq(MerchantApply::getReviewedMsgSent, MessageSendStatusEnum.UNSENT.getCode())
-                        .set(MerchantApply::getReviewedMsgSent, MessageSendStatusEnum.SENT.getCode())
-                        .set(MerchantApply::getReviewedMsgSentTime, LocalDateTime.now())
-        );
-
-        if (rows == 0) {
-            log.info("markReviewedSent skipped, maybe already SENT. id={}", adminRecordId);
-        }
-    }
-
 
     private MerchantApply persistApproveUpdate(MerchantApply apply) {
         Long reviewerId = loginContext.currentLoginId();

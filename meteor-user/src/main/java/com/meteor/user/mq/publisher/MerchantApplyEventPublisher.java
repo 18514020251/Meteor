@@ -1,13 +1,12 @@
 package com.meteor.user.mq.publisher;
 
-import com.meteor.common.exception.BizException;
-import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.common.enums.system.ModuleEnum;
 import com.meteor.mq.contract.merchant.MerchantApplyContract;
 import com.meteor.mq.contract.merchant.MerchantApplyCreatedMessage;
-import com.meteor.mq.core.MqSendResult;
-import com.meteor.mq.core.MqSender;
+import com.meteor.user.domain.cmd.MqSendCmd;
 import com.meteor.user.domain.entity.MerchantApply;
 import com.meteor.user.mq.assembler.MerchantApplyMessageAssembler;
+import com.meteor.user.mq.support.UserMqSendGuard;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,48 +15,29 @@ import org.springframework.stereotype.Component;
  * 商家申请事件发布器
  * @author Programmer
  */
-@Component
 @RequiredArgsConstructor
+@Component
 public class MerchantApplyEventPublisher {
 
-    private final MqSender mqSender;
     private final MerchantApplyMessageAssembler assembler;
-
-
-    /**
-     *  @Deprecated (since = "use publishCreatedOrThrow instead" )
-     * */
-    public void publishCreated(MerchantApply apply) {
-
-        MerchantApplyCreatedMessage message = assembler.from(apply);
-
-        mqSender.send(
-                MerchantApplyContract.Exchange.MERCHANT_APPLY,
-                MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED,
-                message
-        );
-    }
+    private final UserMqSendGuard mqGuard;
 
     public void publishCreatedOrThrow(MerchantApply apply) {
 
         MerchantApplyCreatedMessage message = assembler.from(apply);
 
-        MqSendResult result = mqSender.sendAndWaitConfirm(
+        mqGuard.send(new MqSendCmd(
+                "user_apply_" + apply.getId(),
+                ModuleEnum.USER,
+                apply.getId(),
                 MerchantApplyContract.Exchange.MERCHANT_APPLY,
                 MerchantApplyContract.RoutingKey.MERCHANT_APPLY_CREATED,
+                "merchant_apply_created",
                 message,
-                MerchantApplyContract.CONFIRM_TIMEOUT
-        );
-
-        if (!result.isAck()) {
-            throw new BizException(CommonErrorCode.SYSTEM_ERROR,
-                    "MQ confirm failed");
-        }
-
-        if (result.noRoute()) {
-            throw new BizException(CommonErrorCode.SYSTEM_ERROR,
-                    "MQ NO_ROUTE");
-        }
+                MerchantApplyContract.CONFIRM_TIMEOUT,
+                false
+        ));
     }
 }
+
 

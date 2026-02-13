@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.meteor.common.enums.merchant.MerchantApplyStatusEnum;
-import com.meteor.common.enums.message.MessageSendStatusEnum;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -55,10 +54,6 @@ public class MerchantApply implements Serializable {
 
     private LocalDateTime createTime;
 
-    private Integer reviewedMsgSent;
-
-    private LocalDateTime reviewedMsgSentTime;
-
 
     public void approve(Long reviewerId, LocalDateTime reviewedTime) {
         if (this.status != MerchantApplyStatusEnum.PENDING) {
@@ -68,8 +63,6 @@ public class MerchantApply implements Serializable {
         this.rejectReason = null;
         this.reviewedBy = reviewerId;
         this.reviewedTime = reviewedTime;
-        this.reviewedMsgSent = MessageSendStatusEnum.UNSENT.getCode();
-        this.reviewedMsgSentTime = null;
     }
 
     public void reject(Long reviewerId, LocalDateTime reviewedTime, String rejectReason) {
@@ -83,7 +76,5 @@ public class MerchantApply implements Serializable {
         this.rejectReason = rejectReason.trim();
         this.reviewedBy = reviewerId;
         this.reviewedTime = reviewedTime;
-        this.reviewedMsgSent = MessageSendStatusEnum.UNSENT.getCode();
-        this.reviewedMsgSentTime = null;
     }
 }

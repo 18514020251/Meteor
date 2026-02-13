@@ -5,6 +5,8 @@ import com.meteor.mp.annotation.EnableMeteorMyBatisPlus;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  *  数据分析模块启动类
@@ -13,6 +15,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @version 1.0
  * @date 2026-02-11 9:34
  */
+@EnableScheduling
+@EnableFeignClients(basePackages = "com.meteor.api.contract")
 @SpringBootApplication
 @EnableMeteorMyBatisPlus
 @MapperScan("com.meteor.analytics.mapper")

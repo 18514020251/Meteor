@@ -1,12 +1,14 @@
 package com.meteor.analytics.controller;
 
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.meteor.analytics.controller.vo.PayTodayVO;
 import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
 import com.meteor.analytics.controller.vo.Trend7dVO;
 import com.meteor.analytics.controller.vo.TrendVO;
 import com.meteor.analytics.service.IOpAnalyticsDailyService;
 import com.meteor.common.result.Result;
+import com.meteor.satoken.constants.RoleConst;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Programmer
  * @since 2026-02-11
  */
-// NOTE:接口加鉴权
+@SaCheckRole(RoleConst.ADMIN)
 @RestController
 @RequestMapping("/op-analytics/register")
 @RequiredArgsConstructor

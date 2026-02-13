@@ -3,6 +3,8 @@ package com.meteor.common.constants;
 import java.util.Set;
 
 /**
+ *  媒体常量
+ *
  * @author Programmer
  * @date 2026-02-02 18:33
  */

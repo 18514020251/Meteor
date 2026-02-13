@@ -54,6 +54,12 @@
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-core</artifactId>
+            <version>3.5.7</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

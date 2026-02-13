@@ -23,8 +23,16 @@
             <artifactId>spring-cloud-openfeign-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-annotation</artifactId>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-mp-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-common</artifactId>
         </dependency>
     </dependencies>
 

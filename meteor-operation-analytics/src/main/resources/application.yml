@@ -33,6 +33,12 @@ spring:
     nacos:
       discovery:
         server-addr: ${programmer.nacos.addr}
+    feign:
+      client:
+        config:
+          default:
+            connectTimeout: 1500
+            readTimeout: 3000
 
   rabbitmq:
     host: ${programmer.rabbitmq.host}
@@ -94,3 +100,13 @@ meteor:
     bucket: ${programmer.minio.bucket:meteor}
     path-style: true
     presigned-url-expire-minutes: 5
+
+  remote:
+    ticketing-base-url: localhost:8085
+    user-base-url: localhost:8081
+
+mqfail:
+  remote:
+    merchant: http://localhost:8084
+    user: http://localhost:8081
+    admin: http://localhost:8082

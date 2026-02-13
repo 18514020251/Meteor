@@ -7,8 +7,8 @@ import com.meteor.admin.controller.dto.MerchantApplyDTO;
 import com.meteor.admin.controller.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.meteor.admin.mapper.MerchantApplyMapper;
+import com.meteor.admin.mq.publisher.MerchantApplyReviewedPublishe;
 import com.meteor.admin.service.IMerchantApplyNotifyService;
-import com.meteor.admin.service.IMerchantApplyReviewedService;
 import com.meteor.admin.service.IMerchantApplyService;
 import com.meteor.common.domain.PageResult;
 import com.meteor.satoken.context.LoginContext;
@@ -27,13 +27,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@SuppressWarnings("squid:S1172")
 public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, MerchantApply>
         implements IMerchantApplyService {
 
     private final LoginContext loginContext;
 
-    private final IMerchantApplyReviewedService merchantApplyReviewedService;
+    private final MerchantApplyReviewedPublishe merchantApplyReviewedService;
 
     private final MerchantApplyTxServiceImpl txService;
 
@@ -63,7 +62,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     @Override
     public void approveByApplyId(Long applyId) {
         MerchantApply apply = txService.approvePersist(applyId);
-        merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
+        merchantApplyReviewedService.send(apply, () -> log.info("审核通过MQ发送成功, applyId={}", apply.getApplyId()));
 
         afterApproved(apply);
     }
@@ -84,7 +83,7 @@ public class MerchantApplyServiceImpl extends ServiceImpl<MerchantApplyMapper, M
     @Override
     public void rejectByApplyId(Long applyId, String rejectReason) {
         MerchantApply apply = txService.rejectPersist(applyId, rejectReason);
-        merchantApplyReviewedService.send(apply, () -> txService.markReviewedSent(apply.getId()));
+        merchantApplyReviewedService.send(apply, () -> log.info("审核拒绝MQ发送成功, applyId={}", apply.getApplyId()));
 
         afterRejected(apply);
     }

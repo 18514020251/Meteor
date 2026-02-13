@@ -114,7 +114,10 @@
             <groupId>com.meteor</groupId>
             <artifactId>meteor-id-starter</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.meteor</groupId>
+            <artifactId>meteor-api-contract</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

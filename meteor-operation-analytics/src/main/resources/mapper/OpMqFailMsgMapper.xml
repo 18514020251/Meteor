@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.meteor.analytics.mapper.OpMqFailMsgMapper">
+
+    <select id="selectPendingForResend" resultType="com.meteor.analytics.domain.entity.OpMqFailMsg">
+        SELECT
+            id, source_module, msg_id, biz_id, exchange_name, routing_key, topic, payload,
+            status, retry_cnt, next_retry_time, last_error,
+            source_create_time, source_update_time,
+            collect_time, collect_version,
+            resend_state, resend_request_id, resend_attempt_cnt, resend_last_time, resend_last_error,
+            row_version, create_time, update_time
+        FROM op_mq_fail_msg
+        WHERE
+            (
+                resend_state IN (0, 2)
+                    OR (
+                    resend_state = 3
+                        AND resend_last_time IS NOT NULL
+                        AND resend_last_time &lt; DATE_SUB(NOW(), INTERVAL #{doingTimeoutMinutes} MINUTE)
+                    )
+                )
+        ORDER BY id ASC
+            LIMIT #{limit}
+    </select>
+
+</mapper>

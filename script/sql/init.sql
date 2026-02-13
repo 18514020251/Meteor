@@ -125,12 +125,44 @@ CREATE TABLE merchant_apply (
   DEFAULT CHARSET=utf8mb4
     COMMENT='商家申请表（用户侧）';
 
--- FK: merchant_apply.user_id -> user.id（同库内 OK）
 ALTER TABLE merchant_apply
     ADD CONSTRAINT fk_merchant_apply_user_id
         FOREIGN KEY (user_id) REFERENCES user(id)
             ON DELETE CASCADE
             ON UPDATE CASCADE;
+
+DROP TABLE IF EXISTS user_mq_fail_msg;
+CREATE TABLE user_mq_fail_msg (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+
+    msg_id VARCHAR(64) NOT NULL COMMENT '业务幂等消息ID(建议唯一：如 user_123_register)',
+    module_name VARCHAR(32) NOT NULL COMMENT '模块名：USER/MERCHANT/...（字符串即可）',
+    biz_id BIGINT DEFAULT NULL COMMENT '业务ID（如 userId / applyId）',
+
+    exchange_name VARCHAR(128) NOT NULL COMMENT 'MQ exchange',
+    routing_key VARCHAR(128) NOT NULL COMMENT 'MQ routingKey',
+    topic VARCHAR(64) DEFAULT NULL COMMENT '业务topic/标签（便于分类筛选）',
+
+    payload JSON NOT NULL COMMENT '消息体(JSON)',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '状态：0=PENDING 1=DONE 2=FAILED',
+
+    retry_cnt INT NOT NULL DEFAULT 0 COMMENT '已重试次数(依次+1)',
+    next_retry_time DATETIME DEFAULT NULL COMMENT '下次重试时间',
+    last_error VARCHAR(512) DEFAULT NULL COMMENT '最后一次失败原因',
+
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_msg_id (msg_id),
+
+    KEY idx_status_next_time (status, next_retry_time),
+    KEY idx_biz_id (biz_id),
+    KEY idx_exchange_routing (exchange_name, routing_key),
+    KEY idx_create_time (create_time)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+    COMMENT='User模块-MQ发送失败兜底表';
 
 -- =========================================================
 -- meteor_admin
@@ -139,20 +171,20 @@ USE meteor_admin;
 
 DROP TABLE IF EXISTS merchant_apply;
 CREATE TABLE merchant_apply (
-                                id BIGINT NOT NULL AUTO_INCREMENT COMMENT '管理端记录ID',
-                                apply_id BIGINT NOT NULL COMMENT '用户模块的申请ID',
-                                user_id BIGINT NOT NULL COMMENT '用户ID',
-                                shop_name VARCHAR(100) NOT NULL COMMENT '店铺名称',
-                                apply_reason VARCHAR(255) DEFAULT NULL COMMENT '申请理由',
-                                status TINYINT NOT NULL COMMENT '状态：0-PENDING 1-APPROVED 2-REJECTED',
-                                reject_reason VARCHAR(255) DEFAULT NULL COMMENT '拒绝原因',
-                                reviewed_by BIGINT DEFAULT NULL COMMENT '审核人ID',
-                                reviewed_time DATETIME DEFAULT NULL COMMENT '审核时间',
-                                create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录创建时间',
-                                PRIMARY KEY (id),
-                                UNIQUE KEY uk_apply_id (apply_id),
-                                INDEX idx_status (status),
-                                INDEX idx_user_id (user_id)
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '管理端记录ID',
+    apply_id BIGINT NOT NULL COMMENT '用户模块的申请ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    shop_name VARCHAR(100) NOT NULL COMMENT '店铺名称',
+    apply_reason VARCHAR(255) DEFAULT NULL COMMENT '申请理由',
+    status TINYINT NOT NULL COMMENT '状态：0-PENDING 1-APPROVED 2-REJECTED',
+    reject_reason VARCHAR(255) DEFAULT NULL COMMENT '拒绝原因',
+    reviewed_by BIGINT DEFAULT NULL COMMENT '审核人ID',
+    reviewed_time DATETIME DEFAULT NULL COMMENT '审核时间',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录创建时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_apply_id (apply_id),
+    INDEX idx_status (status),
+    INDEX idx_user_id (user_id)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
     COMMENT='商家申请表（管理端，审核视图）';
@@ -160,39 +192,34 @@ CREATE TABLE merchant_apply (
 CREATE INDEX idx_shop_name ON merchant_apply(shop_name);
 CREATE INDEX idx_user_status_shop ON merchant_apply(user_id, status, shop_name);
 
-USE meteor_admin;
-
-ALTER TABLE merchant_apply
-    ADD COLUMN reviewed_msg_sent TINYINT NOT NULL DEFAULT 0
-    COMMENT '审核结果消息是否已发送：0-未发送 1-已发送'
-        AFTER reviewed_time,
-    ADD COLUMN reviewed_msg_sent_time DATETIME DEFAULT NULL
-        COMMENT '审核结果消息发送时间'
-        AFTER reviewed_msg_sent;
-
-CREATE INDEX idx_status_msgsent
-    ON merchant_apply (status, reviewed_msg_sent);
 
 
--- 示例数据（可选，不要就删掉这一段）
-INSERT INTO merchant_apply
-(apply_id, user_id, shop_name, apply_reason, status, reject_reason, reviewed_by, reviewed_time)
-VALUES
-    (1001, 201, '喵星便利店', '想开店试试', 0, NULL, NULL, NULL),
-    (1002, 202, '蓝天服饰', '扩大销售渠道', 1, NULL, 301, '2026-01-15 10:23:45'),
-    (1003, 203, '小庞科技', '卖软件周边', 2, '资料不全', 302, '2026-01-16 11:00:12'),
-    (1004, 204, '橙子甜品', '创业尝试', 0, NULL, NULL, NULL),
-    (1005, 205, '星辰书店', '希望提供本地书籍', 1, NULL, 303, '2026-01-14 09:45:30'),
-    (1006, 206, '风车咖啡', '爱好咖啡', 2, '店铺位置不合格', 304, '2026-01-17 14:12:20'),
-    (1007, 207, '未来家居', '家居电商', 0, NULL, NULL, NULL),
-    (1008, 208, '萌宠用品', '宠物相关', 1, NULL, 305, '2026-01-18 15:30:00'),
-    (1009, 209, '奇趣玩具', '儿童玩具销售', 2, '审核信息错误', 306, '2026-01-19 16:45:10'),
-    (1010, 210, '健康食品坊', '健康零食', 0, NULL, NULL, NULL),
-    (1011, 211, '小庞影像', '摄影服务', 1, NULL, 307, '2026-01-20 13:20:05'),
-    (1012, 212, '运动天地', '体育用品', 2, '资质不符', 308, '2026-01-21 11:50:33'),
-    (1013, 213, '绿叶花店', '花卉销售', 0, NULL, NULL, NULL),
-    (1014, 214, '梦想乐器', '乐器销售', 1, NULL, 309, '2026-01-22 10:10:10'),
-    (1015, 215, '奇妙文具', '办公用品销售', 2, '资料不全', 310, '2026-01-23 09:05:55');
+DROP TABLE IF EXISTS admin_mq_fail_msg;
+
+CREATE TABLE admin_mq_fail_msg (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    msg_id VARCHAR(64) NOT NULL COMMENT '消息唯一ID（前端msgId/雪花ID）',
+    module_name VARCHAR(64) NOT NULL COMMENT '所属模块，例如 user/merchant/order',
+    biz_id BIGINT DEFAULT NULL COMMENT '业务对象ID，例如 applyId/orderId',
+    exchange_name VARCHAR(64) NULL COMMENT 'MQ交换机名',
+    routing_key VARCHAR(128) NULL COMMENT 'MQ路由键',
+    topic VARCHAR(128) NULL COMMENT '业务topic（可选）',
+    payload JSON NULL COMMENT '原始消息体（可选，便于补发）',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '消息状态：0=PENDING,1=DONE,2=FAILED',
+    retry_cnt INT NOT NULL DEFAULT 0 COMMENT '重试次数',
+    last_error VARCHAR(512) NULL COMMENT '上次发送失败原因',
+    next_retry_time DATETIME NULL COMMENT '下一次重试时间',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_msg_id (msg_id),
+    KEY idx_status_time (status, create_time),
+    KEY idx_module_biz (module_name, biz_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    COMMENT='管理端-模块MQ发送失败记录';
+
+
 
 -- =========================================================
 -- meteor_message
@@ -200,24 +227,24 @@ VALUES
 USE meteor_message;
 DROP TABLE IF EXISTS user_message;
 CREATE TABLE user_message (
-                              id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-                              user_id BIGINT NOT NULL COMMENT '用户ID(消息归属)',
-                              source TINYINT NOT NULL DEFAULT 0 COMMENT '消息来源：0系统消息 1业务事件(如MQ消费生成)',
-                              type TINYINT NOT NULL COMMENT '消息类型(冗余字段，避免查询总是JOIN)',
-                              title VARCHAR(64) DEFAULT NULL COMMENT '消息标题(冗余字段)',
-                              content VARCHAR(512) DEFAULT NULL COMMENT '消息内容(冗余字段，短内容；长内容可改TEXT)',
-                              biz_key VARCHAR(64) DEFAULT NULL COMMENT '业务幂等键(可选)，用于防重复写入，如: merchantApply:123',
-                              read_status TINYINT NOT NULL DEFAULT 0 COMMENT '已读状态：0未读 1已读',
-                              read_time DATETIME DEFAULT NULL COMMENT '已读时间',
-                              deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记：0正常 1已删除(软删)',
-                              create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间(投递/生成时间)',
-                              PRIMARY KEY (id),
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID(消息归属)',
+    source TINYINT NOT NULL DEFAULT 0 COMMENT '消息来源：0系统消息 1业务事件(如MQ消费生成)',
+    type TINYINT NOT NULL COMMENT '消息类型(冗余字段，避免查询总是JOIN)',
+    title VARCHAR(64) DEFAULT NULL COMMENT '消息标题(冗余字段)',
+    content VARCHAR(512) DEFAULT NULL COMMENT '消息内容(冗余字段，短内容；长内容可改TEXT)',
+    biz_key VARCHAR(64) DEFAULT NULL COMMENT '业务幂等键(可选)，用于防重复写入，如: merchantApply:123',
+    read_status TINYINT NOT NULL DEFAULT 0 COMMENT '已读状态：0未读 1已读',
+    read_time DATETIME DEFAULT NULL COMMENT '已读时间',
+    deleted TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记：0正常 1已删除(软删)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间(投递/生成时间)',
+    PRIMARY KEY (id),
 
-                              UNIQUE KEY uk_user_message_user_biz (user_id, biz_key),
+    UNIQUE KEY uk_user_message_user_biz (user_id, biz_key),
 
-                              KEY idx_user_message_inbox (user_id, deleted, read_status, id),
-                              KEY idx_user_message_page (user_id, id),
-                              KEY idx_user_message_biz_key (biz_key)
+    KEY idx_user_message_inbox (user_id, deleted, read_status, id),
+    KEY idx_user_message_page (user_id, id),
+    KEY idx_user_message_biz_key (biz_key)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
     COMMENT='用户消息表';
@@ -236,39 +263,75 @@ use meteor_merchant;
 
 DROP TABLE IF EXISTS merchant;
 CREATE TABLE merchant (
-                          id BIGINT NOT NULL AUTO_INCREMENT COMMENT '商家ID',
-                          user_id BIGINT NOT NULL COMMENT '关联用户ID（唯一）',
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '商家ID',
+    user_id BIGINT NOT NULL COMMENT '关联用户ID（唯一）',
 
-                          shop_name VARCHAR(100) NOT NULL COMMENT '店铺名称',
-                          notice VARCHAR(255) DEFAULT NULL COMMENT '店铺公告/简介（短）',
+    shop_name VARCHAR(100) NOT NULL COMMENT '店铺名称',
+    notice VARCHAR(255) DEFAULT NULL COMMENT '店铺公告/简介（短）',
 
-                          status TINYINT NOT NULL DEFAULT 0 COMMENT '商家状态：0-正常 1-冻结 2-关闭',
-                          verified_time DATETIME DEFAULT NULL COMMENT '审核通过/开通时间',
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '商家状态：0-正常 1-冻结 2-关闭',
+    verified_time DATETIME DEFAULT NULL COMMENT '审核通过/开通时间',
 
-                          apply_id BIGINT DEFAULT NULL COMMENT '来源申请ID（用于幂等/追溯）',
+    apply_id BIGINT DEFAULT NULL COMMENT '来源申请ID（用于幂等/追溯）',
 
-                          create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-                          update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
 
-                          is_deleted TINYINT NOT NULL DEFAULT 0 COMMENT '软删：0-未删 1-已删',
+    is_deleted TINYINT NOT NULL DEFAULT 0 COMMENT '软删：0-未删 1-已删',
 
-                          PRIMARY KEY (id),
+    PRIMARY KEY (id),
 
-                          UNIQUE KEY uk_user_not_deleted (
-                              user_id,
-                              (CASE WHEN is_deleted = 0 THEN 0 ELSE NULL END)
-                              ),
+    UNIQUE KEY uk_user_not_deleted (
+        user_id,
+        (CASE WHEN is_deleted = 0 THEN 0 ELSE NULL END)
+        ),
 
-                          UNIQUE KEY uk_apply_not_deleted (
-                              apply_id,
-                              (CASE WHEN is_deleted = 0 THEN 0 ELSE NULL END)
-                              ),
+    UNIQUE KEY uk_apply_not_deleted (
+        apply_id,
+        (CASE WHEN is_deleted = 0 THEN 0 ELSE NULL END)
+        ),
 
-                          INDEX idx_status (status),
-                          INDEX idx_shop_name (shop_name),
-                          UNIQUE KEY uk_merchant_user_id (user_id),
-                          UNIQUE KEY uk_merchant_apply_id (apply_id)
+    INDEX idx_status (status),
+    INDEX idx_shop_name (shop_name),
+    UNIQUE KEY uk_merchant_user_id (user_id),
+    UNIQUE KEY uk_merchant_apply_id (apply_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商家表';
+
+
+DROP TABLE IF EXISTS merchant_mq_fail_msg;
+CREATE TABLE merchant_mq_fail_msg (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+
+    msg_id VARCHAR(64) NOT NULL COMMENT '幂等消息ID（如 merchant_123_create）',
+    module_name VARCHAR(32) NOT NULL COMMENT '模块名：MERCHANT（固定值）',
+    biz_id BIGINT DEFAULT NULL COMMENT '业务ID（如商家ID或申请ID）',
+
+    exchange_name VARCHAR(128) NOT NULL COMMENT 'MQ交换机名（如 merchant_exchange）',
+    routing_key VARCHAR(128) NOT NULL COMMENT 'MQ路由键（如 merchant.create 或 merchant.update）',
+    topic VARCHAR(64) DEFAULT NULL COMMENT '业务topic/标签，方便补偿筛选',
+
+    payload JSON NOT NULL COMMENT '消息内容（JSON格式，便于补发）',
+
+    status TINYINT NOT NULL DEFAULT 0 COMMENT '发送状态：0=PENDING，1=DONE，2=FAILED',
+
+    retry_cnt INT NOT NULL DEFAULT 0 COMMENT '已重试次数',
+    next_retry_time DATETIME DEFAULT NULL COMMENT '下一次重试时间',
+    last_error VARCHAR(512) DEFAULT NULL COMMENT '上次发送失败原因',
+
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+    PRIMARY KEY (id),
+
+    UNIQUE KEY uk_msg_id (msg_id),
+
+    KEY idx_status_next_retry (status, next_retry_time),
+    KEY idx_biz_id (biz_id),
+    KEY idx_exchange_routing (exchange_name, routing_key),
+    KEY idx_create_time (create_time)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+    COMMENT='商家模块-MQ发送失败兜底表';
 
 
 -- =========================================================
@@ -278,41 +341,41 @@ use meteor_ticketing;
 
 DROP TABLE IF EXISTS screening;
 CREATE TABLE screening (
-                           id                BIGINT PRIMARY KEY COMMENT '场次ID',
-                           merchant_id       BIGINT NOT NULL COMMENT '商家ID(影院方/售票方)',
-                           movie_id          BIGINT NOT NULL COMMENT '电影ID',
+    id                BIGINT PRIMARY KEY COMMENT '场次ID',
+    merchant_id       BIGINT NOT NULL COMMENT '商家ID(影院方/售票方)',
+    movie_id          BIGINT NOT NULL COMMENT '电影ID',
 
-                           start_time        DATETIME NOT NULL COMMENT '开始时间',
-                           end_time          DATETIME NULL COMMENT '结束时间',
+    start_time        DATETIME NOT NULL COMMENT '开始时间',
+    end_time          DATETIME NULL COMMENT '结束时间',
 
-                           sale_start_time   DATETIME NOT NULL COMMENT '开售时间',
-                           sale_end_time     DATETIME NULL COMMENT '停售时间',
+    sale_start_time   DATETIME NOT NULL COMMENT '开售时间',
+    sale_end_time     DATETIME NULL COMMENT '停售时间',
 
-                           status            TINYINT NOT NULL DEFAULT 1 COMMENT '1=SCHEDULED 2=SELLING 3=SOLD_OUT 4=CLOSED 5=CANCELED',
-                           sale_mode         TINYINT NOT NULL DEFAULT 1 COMMENT '1=AUTO抢票 2=MANUAL选座 3=MIXED',
+    status            TINYINT NOT NULL DEFAULT 1 COMMENT '1=SCHEDULED 2=SELLING 3=SOLD_OUT 4=CLOSED 5=CANCELED',
+    sale_mode         TINYINT NOT NULL DEFAULT 1 COMMENT '1=AUTO抢票 2=MANUAL选座 3=MIXED',
 
-                           base_price        INT NOT NULL COMMENT '基础价格(分)',
-                           min_price         INT NOT NULL COMMENT '最小价格(分)',
-                           max_price         INT NOT NULL COMMENT '最大价格(分)',
+    base_price        INT NOT NULL COMMENT '基础价格(分)',
+    min_price         INT NOT NULL COMMENT '最小价格(分)',
+    max_price         INT NOT NULL COMMENT '最大价格(分)',
 
-                           total_tickets     INT NOT NULL COMMENT '总票数',
-                           available_tickets INT NOT NULL COMMENT '可用票数',
-                           sold_tickets      INT NOT NULL DEFAULT 0 COMMENT '已售票数',
+    total_tickets     INT NOT NULL COMMENT '总票数',
+    available_tickets INT NOT NULL COMMENT '可用票数',
+    sold_tickets      INT NOT NULL DEFAULT 0 COMMENT '已售票数',
 
-                           hot_score         BIGINT NOT NULL DEFAULT 0 COMMENT '热度分(展示用)',
-                           version           INT NOT NULL DEFAULT 0 COMMENT '版本号(防超卖)',
+    hot_score         BIGINT NOT NULL DEFAULT 0 COMMENT '热度分(展示用)',
+    version           INT NOT NULL DEFAULT 0 COMMENT '版本号(防超卖)',
 
-                           create_time       DATETIME NOT NULL COMMENT '创建时间',
-                           update_time       DATETIME NOT NULL COMMENT '更新时间',
-                           create_by         BIGINT NULL COMMENT '创建人',
-                           update_by         BIGINT NULL COMMENT '更新人',
-                           deleted           TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
+    create_time       DATETIME NOT NULL COMMENT '创建时间',
+    update_time       DATETIME NOT NULL COMMENT '更新时间',
+    create_by         BIGINT NULL COMMENT '创建人',
+    update_by         BIGINT NULL COMMENT '更新人',
+    deleted           TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除 0=否 1=是',
 
-                           KEY idx_merchant_time (merchant_id, start_time),
-                           KEY idx_movie_time (movie_id, start_time),
-                           KEY idx_sale_status_time (status, sale_start_time, start_time),
-                           KEY idx_hot (hot_score),
-                           KEY idx_price (min_price, max_price)
+    KEY idx_merchant_time (merchant_id, start_time),
+    KEY idx_movie_time (movie_id, start_time),
+    KEY idx_sale_status_time (status, sale_start_time, start_time),
+    KEY idx_hot (hot_score),
+    KEY idx_price (min_price, max_price)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='电影场次表';
 
 ALTER TABLE screening
@@ -612,27 +675,54 @@ CREATE TABLE op_analytics_daily (
     KEY idx_scope (biz_scope, biz_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运营分析-每日KPI汇总';
 
-DROP TABLE IF EXISTS admin_mq_fail_msg;
-CREATE TABLE admin_mq_fail_msg (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    msg_id VARCHAR(64) NOT NULL COMMENT '消息唯一ID',
-    exchange_name VARCHAR(64) NULL,
-    routing_key VARCHAR(128) NOT NULL,
-    topic VARCHAR(128) NULL COMMENT '可选：业务topic',
-    name VARCHAR(64) NOT NULL COMMENT '展示名',
-    level VARCHAR(16) NOT NULL DEFAULT 'warn' COMMENT 'warn/error',
-    status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING/FAILED/DONE',
-    retry_cnt INT NOT NULL DEFAULT 0,
-    last_error VARCHAR(512) NULL,
-    next_retry_time DATETIME NULL,
-    payload JSON NULL COMMENT '原始消息体(便于补发)',
-    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE KEY uk_msg_id (msg_id),
-    KEY idx_status_time (status, create_time),
-    KEY idx_routing (routing_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理端-MQ失败/待补发表';
+DROP TABLE IF EXISTS op_mq_fail_msg;
+
+CREATE TABLE op_mq_fail_msg (
+                                id BIGINT PRIMARY KEY AUTO_INCREMENT,
+
+                                source_module VARCHAR(32) NOT NULL COMMENT '来源服务：USER/MERCHANT/ADMIN',
+
+                                msg_id VARCHAR(64) NOT NULL COMMENT '源服务内消息唯一ID',
+
+                                biz_id BIGINT NULL,
+                                exchange_name VARCHAR(128) NULL,
+                                routing_key VARCHAR(128) NOT NULL,
+                                topic VARCHAR(128) NULL,
+                                payload JSON NULL,
+
+                                status INT NOT NULL DEFAULT 0 COMMENT '0=PENDING,1=DONE,2=FAILED',
+                                retry_cnt INT NOT NULL DEFAULT 0,
+                                next_retry_time DATETIME NULL,
+                                last_error VARCHAR(512) NULL,
+
+                                source_create_time DATETIME NULL,
+                                source_update_time DATETIME NULL,
+
+                                collect_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                collect_version BIGINT NOT NULL DEFAULT 0,
+
+                                resend_state INT NOT NULL DEFAULT 0,
+                                resend_request_id VARCHAR(64) NULL,
+                                resend_attempt_cnt INT NOT NULL DEFAULT 0,
+                                resend_last_time DATETIME NULL,
+                                resend_last_error VARCHAR(512) NULL,
+
+                                row_version BIGINT NOT NULL DEFAULT 0,
+
+                                create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+                                UNIQUE KEY uk_source_msg (source_module, msg_id),
+
+                                KEY idx_collect_time (collect_time),
+                                KEY idx_status (status),
+                                KEY idx_resend_state (resend_state),
+                                KEY idx_routing (routing_key),
+                                KEY idx_source_update (source_module, source_update_time)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运营分析-失败消息中心表';
+
 
 DROP TABLE IF EXISTS op_analytics_event_log;
 CREATE TABLE op_analytics_event_log (

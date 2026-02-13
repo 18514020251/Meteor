@@ -1,11 +1,13 @@
 package com.meteor.user.mq.publisher;
 
+import com.meteor.common.enums.system.ModuleEnum;
 import com.meteor.id.utils.SnowflakeIdGenerator;
 import com.meteor.mq.contract.analytics.OperationAnalyticsContract;
 import com.meteor.mq.contract.analytics.UserRegisteredMessage;
-import com.meteor.mq.core.MqSendResult;
 import com.meteor.mq.core.MqSender;
+import com.meteor.user.domain.cmd.MqSendCmd;
 import com.meteor.user.domain.entity.User;
+import com.meteor.user.mq.support.UserMqSendGuard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,7 @@ public class OperationAnalyticsEventPublisher {
 
     private final MqSender mqSender;
     private final SnowflakeIdGenerator idGenerator;
+    private final UserMqSendGuard mqGuard;
 
     public void publishUserRegistered(User user) {
         if (user == null || user.getId() == null) {
@@ -44,27 +47,17 @@ public class OperationAnalyticsEventPublisher {
     }
 
     private void doSend(UserRegisteredMessage message) {
-        MqSendResult result = mqSender.sendAndWaitConfirm(
+
+        mqGuard.send(new MqSendCmd(
+                message.getEventId(),
+                ModuleEnum.USER,
+                message.getUserId(),
                 OperationAnalyticsContract.Exchange.ANALYTICS,
                 OperationAnalyticsContract.RoutingKey.USER_REGISTERED,
+                "user_registered",
                 message,
-                OperationAnalyticsContract.CONFIRM_TIMEOUT
-        );
-
-        if (!result.isAck()) {
-            log.error("MQ confirm failed: exchange={}, routingKey={}, eventId={}, cause={}",
-                    OperationAnalyticsContract.Exchange.ANALYTICS,
-                    OperationAnalyticsContract.RoutingKey.USER_REGISTERED,
-                    message.getEventId(),
-                    result.getCause());
-            return;
-        }
-
-        if (result.noRoute()) {
-            log.warn("MQ NO_ROUTE: exchange={}, routingKey={}, eventId={}",
-                    OperationAnalyticsContract.Exchange.ANALYTICS,
-                    OperationAnalyticsContract.RoutingKey.USER_REGISTERED,
-                    message.getEventId());
-        }
+                OperationAnalyticsContract.CONFIRM_TIMEOUT,
+                false
+        ));
     }
 }
