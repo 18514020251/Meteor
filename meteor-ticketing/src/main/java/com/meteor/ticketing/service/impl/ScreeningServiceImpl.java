@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.ticketing.service.assembler.ScreeningAssembler;
 import com.meteor.ticketing.service.hot.ScreeningHotCounter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,7 @@ import static com.meteor.common.constants.MovieCategoryConstants.DEFAULT_HOT_SCO
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening> implements IScreeningService {
 
     private final HotRankServiceImpl hotRankService;
@@ -182,7 +184,6 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
             chosenScreeningIds.add(chosen.getId());
         }
 
-        // 去重，避免重复查
         List<Long> uniq = chosenScreeningIds.stream().distinct().toList();
         return new Chosen(chosenByMovie, uniq);
     }
@@ -192,8 +193,9 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
 
         return list.stream()
                 .filter(s -> s != null && s.getId() != null)
-                // 主页卡片不展示开场后的过期场次（可选但推荐）
-                .filter(s -> s.getStartTime() != null && !now.isAfter(s.getStartTime()))
+                // NOTE(dev): 当前项目开发期允许展示历史场次（本地初始化数据多为过去时间）
+                // 生产/商家数据接入后如需“只显示未开场/可售”，再恢复为 startTime >= now 的过滤口径
+                //.filter(s -> s.getStartTime() != null && !now.isAfter(s.getStartTime()))
                 .min((a, b) -> {
                     SaleStateEnum sa = calculateSaleState(a, now);
                     SaleStateEnum sb = calculateSaleState(b, now);
@@ -202,7 +204,6 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
                     int pb = salePriority(sb);
                     if (pa != pb) return Integer.compare(pa, pb);
 
-                    // 同状态内再按“更接近可买”排序
                     if (sa == SaleStateEnum.NOT_STARTED) {
                         return nullSafeCompare(a.getSaleStartTime(), b.getSaleStartTime());
                     }

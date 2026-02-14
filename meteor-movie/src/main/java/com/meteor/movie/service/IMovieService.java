@@ -49,7 +49,7 @@ public interface IMovieService extends IService<Movie> {
      *
      * @return 电影数据列表
      * */
-    List<HomeMovieCardVO> latest20();
+    List<HomeMovieCardVO> latest8();
 
     /**
      * 根据ID查询电影详情（含场次、分类、海报、热度）

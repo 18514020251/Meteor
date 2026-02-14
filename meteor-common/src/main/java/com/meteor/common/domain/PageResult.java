@@ -1,5 +1,6 @@
 package com.meteor.common.domain;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,6 @@ public class PageResult<T> {
     private long total;
     private long pageNum;
     private long pageSize;
-
 
 
     public static <T> PageResult<T> of(List<T> records, long total, long pageNum, long pageSize) {

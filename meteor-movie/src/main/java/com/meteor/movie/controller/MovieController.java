@@ -60,10 +60,11 @@ public class MovieController {
         return Result.success(movieService.home(uid));
     }
 
-    @Operation(summary = "获取最新电影列表20")
+    // NOTE: 可以在优雅一点(增加返回类型 ，当电影没有票时返回无票)
+    @Operation(summary = "获取最新电影列表8")
     @GetMapping("/latest")
     public Result<List<HomeMovieCardVO>> latest() {
-        return Result.success(movieService.latest20());
+        return Result.success(movieService.latest8());
     }
 
 

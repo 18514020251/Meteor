@@ -14,8 +14,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Objects;
 
 /**
  *  全局异常处理器
@@ -63,15 +67,25 @@ public class GlobalExceptionHandler {
         return Result.fail(CommonErrorCode.PARAM_INVALID, "缺少请求参数：" + e.getParameterName());
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public Result<Void> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+        log.warn("参数类型转换失败：{} 无法转换为 {}", e.getValue(), Objects.requireNonNull(e.getRequiredType()).getSimpleName());
+        return Result.fail(CommonErrorCode.PARAM_INVALID, "参数格式错误");
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.warn("上传文件大小超出限制：{}", e.getMessage());
         return Result.fail(CommonErrorCode.FILE_SIZE_ERROR);
     }
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public Result<Void> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        log.warn("未找到该资源：{}", e.getMessage());
-        return Result.fail(CommonErrorCode.NOT_FOUND);
+    @ExceptionHandler(ResponseStatusException.class)
+    public Result<Void> handleResponseStatusException(ResponseStatusException e) {
+        if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+            log.warn("未找到该资源：{} - {}", e.getStatusCode(), e.getReason());
+            return Result.fail(CommonErrorCode.NOT_FOUND);
+        }
+        log.warn("响应状态异常：{} - {}", e.getStatusCode(), e.getReason());
+        return Result.fail(e.getStatusCode().value(), e.getReason() != null ? e.getReason() : "请求处理异常");
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

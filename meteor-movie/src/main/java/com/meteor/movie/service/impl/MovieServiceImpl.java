@@ -231,7 +231,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
                 .map(HomeMovieCardVO::movieId)
                 .collect(Collectors.toSet());
 
-        List<HomeMovieCardVO> latest = latest20();
+        List<HomeMovieCardVO> latest = latest8();
 
         List<HomeMovieCardVO> merged = new ArrayList<>(MAX_MOVIE_PER);
         merged.addAll(main);
@@ -302,10 +302,10 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
     }
 
     /**
-     * 最新电影（按上映日期，固定 20 条），并远程补齐票务字段
+     * 最新电影（按上映日期，固定 8 条），并远程补齐票务字段
      */
     @Override
-    public List<HomeMovieCardVO> latest20() {
+    public List<HomeMovieCardVO> latest8() {
 
         List<Movie> movies = queryLatestMovies();
         if (movies == null || movies.isEmpty()) {
@@ -326,6 +326,7 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         return movies.stream()
                 .map(m -> buildHomeCardOrNull(m, posterUrlMap, categoryMap, ticketingMap))
                 .flatMap(Optional::stream)
+                .limit(MAX_MOVIE_PER)
                 .toList();
     }
 
@@ -424,6 +425,8 @@ public class MovieServiceImpl extends ServiceImpl<MovieMapper, Movie> implements
         }
 
         List<MoviePosterRow> posters = mediaAssetMapper.selectPosterObjectKeyByMovieIds(movieIds);
+
+        log.info("posters={}", posters);
 
         Map<Long, String> map = new HashMap<>(movieIds.size() * 2);
         for (MoviePosterRow row : posters) {
