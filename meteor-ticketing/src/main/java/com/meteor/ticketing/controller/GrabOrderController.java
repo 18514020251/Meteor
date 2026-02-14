@@ -7,12 +7,12 @@ import com.meteor.ticketing.service.IGrabOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.opentelemetry.api.trace.Span;
 
 /**
  *
@@ -37,6 +37,20 @@ public class GrabOrderController {
     @PostMapping("/grab")
     public Result<GrabOrderVO> grab(@RequestParam @NotNull Long screeningId) {
         Long uid = loginContext.currentLoginId();
-        return Result.success(grabOrderService.grab(screeningId,uid));
+
+        Span span = Span.current();
+        span.setAttribute("biz.screening_id", String.valueOf(screeningId));
+        span.setAttribute("biz.user_id", String.valueOf(uid));
+
+        try {
+            GrabOrderVO vo = grabOrderService.grab(screeningId, uid);
+            span.setAttribute("biz.grab_result", "SUCCESS");
+            return Result.success(vo);
+        } catch (Exception e) {
+            span.setAttribute("biz.grab_result", "FAILED");
+            span.recordException(e);
+            span.setStatus(io.opentelemetry.api.trace.StatusCode.ERROR);
+            throw e;
+        }
     }
 }

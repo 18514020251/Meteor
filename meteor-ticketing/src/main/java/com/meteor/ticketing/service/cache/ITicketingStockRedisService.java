@@ -18,4 +18,5 @@ public interface ITicketingStockRedisService {
     RedisStockOpResult incrStockN(Long screeningId, int cnt);
 
     void rebuildStock(Long screeningId, int cnt);
+
 }

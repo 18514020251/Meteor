@@ -168,6 +168,12 @@
 				<version>${sa-token.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>io.opentelemetry</groupId>
+				<artifactId>opentelemetry-api</artifactId>
+				<version>${opentelemetry.version}</version>
+			</dependency>
+
 			<!-- Lombok -->
 			<dependency>
 				<groupId>org.projectlombok</groupId>

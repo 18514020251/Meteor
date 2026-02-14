@@ -34,8 +34,11 @@ public class ScreeningStockWarmupJob {
     private final ScreeningMapper screeningMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
-    @Scheduled(fixedDelay = 15_000L)
+    //@Scheduled(fixedDelay = 5_000L)
+    @Scheduled(fixedDelay = 5_000L)
+    //@Scheduled(fixedDelay = 5 * 60 * 1000L)
     public void warmup() {
+        log.info("[ScreeningStockWarmupJob] start");
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime to = now.plus(RedisKeyConstants.WARMUP_WINDOW);
@@ -54,6 +57,7 @@ public class ScreeningStockWarmupJob {
         }
 
         for (Long screeningId : ids) {
+            log.info("[v] id={}", screeningId);
             tryWarmOne(screeningId, now);
         }
     }
@@ -65,42 +69,51 @@ public class ScreeningStockWarmupJob {
         String lockKey  = buildScreeningStockWarmLockKey(screeningId);
 
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(readyKey))) {
+            log.info("存在锁，跳过");
             return;
         }
 
         Boolean locked = stringRedisTemplate.opsForValue()
                 .setIfAbsent(lockKey, "READY", RedisKeyConstants.SCREENING_STOCK_WARM_LOCK_TTL);
         if (!Boolean.TRUE.equals(locked)) {
+            log.info("[WarmupLocked] id={} lockKey={}", screeningId, lockKey);
             return;
         }
 
         Screening s = screeningMapper.selectById(screeningId);
         if (s == null || s.getDeleted() == null || DeleteStatus.DELETED.equals(s.getDeleted())) {
+            log.info("票务被删除");
             return;
         }
 
         if (ScreeningStatusEnum.CANCELED.equals(s.getStatus()) || ScreeningStatusEnum.CLOSED.equals(s.getStatus())) {
+            log.info("场次已取消");
             return;
         }
         if (s.getStartTime() != null && now.isAfter(s.getStartTime())) {
+            log.info("场次已售罄");
             return;
         }
         if (s.getSaleEndTime() != null && now.isAfter(s.getSaleEndTime())) {
+            log.info("场次已售罄");
             return;
         }
 
         Integer available = s.getAvailableTickets();
         if (available == null) {
+            log.info("库存为空");
             return;
         }
 
         LocalDateTime endBase = s.getSaleEndTime() != null ? s.getSaleEndTime() : s.getStartTime();
         if (endBase == null) {
+            log.info("场次未开始");
             return;
         }
 
         long ttlSeconds = Duration.between(now, endBase.plus(RedisKeyConstants.EXTRA_TTL)).getSeconds();
         if (ttlSeconds <= 0) {
+            log.info("场次已 结束");
             return;
         }
 

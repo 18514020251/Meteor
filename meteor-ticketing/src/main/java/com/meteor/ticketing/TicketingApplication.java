@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableMeteorMyBatisPlus
 @EnableDiscoveryClient
 @SpringBootApplication
-//@EnableScheduling
+@EnableScheduling
 @MapperScan("com.meteor.ticketing.mapper")
 public class TicketingApplication {
     public static void main(String[] args) {
