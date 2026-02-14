@@ -2,10 +2,7 @@ package com.meteor.analytics.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckRole;
-import com.meteor.analytics.controller.vo.PayTodayVO;
-import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
-import com.meteor.analytics.controller.vo.Trend7dVO;
-import com.meteor.analytics.controller.vo.TrendVO;
+import com.meteor.analytics.controller.vo.*;
 import com.meteor.analytics.service.IOpAnalyticsDailyService;
 import com.meteor.common.result.Result;
 import com.meteor.satoken.constants.RoleConst;
@@ -16,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * <p>
@@ -56,6 +55,13 @@ public class OpAnalyticsDailyController {
     @GetMapping("/trend")
     public Result<TrendVO> trend(@RequestParam(defaultValue = "7") int days) {
         return Result.success(dailyService.getGmvTrendGlobal(days));
+    }
+
+    @Operation(summary = "获取失败消息的补发状态统计")
+    @GetMapping("/resend-state-stats")
+    public Result<List<ResendStateCountVO>> getResendStateStats() {
+        List<ResendStateCountVO> dtoList = dailyService.getResendStateCounts();
+        return Result.success(dtoList);
     }
 
 }

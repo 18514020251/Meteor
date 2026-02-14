@@ -11,6 +11,6 @@ package com.meteor.api.constants;
 public class MqFailMsgConstants {
 
     private MqFailMsgConstants(){}
-    public static final Integer DEFAULT_PAST_MINUTES = 100000;
+    public static final Integer DEFAULT_PAST_MINUTES = 65;
 
 }

@@ -1,14 +1,15 @@
 package com.meteor.analytics.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
-import com.meteor.analytics.controller.vo.PayTodayVO;
-import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
-import com.meteor.analytics.controller.vo.Trend7dVO;
-import com.meteor.analytics.controller.vo.TrendVO;
+import com.meteor.analytics.controller.vo.*;
 import com.meteor.analytics.domain.entity.OpAnalyticsDaily;
+import com.meteor.analytics.domain.entity.OpMqFailMsg;
 import com.meteor.analytics.enums.BizScopeEnum;
+import com.meteor.analytics.enums.SendState;
 import com.meteor.analytics.mapper.OpAnalyticsDailyMapper;
+import com.meteor.analytics.mapper.OpMqFailMsgMapper;
 import com.meteor.analytics.service.IOpAnalyticsDailyService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meteor.analytics.service.assembler.OpAnalyticsDailyAssembler;
@@ -19,10 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 /**
@@ -39,9 +37,14 @@ public class OpAnalyticsDailyServiceImpl
         extends ServiceImpl<OpAnalyticsDailyMapper, OpAnalyticsDaily>
         implements IOpAnalyticsDailyService {
 
+    private final OpAnalyticsDailyAssembler dailyAssembler;
+    private final OpMqFailMsgMapper mqFailMsgService;
+
+
     private static final String SCOPE_GLOBAL = "GLOBAL";
     private static final DateTimeFormatter MM_DD = DateTimeFormatter.ofPattern("MM-dd");
-    private final OpAnalyticsDailyAssembler dailyAssembler;
+    private static final String FIELD_RESEND_STATE = "resend_state";
+    private static final String FIELD_COUNT = "count";
     private static final int DEFAULT_TREND_DAYS = 7;
     private static final int ALLOWED_DAYS_7 = 7;
     private static final int ALLOWED_DAYS_30 = 30;
@@ -250,5 +253,28 @@ public class OpAnalyticsDailyServiceImpl
         }
     }
 
+
+
+    public List<ResendStateCountVO> getResendStateCounts() {
+        // 用条件构造器查出统计结果
+        List<Map<String, Object>> rawCounts = mqFailMsgService.selectMaps(
+                Wrappers.<OpMqFailMsg>query()
+                        .select(FIELD_RESEND_STATE, "COUNT(*) AS " + FIELD_COUNT)
+                        .groupBy(FIELD_RESEND_STATE)
+        );
+
+        return rawCounts.stream()
+                .map(row -> {
+                    Integer resendState = (Integer) row.get(FIELD_RESEND_STATE);
+                    Long count = (Long) row.get(FIELD_COUNT);
+                    String resendStateDesc = Arrays.stream(SendState.values())
+                            .filter(state -> state.getCode() == resendState)
+                            .findFirst()
+                            .map(SendState::getDesc)
+                            .orElse("未知状态");
+                    return new ResendStateCountVO(resendStateDesc, resendState, count);
+                })
+                .toList();
+    }
 
 }

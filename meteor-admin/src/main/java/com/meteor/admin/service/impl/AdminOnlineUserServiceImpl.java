@@ -4,7 +4,11 @@ import com.meteor.admin.controller.vo.OnlineUserVO;
 import com.meteor.admin.service.IUserCacheService;
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.common.domain.PageResult;
+import com.meteor.common.exception.BizException;
+import com.meteor.common.exception.CommonErrorCode;
+import com.meteor.satoken.context.LoginContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +24,10 @@ import java.util.Set;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AdminOnlineUserServiceImpl implements IUserCacheService {
     private final StringRedisTemplate redisTemplate;
+    private final LoginContext loginContext;
 
     @Override
     public PageResult<OnlineUserVO> pageOnlineUsers(int pageNum, int pageSize) {
@@ -65,5 +71,24 @@ public class AdminOnlineUserServiceImpl implements IUserCacheService {
     private Long longVal(Object o) {
         if (o == null) return 0L;
         try { return Long.valueOf(String.valueOf(o)); } catch (Exception e) { return 0L; }
+    }
+
+    @Override
+    public void kickOutUser(Long userId) {
+        String zsetKey = RedisKeyConstants.onlineUserZsetKey();
+        String detailKey = RedisKeyConstants.buildOnlineUserDetailKey(userId);
+
+        try {
+            redisTemplate.opsForZSet().remove(zsetKey, String.valueOf(userId));
+
+            redisTemplate.delete(detailKey);
+
+            loginContext.kickout(userId);
+
+            log.info("用户踢下线成功, userId={}", userId);
+        } catch (Exception e) {
+            log.error("踢下线失败, userId={}", userId, e);
+            throw new BizException(CommonErrorCode.KICK_OUT_USER_FAIL);
+        }
     }
 }

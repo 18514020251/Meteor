@@ -11,4 +11,6 @@ import com.meteor.common.domain.PageResult;
 public interface IUserCacheService {
 
     PageResult<OnlineUserVO> pageOnlineUsers(int pageNum, int pageSize);
+
+    void kickOutUser(Long uid);
 }

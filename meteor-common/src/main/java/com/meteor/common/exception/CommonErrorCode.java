@@ -74,8 +74,10 @@ public enum CommonErrorCode implements IErrorCode {
 
     // 电影相关异常
     CONFLICT(8001, "电影已存在", HttpStatus.BAD_REQUEST),
-    MOVIE_NOT_FOUND(8002, "电影不存在", HttpStatus.NOT_FOUND);
+    MOVIE_NOT_FOUND(8002, "电影不存在", HttpStatus.NOT_FOUND),
 
+    // 管理员
+    KICK_OUT_USER_FAIL(9001, "踢下线失败", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;

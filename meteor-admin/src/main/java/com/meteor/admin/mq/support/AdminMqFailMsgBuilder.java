@@ -6,7 +6,7 @@ import com.meteor.api.model.AdminMqFailureEntity;
 import com.meteor.common.constants.MqConstants;
 import com.meteor.common.enums.system.ModuleEnum;
 import com.meteor.common.enums.system.mq.MessageStatusEnum;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
@@ -21,14 +21,19 @@ import java.util.Objects;
  * @date 2026-02-12
  */
 @Component
-@RequiredArgsConstructor
 public class AdminMqFailMsgBuilder {
 
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
+    @Autowired
     public AdminMqFailMsgBuilder(ObjectMapper objectMapper) {
         this(objectMapper, Clock.systemDefaultZone());
+    }
+
+    public AdminMqFailMsgBuilder(ObjectMapper objectMapper, Clock clock) {
+        this.objectMapper = objectMapper;
+        this.clock = clock;
     }
 
     public AdminMqFailureEntity build(BuildCmd cmd) {

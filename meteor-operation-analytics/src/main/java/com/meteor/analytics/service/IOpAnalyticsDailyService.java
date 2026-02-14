@@ -1,14 +1,12 @@
 package com.meteor.analytics.service;
 
-import com.meteor.analytics.controller.vo.PayTodayVO;
-import com.meteor.analytics.controller.vo.RegisterTrend7dVO;
-import com.meteor.analytics.controller.vo.Trend7dVO;
-import com.meteor.analytics.controller.vo.TrendVO;
+import com.meteor.analytics.controller.vo.*;
 import com.meteor.analytics.domain.entity.OpAnalyticsDaily;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -56,4 +54,11 @@ public interface IOpAnalyticsDailyService extends IService<OpAnalyticsDaily> {
      *  @return GMV趋势
      * */
     TrendVO getGmvTrendGlobal(int days);
+
+    /**
+     *  查询重发状态数量
+     *
+     *  @return 重发状态数量
+     * */
+    List<ResendStateCountVO> getResendStateCounts();
 }

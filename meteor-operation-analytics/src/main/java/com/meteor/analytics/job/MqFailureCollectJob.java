@@ -30,8 +30,7 @@ public class MqFailureCollectJob {
 
     private final Executor executor = Executors.newFixedThreadPool(6);
 
-    //@Scheduled(cron = "0 */1 * * * ?")
-    @Scheduled(cron = "0/20 * * * * ?")
+    @Scheduled(cron = "0 */15 * * * ?")
     public void collect() {
         log.info("[MQ失败消息，发起远程调用]");
 

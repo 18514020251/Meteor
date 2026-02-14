@@ -11,10 +11,11 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.reactive.resource.NoResourceFoundException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 /**
  *  全局异常处理器
@@ -56,10 +57,21 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public Result<Void> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        log.warn("缺少请求参数：{} - {}", e.getParameterName(), e.getMessage());
+        return Result.fail(CommonErrorCode.PARAM_INVALID, "缺少请求参数：" + e.getParameterName());
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public Result<Void> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.warn("上传文件大小超出限制：{}", e.getMessage());
         return Result.fail(CommonErrorCode.FILE_SIZE_ERROR);
+    }
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public Result<Void> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.warn("未找到该资源：{}", e.getMessage());
+        return Result.fail(CommonErrorCode.NOT_FOUND);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -69,12 +81,6 @@ public class GlobalExceptionHandler {
                 .map(ConstraintViolation::getMessage)
                 .orElse("参数校验失败");
         return Result.fail(CommonErrorCode.PARAM_INVALID, msg);
-    }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public Result<Void> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.warn("未找到该资源：{}", e.getMessage());
-        return Result.fail(CommonErrorCode.NOT_FOUND);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
