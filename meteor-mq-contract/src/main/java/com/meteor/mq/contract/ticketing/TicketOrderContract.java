@@ -37,6 +37,7 @@ public final class TicketOrderContract {
         public static final String TICKET_ORDER_DB_RESERVED = "ticket.order.db.reserved.queue";
         public static final String TICKET_ORDER_CREATE_DLX = "ticket.order.create.dlx";
         public static final String TICKET_STOCK_RELEASE = "ticket.stock.release";
+        public static final String TICKET_DB_RESERVED = "ticket.order.db_reserved";
     }
 }
 

@@ -5,8 +5,9 @@ import com.meteor.mq.contract.ticketing.TicketOrderCreateMessage;
 import com.meteor.ticketing.controller.dto.ScreeningOrderSnapshot;
 import com.meteor.ticketing.mapper.TicketMqConsumeLogMapper;
 import com.meteor.ticketing.mq.assmabler.TicketOrderDbReservedMessageAssembler;
-import com.meteor.ticketing.mq.publisher.TicketOrderDbReservedPublisher;
+import com.meteor.ticketing.mq.outbox.OutboxWriter;
 import com.meteor.ticketing.service.IScreeningService;
+import io.opentelemetry.api.trace.Span;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -26,10 +27,9 @@ import java.time.LocalDateTime;
 public class TicketOrderCreateConsumer {
 
     private final TicketMqConsumeLogMapper consumeLogMapper;
-    private final TicketOrderDbReservedPublisher dbReservedPublisher;
     private final TicketOrderDbReservedMessageAssembler assembler;
-
     private final IScreeningService screeningService;
+    private final OutboxWriter outboxWriter;
 
     @RabbitListener(
             queues = TicketOrderContract.Queue.TICKET_ORDER_CREATE,
@@ -61,12 +61,28 @@ public class TicketOrderCreateConsumer {
 
         screeningService.markSoldOutIfNeeded(message.getScreeningId());
 
-        ScreeningOrderSnapshot screening = screeningService.getOrderSnapshot(message.getScreeningId());
+        ScreeningOrderSnapshot screening =
+                screeningService.getOrderSnapshot(message.getScreeningId());
+
         if (screening == null) {
-            throw new IllegalStateException("screening not found: " + message.getScreeningId());
+            throw new IllegalStateException(
+                    "screening not found: " + message.getScreeningId()
+            );
         }
 
         var dbMsg = assembler.from(message, screening);
-        dbReservedPublisher.publishOrThrow(dbMsg);
+
+        outboxWriter.saveEvent(
+                OutboxWriter.SaveEventParams.builder()
+                        .bizKey(message.getOrderNo())
+                        .eventType("TICKET_DB_RESERVED")
+                        .exchange(TicketOrderContract.Exchange.TICKET_ORDER)
+                        .routingKey(TicketOrderContract.RoutingKey.TICKET_DB_RESERVED)
+                        .message(dbMsg)
+                        .traceId(Span.current().getSpanContext().getTraceId())
+                        .deliverAt(LocalDateTime.now())
+                        .bizExpireAt(LocalDateTime.now().plusMinutes(10))
+                        .build()
+        );
     }
 }

@@ -381,6 +381,35 @@ CREATE TABLE screening (
 ALTER TABLE screening
     MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '场次ID';
 
+drop table if exists mq_outbox_event;
+CREATE TABLE mq_outbox_event (
+    id              BIGINT      NOT NULL PRIMARY KEY,
+    biz_key         VARCHAR(64)  NOT NULL,
+    event_type      VARCHAR(64)  NOT NULL,
+
+    exchange_name   VARCHAR(128) NOT NULL,
+    routing_key     VARCHAR(128) NOT NULL,
+
+    payload         MEDIUMTEXT   NOT NULL,
+
+    status          INT          NOT NULL,
+    retry_cnt       INT          NOT NULL DEFAULT 0,
+    next_retry_time DATETIME(3)  NOT NULL,
+    deliver_at      DATETIME(3)  NOT NULL,
+    biz_expire_at   DATETIME(3)  NOT NULL,
+
+    trace_id        VARCHAR(64)  NULL,
+    last_error      VARCHAR(512) NULL,
+
+    created_at      DATETIME(3)  NOT NULL,
+    updated_at      DATETIME(3)  NOT NULL,
+
+    UNIQUE KEY uk_event_dedupe (event_type, biz_key),
+    KEY idx_outbox_scan (status, next_retry_time, deliver_at),
+    KEY idx_outbox_expire (status, biz_expire_at),
+    KEY idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 DROP TABLE IF EXISTS hot_rank;
 CREATE TABLE hot_rank (
