@@ -3,15 +3,13 @@ package com.meteor.ticketing.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.meteor.api.enums.GrabOrderResultEnum;
-import com.meteor.common.constants.MqConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.id.utils.SnowflakeIdGenerator;
-import com.meteor.mq.contract.ticketing.TicketOrderContract;
 import com.meteor.mq.contract.ticketing.TicketOrderCreateMessage;
 import com.meteor.ticketing.controller.vo.GrabOrderVO;
 import com.meteor.ticketing.domain.entity.MqOutboxEvent;
-import com.meteor.ticketing.enums.OutboxStatus;
+import com.meteor.ticketing.mq.assmabler.MqOutboxEventAssembler;
 import com.meteor.ticketing.mq.assmabler.TicketOrderMessageAssembler;
 import com.meteor.ticketing.redis.GrabSemaphoreService;
 import com.meteor.ticketing.service.IGrabOrderService;
@@ -42,6 +40,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
     private final TicketOrderMessageAssembler assembler;
     private final ObjectMapper objectMapper;
     private final GrabSemaphoreService grabSemaphoreService;
+    private final MqOutboxEventAssembler mqOutboxEventAssembler;
 
     private static final int BIZ_EXPIRE_MINUTES = 3;
 
@@ -132,20 +131,12 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
 
         String payload = objectMapper.writeValueAsString(message);
 
-        // NOTE： 提取Assembler或全参
-        MqOutboxEvent event = new MqOutboxEvent()
-                .setId(idGenerator.nextId())
-                .setBizKey(orderNo)
-                .setEventType("TICKET_ORDER_CREATE")
-                .setExchangeName(TicketOrderContract.Exchange.TICKET_ORDER)
-                .setRoutingKey(TicketOrderContract.RoutingKey.TICKET_ORDER_CREATE)
-                .setPayload(payload)
-                .setStatus(OutboxStatus.NEW)
-                .setRetryCnt(MqConstants.DEFAULT_RETRY_COUNT)
-                .setNextRetryTime(now)
-                .setDeliverAt(now)
-                .setBizExpireAt(expireAt)
-                .setTraceId(Span.current().getSpanContext().getTraceId());
+        MqOutboxEvent event = mqOutboxEventAssembler.buildTicketOrderCreate(
+                orderNo,
+                payload,
+                now,
+                expireAt
+        );
 
         boolean saved = outboxService.save(event);
         if (!saved) {

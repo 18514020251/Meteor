@@ -8,6 +8,7 @@ import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.id.utils.SnowflakeIdGenerator;
 import com.meteor.ticketing.domain.entity.MqOutboxEvent;
 import com.meteor.ticketing.enums.OutboxStatus;
+import com.meteor.ticketing.mq.assmabler.MqOutboxEventAssembler;
 import com.meteor.ticketing.service.IMqOutboxEventService;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,7 @@ public class OutboxWriter {
     private final IMqOutboxEventService outboxService;
     private final SnowflakeIdGenerator idGenerator;
     private final ObjectMapper objectMapper;
+    private final MqOutboxEventAssembler assembler;
 
     @Data
     @Builder
@@ -45,35 +47,25 @@ public class OutboxWriter {
     }
 
     public void saveEvent(SaveEventParams params) {
-        try {
-            validate(params);
-            String payload = objectMapper.writeValueAsString(params.getMessage());
-            // NOTE:后续提取为Assembler或全参
-            MqOutboxEvent e = new MqOutboxEvent()
-                    .setId(idGenerator.nextId())
-                    .setBizKey(params.getBizKey())
-                    .setEventType(params.getEventType())
-                    .setExchangeName(params.getExchange())
-                    .setRoutingKey(params.getRoutingKey())
-                    .setPayload(payload)
-                    .setStatus(OutboxStatus.NEW)
-                    .setRetryCnt(MqConstants.DEFAULT_RETRY_COUNT)
-                    .setNextRetryTime(LocalDateTime.now())
-                    .setDeliverAt(params.getDeliverAt())
-                    .setBizExpireAt(params.getBizExpireAt())
-                    .setTraceId(params.getTraceId());
+        validate(params);
 
-            if (!outboxService.save(e)) {
+        final String payload;
+        try {
+            payload = objectMapper.writeValueAsString(params.getMessage());
+        } catch (JsonProcessingException ex) {
+            throw new BizException(CommonErrorCode.PARAM_ERROR,
+                    "消息体JSON序列化失败: " + ex.getMessage());
+        }
+
+        MqOutboxEvent e = assembler.from(params, payload);
+
+        try {
+            boolean ok = outboxService.save(e);
+            if (!ok) {
                 throw new BizException(CommonErrorCode.SYSTEM_ERROR,
                         String.format("保存MqOutboxEvent失败: bizKey=%s, eventType=%s",
                                 params.getBizKey(), params.getEventType()));
             }
-        } catch (JsonProcessingException ex) {
-            throw new BizException(CommonErrorCode.PARAM_ERROR,
-                    "消息体JSON序列化失败: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            throw new BizException(CommonErrorCode.PARAM_ERROR,
-                    "参数校验失败: " + ex.getMessage());
         } catch (BizException ex) {
             throw ex;
         } catch (Exception ex) {

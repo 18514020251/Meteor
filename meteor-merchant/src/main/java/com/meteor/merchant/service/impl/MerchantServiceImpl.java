@@ -108,7 +108,6 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
                     );
                 } catch (Exception e) {
                     log.error("afterCommit MQ send failed, userId={}", userId, e);
-                    // NOTE: 以后上 outbox / 失败补偿列表
                 }
             }
         });
