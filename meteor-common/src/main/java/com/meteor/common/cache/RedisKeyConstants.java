@@ -67,6 +67,14 @@ public class RedisKeyConstants {
     public static final String ONLINE_USER_FIELD_ROLE = "role";
 
 
+    // ================== 抢票并发闸门（分布式信号量） ==================
+    private static final String GRAB_SEM_MAX_KEY     = "grab:sem:max:%d";
+    private static final String GRAB_SEM_PERMITS_KEY = "grab:sem:permits:%d";
+    private static final String GRAB_SEM_LEASE_ZSET  = "grab:sem:lease:%d";
+
+    private static final String GRAB_ACTIVE_SCREENING_ZSET = "grab:active:screening:zset";
+
+
     /**
     *  用户信息缓存 TTL 随机抖动上限（秒）
     */
@@ -114,5 +122,21 @@ public class RedisKeyConstants {
 
     public static String buildScreeningStockWarmLockKey(Long screeningId) {
         return String.format(SCREENING_STOCK_WARM_LOCK_KEY, screeningId);
+    }
+
+    public static String buildGrabSemMaxKey(Long screeningId) {
+        return String.format(GRAB_SEM_MAX_KEY, screeningId);
+    }
+
+    public static String buildGrabSemPermitsKey(Long screeningId) {
+        return String.format(GRAB_SEM_PERMITS_KEY, screeningId);
+    }
+
+    public static String buildGrabSemLeaseZsetKey(Long screeningId) {
+        return String.format(GRAB_SEM_LEASE_ZSET, screeningId);
+    }
+
+    public static String grabActiveScreeningZsetKey() {
+        return GRAB_ACTIVE_SCREENING_ZSET;
     }
 }

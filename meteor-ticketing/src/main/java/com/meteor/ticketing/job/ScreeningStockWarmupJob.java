@@ -34,9 +34,12 @@ public class ScreeningStockWarmupJob {
     private final ScreeningMapper screeningMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
-    //@Scheduled(fixedDelay = 5_000L)
+    // 最大并发数
+    private static final int MAX_INFLIGHT = 500;
+
+
+
     @Scheduled(fixedDelay = 5_000L)
-    //@Scheduled(fixedDelay = 5 * 60 * 1000L)
     public void warmup() {
         log.info("[ScreeningStockWarmupJob] start");
 
@@ -120,6 +123,21 @@ public class ScreeningStockWarmupJob {
         stringRedisTemplate.opsForValue().set(stockKey, String.valueOf(available), ttlSeconds, TimeUnit.SECONDS);
         long saleStartEpoch = s.getSaleStartTime().atZone(ZoneId.systemDefault()).toEpochSecond();
         stringRedisTemplate.opsForValue().set(readyKey, String.valueOf(saleStartEpoch), ttlSeconds, TimeUnit.SECONDS);
+
+        String semMaxKey = RedisKeyConstants.buildGrabSemMaxKey(screeningId);
+        String semPermitsKey = RedisKeyConstants.buildGrabSemPermitsKey(screeningId);
+        String semLeaseKey = RedisKeyConstants.buildGrabSemLeaseZsetKey(screeningId);
+
+        stringRedisTemplate.opsForValue().set(semMaxKey, String.valueOf(MAX_INFLIGHT), ttlSeconds, TimeUnit.SECONDS);
+        stringRedisTemplate.opsForValue().set(semPermitsKey, String.valueOf(MAX_INFLIGHT), ttlSeconds, TimeUnit.SECONDS);
+        stringRedisTemplate.delete(semLeaseKey);
+
+        long endEpoch = endBase.atZone(ZoneId.systemDefault()).toEpochSecond();
+        stringRedisTemplate.opsForZSet().add(RedisKeyConstants.grabActiveScreeningZsetKey(),
+                String.valueOf(screeningId), endEpoch);
+
+        stringRedisTemplate.expire(RedisKeyConstants.grabActiveScreeningZsetKey(),
+                Duration.ofDays(1));
 
         log.info("[WarmupOK] id={} stockKey={} value={} ttl={}s", screeningId, stockKey, available, ttlSeconds);
     }

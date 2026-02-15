@@ -13,6 +13,7 @@ import com.meteor.ticketing.controller.vo.GrabOrderVO;
 import com.meteor.ticketing.domain.entity.MqOutboxEvent;
 import com.meteor.ticketing.enums.OutboxStatus;
 import com.meteor.ticketing.mq.assmabler.TicketOrderMessageAssembler;
+import com.meteor.ticketing.redis.GrabSemaphoreService;
 import com.meteor.ticketing.service.IGrabOrderService;
 import com.meteor.ticketing.service.IMqOutboxEventService;
 import com.meteor.ticketing.service.cache.ITicketingStockRedisService;
@@ -40,10 +41,10 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
     private final IMqOutboxEventService outboxService;
     private final TicketOrderMessageAssembler assembler;
     private final ObjectMapper objectMapper;
+    private final GrabSemaphoreService grabSemaphoreService;
 
     private static final int BIZ_EXPIRE_MINUTES = 3;
 
-    // 提取常量
     private static final String BIZ_GRAB_RESULT = "biz.grab_result";
     private static final String BIZ_SCREENING_ID = "biz.screening_id";
     private static final String BIZ_USER_ID = "biz.user_id";
@@ -86,6 +87,12 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
 
         String orderNo = String.valueOf(idGenerator.nextId());
         span.setAttribute(BIZ_ORDER_NO, orderNo);
+
+        GrabSemaphoreService.Lease lease = grabSemaphoreService.tryAcquire(screeningId, 3000);
+        if (lease == null) {
+            span.setAttribute(BIZ_GRAB_RESULT, "BUSY");
+            return GrabOrderVO.of(GrabOrderResultEnum.BUSY);
+        }
 
         try {
             insertOutboxEvent(orderNo, userId, screeningId);
