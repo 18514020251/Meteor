@@ -37,8 +37,6 @@ public class ScreeningStockWarmupJob {
     // 最大并发数
     private static final int MAX_INFLIGHT = 500;
 
-
-
     @Scheduled(fixedDelay = 5_000L)
     public void warmup() {
         log.info("[ScreeningStockWarmupJob] start");

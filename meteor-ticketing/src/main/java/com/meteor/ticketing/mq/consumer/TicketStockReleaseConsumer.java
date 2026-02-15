@@ -32,7 +32,8 @@ public class TicketStockReleaseConsumer {
     private final IScreeningService screeningStockService;
     private final ITicketingStockRedisService stockRedisService;
 
-    private static final String TOPIC = TicketOrderContract.RoutingKey.TICKET_STOCK_RELEASE;
+    private static final String TOPIC = TicketOrderContract.RoutingKey.TICKET_ORDER_DB_RESERVED;
+
 
     @RabbitListener(
             queues = TicketOrderContract.Queue.TICKET_STOCK_RELEASE,

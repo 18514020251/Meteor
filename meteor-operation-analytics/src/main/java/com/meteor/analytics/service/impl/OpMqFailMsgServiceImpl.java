@@ -67,7 +67,6 @@ public class OpMqFailMsgServiceImpl extends ServiceImpl<OpMqFailMsgMapper, OpMqF
             this.baseMapper.insert(e);
             log.info("[upsertByUk] insert success: sourceModule={}, msgId={}", e.getSourceModule(), e.getMsgId());
         } catch (DuplicateKeyException dup) {
-            // 并发下可能出现：update=0，但 insert 时已被别人插入
             log.warn("[upsertByUk] insert duplicate key, fallback to update: sourceModule={}, msgId={}",
                     e.getSourceModule(), e.getMsgId(), dup);
 
@@ -104,7 +103,6 @@ public class OpMqFailMsgServiceImpl extends ServiceImpl<OpMqFailMsgMapper, OpMqF
     }
 
     private void prepareForInsert(OpMqFailMsg e) {
-        // 你原来是希望走 DB 默认值/触发器的话，置空是合理的
         e.setCollectTime(null);
         e.setCollectVersion(null);
     }

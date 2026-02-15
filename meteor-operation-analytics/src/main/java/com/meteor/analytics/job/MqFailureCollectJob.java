@@ -55,10 +55,8 @@ public class MqFailureCollectJob {
                             return Collections.emptyList();
                         });
 
-        // 等拉取都完成
         CompletableFuture.allOf(fMerchant, fUser, fAdmin).join();
 
-        // 串行写库（Spring 事务/会话更“正常”）
         persist("MERCHANT", fMerchant.join());
         persist("USER", fUser.join());
         persist("ADMIN", fAdmin.join());
