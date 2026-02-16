@@ -36,7 +36,7 @@ public class MqOutboxDispatcherJob {
     private static final int MAX_RETRY = 10;
     private static final Duration CONFIRM_TIMEOUT_MS = Duration.ofMillis(3000);
 
-    @Scheduled(fixedDelay = 4000)
+    @Scheduled(fixedDelay = 2000)
     public void dispatch() {
         List<MqOutboxEvent> due = outboxService.listDueEvents(BATCH_SIZE);
         if (due.isEmpty()) return;

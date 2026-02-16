@@ -57,12 +57,10 @@ public class PaymentController {
     @PostMapping("/confirm")
     public Result<Boolean> confirm(@Valid @RequestBody PayConfirmRequest req) {
 
-        Long uid = loginContext.currentLoginId();
-
         boolean ok = payService.confirmPay(
                 req.getPayNo(),
                 req.getPayPwd(),
-                uid
+                req.getUid()
         );
 
         return Result.success(ok);

@@ -1,6 +1,7 @@
 package com.meteor.order.controller.dto.pay;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -18,4 +19,7 @@ public class PayConfirmRequest {
     /** 演示用支付密码 */
     @NotBlank(message = "payPwd不能为空")
     private String payPwd;
+
+    @NotNull(message = "uid不能为空")
+    private Long uid;
 }

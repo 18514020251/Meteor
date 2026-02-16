@@ -43,23 +43,34 @@ public class SaTokenGatewayConfig {
                         "/movies/**",
                         "/ticketing/screenings/movie/**",
                         "/ticketing/screenings/**",
+
+                        "/order/pay/confirm",
+                        "/order/pay/confirm/**",
+
                         "/error"
                 )
+                .setBeforeAuth(obj -> {
+                    SaHolder.getResponse()
+                            .setHeader("Access-Control-Allow-Origin", SaHolder.getRequest().getHeader("Origin"))
+                            .setHeader("Access-Control-Allow-Credentials", "true")
+                            .setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+                            .setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+
+                    if ("OPTIONS".equalsIgnoreCase(SaHolder.getRequest().getMethod())) {
+                        SaHolder.getResponse().setStatus(200);
+                    }
+                })
                 .setAuth(obj -> {
                     StpUtil.checkLogin();
 
                     String path = SaHolder.getRequest().getRequestPath();
                     if (path.startsWith("/admin")) {
-                        log.info("loginId={}, roleList={}",
-                                StpUtil.getLoginIdDefaultNull(),
-                                StpUtil.getRoleList()
-                        );
-
                         StpUtil.checkRole(RoleConst.ADMIN);
                     }
                 })
                 .setError(this::handleSaTokenError);
     }
+
 
     private String handleSaTokenError(Throwable e) {
 
