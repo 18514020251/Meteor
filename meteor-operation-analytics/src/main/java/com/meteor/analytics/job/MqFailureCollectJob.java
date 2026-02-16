@@ -2,7 +2,7 @@ package com.meteor.analytics.job;
 
 import com.meteor.analytics.domain.entity.OpMqFailMsg;
 import com.meteor.analytics.service.IOpMqFailMsgService;
-import com.meteor.api.common.dtp.RemoteMqFailureDTO;
+import com.meteor.api.common.dto.RemoteMqFailureDTO;
 import com.meteor.api.contract.mqfail.client.AdminMqFailureClient;
 import com.meteor.api.contract.mqfail.client.MerchantMqFailureClient;
 import com.meteor.api.contract.mqfail.client.UserMqFailureClient;

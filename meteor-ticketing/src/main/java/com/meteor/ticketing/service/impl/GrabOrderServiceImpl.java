@@ -113,7 +113,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
             span.setAttribute(BIZ_GRAB_RESULT, "FAILED");
             span.setAttribute(BIZ_FAIL_REASON, "OUTBOX_INSERT_FAIL");
 
-            throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，已回滚库存，请重试");
+            throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
         }
     }
 

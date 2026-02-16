@@ -1,6 +1,6 @@
 package com.meteor.api.contract.mqfail.client;
 
-import com.meteor.api.common.dtp.RemoteMqFailureDTO;
+import com.meteor.api.common.dto.RemoteMqFailureDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 

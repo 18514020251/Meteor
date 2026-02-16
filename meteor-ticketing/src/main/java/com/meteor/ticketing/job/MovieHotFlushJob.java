@@ -5,7 +5,7 @@ import com.meteor.ticketing.mapper.HotRankMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+//import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -17,6 +17,11 @@ import java.util.Set;
  * @version 1.0
  * @date 2026-02-08 12:00
  */
+// TODO: 热度统计模块（当前版本未启用）
+// 设计方案：
+// 1. Redis ZSet 按 movieId 计分
+// 2. 行为来源：浏览 / 下单 / 支付
+// 3. 定时任务每日衰减
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,7 +33,7 @@ public class MovieHotFlushJob {
     /**
      * 每分钟执行一次
      */
-    @Scheduled(fixedRate = 60_000)
+    //@Scheduled(fixedRate = 60_000)
     public void flushMovieHot() {
 
         Set<String> keys = redisTemplate.keys("movie:hot:*");

@@ -1,4 +1,4 @@
-package com.meteor.api.common.dtp;
+package com.meteor.api.common.dto;
 
 import com.meteor.common.enums.system.ModuleEnum;
 import com.meteor.common.enums.system.mq.MessageStatusEnum;
