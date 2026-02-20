@@ -1,7 +1,11 @@
 package com.meteor.order.service;
 
+import com.meteor.order.controller.vo.OrderOperateLogExportVO;
 import com.meteor.order.domain.entity.OrderOperateLog;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IOrderOperateLogService extends IService<OrderOperateLog> {
 
+    /**
+     * 按天查询订单操作日志并转为导出行
+     */
+    List<OrderOperateLogExportVO> listExportRowsByDate(LocalDate date);
+
+    /**
+     * 生成导出文件名
+     */
+    String buildExportFileName(LocalDate date);
 }

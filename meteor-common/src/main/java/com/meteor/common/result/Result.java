@@ -1,12 +1,12 @@
 package com.meteor.common.result;
 
 import com.meteor.common.exception.CommonErrorCode;
-import com.meteor.common.exception.IErrorCode;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+
 
 /**
  * 统一返回体
@@ -23,7 +23,8 @@ public class Result<T> implements Serializable {
 
     private int code;
     private String msg;
-    private T data;
+
+    private transient T data;
 
     public Result(int code, String msg, T data) {
         this.code = code;

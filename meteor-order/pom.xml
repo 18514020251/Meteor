@@ -35,6 +35,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.meteor</groupId>
             <artifactId>meteor-mq-contract</artifactId>
         </dependency>
