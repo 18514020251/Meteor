@@ -59,8 +59,8 @@ public class MerchantApplyReviewedPublishe {
                 merchantApplyAssembler.toReviewedMessage(apply);
 
         MqSendResult result = mqSender.sendAndWaitConfirm(
-                "故意不存在(Admin侧)",
-                //MerchantApplyContract.Exchange.MERCHANT_APPLY,
+                //"故意不存在(Admin侧)",
+                MerchantApplyContract.Exchange.MERCHANT_APPLY,
                 MerchantApplyContract.RoutingKey.MERCHANT_APPLY_REVIEWED,
                 message,
                 MerchantApplyContract.CONFIRM_TIMEOUT

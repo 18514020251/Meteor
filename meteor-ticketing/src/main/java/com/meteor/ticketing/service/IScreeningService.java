@@ -40,6 +40,9 @@ public interface IScreeningService extends IService<Screening> {
      * */
     boolean decrStockAndIncrSold(Long screeningId);
 
+    /**
+     *  标记已售罄
+     * */
     void markSoldOutIfNeeded(Long screeningId);
 
     /**

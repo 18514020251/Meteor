@@ -27,7 +27,7 @@ public class PressureTaskServiceImpl implements IPressureTaskService {
         String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String taskId = "pt_" + ts + "_" + idGenerator.nextId();
 
-        // TODO: Day1 我们会在这里：写 Redis meta/counter，并异步启动 Runner
+        // NOTE：压测待开发
         return new PressureStartVO(taskId, "RUNNING");
     }
 }

@@ -1,0 +1,1148 @@
+Day34: feat(order-log): 新增按天导出订单操作日志功能
+
+后端：
+- 新增 /order/order-logs/export 接口（Admin 权限）
+- 基于 EasyExcel 实现按日期导出订单操作日志
+- 修复 record 与 EasyExcel 不兼容问题，改为普通 VO
+- 优化响应头设置，支持前端获取 Content-Disposition
+- 修复 Sonar 报警：
+  - 缩小异常抛出范围（移除 throws Exception）
+  - 规范静态方法调用方式
+
+---
+Day32: fix(ticketing): 准备实现模拟并发，更改包名
+
+
+---
+Day30: feat(gateway): 支持扫码模拟支付 confirm 免登录并解决浏览器 403
+
+网关 Sa-Token 放行 POST /order/pay/confirm（含 /order/pay/confirm/**）
+
+新增/完善 Gateway CORS 配置，解决浏览器请求 403、Apifox 正常但页面不通的问题
+
+调整 confirm 入参支持传 uid（由前端二维码携带），满足确认支付需用户标识的业务
+
+修复校验注解：uid(Long) 使用 @NotNull 替换 @NotBlank
+
+其他：日志/配置微调，确保 dev 环境可稳定联调
+
+新增功能：
+
+1. 订单详情查询接口
+   GET /order?orderNo=
+   - 校验订单归属
+   - 返回订单状态、金额、支付信息、快照信息
+   - 枚举类型直接序列化输出
+
+2. 我的订单分页列表接口
+   GET /order/list?page=&size=&status=
+   - 支持按状态筛选
+   - 默认按创建时间倒序
+   - 仅查询未删除订单（deleted=0）
+   - 返回基础订单信息用于前端列表展示
+
+3. 订单逻辑删除接口
+   DELETE /order?orderNo=
+   - 仅允许删除已结束订单（CLOSED_TIMEOUT / CANCELED / REFUNDED）
+   - WAIT_PAY / PAID / REFUNDING 状态禁止删除
+   - 采用逻辑删除（deleted=1），不做物理删除
+   - 不影响支付/库存/日志数据一致性
+
+当前订单模块已具备完整最小闭环能力：
+
+- 抢票创建订单（MQ）
+- 创建支付单
+- 模拟支付
+- 自动超时关闭订单
+- 库存释放（通过 Outbox + MQ）
+- 订单详情查询
+- 订单分页查询
+- 订单逻辑删除
+
+订单系统 MVP 完成。
+
+---
+Day29: feat(order): 完成订单查询与逻辑删除接口，实现订单视图闭环
+
+本次提交完成订单侧最小查询能力补充，实现用户订单视图闭环能力。
+
+新增功能：
+
+1. 订单详情查询接口
+   GET /order?orderNo=
+   - 校验订单归属
+   - 返回订单状态、金额、支付信息、快照信息
+   - 枚举类型直接序列化输出
+
+2. 我的订单分页列表接口
+   GET /order/list?page=&size=&status=
+   - 支持按状态筛选
+   - 默认按创建时间倒序
+   - 仅查询未删除订单（deleted=0）
+   - 返回基础订单信息用于前端列表展示
+
+3. 订单逻辑删除接口
+   DELETE /order?orderNo=
+   - 仅允许删除已结束订单（CLOSED_TIMEOUT / CANCELED / REFUNDED）
+   - WAIT_PAY / PAID / REFUNDING 状态禁止删除
+   - 采用逻辑删除（deleted=1），不做物理删除
+   - 不影响支付/库存/日志数据一致性
+
+当前订单模块已具备完整最小闭环能力：
+
+- 抢票创建订单（MQ）
+- 创建支付单
+- 模拟支付
+- 自动超时关闭订单
+- 库存释放（通过 Outbox + MQ）
+- 订单详情查询
+- 订单分页查询
+- 订单逻辑删除
+
+订单系统 MVP 完成。
+
+---
+Day29: refactor: 提取流程逻辑到assembler
+
+
+---
+Day29: refactor: 移除直接 MQ 发布逻辑，主流程已全面切换至 Outbox 模式
+
+- 删除 TicketOrderEventPublisher
+- 主流程不再直接发送 MQ
+- MQ 发送统一由 Outbox Dispatcher 负责
+
+---
+Day29: feat: 引入 Redis 租约式分布式信号量控制抢票并发
+
+- 新增 grab 并发闸门（max/permits/lease zset）
+- Lua 保证 acquire/release 原子性
+- 定时 reclaim 回收过期租约
+- 避免 permit 泄漏与双重释放
+- 超过并发上限快速失败保护系统
+
+---
+Day29: feat: 引入 Outbox 模式重构抢票流程，解耦主线程与 MQ
+
+- 主流程改为：Redis 扣库存 + 写入 mq_outbox_event
+- 新增 Dispatcher 定时发送 MQ 并支持重试
+- 消费端改为事务内写 Outbox，避免直接发 MQ
+- 实现消息最终一致性与异常可恢复能力
+
+---
+Day28:  feat: 实现 MQ 失败兜底与统一补偿机制（跨模块接入 + 统一管理）
+
+
+---
+Day28:
+
+feat(movie)
+- 实现电影查询接口(分类、模糊查询)
+
+---
+Day28: feat(admin,operation): 新增管理员在线用户踢出功能 & MQ 重发状态数据统计接口
+
+      1. 新增管理员踢用户下线功能
+         - 接口：POST /admin/online-user/kick
+         - 支持管理员强制踢出指定 userId
+         - 结合在线用户分页接口 /admin/online-user
+         - 操作后刷新在线列表
+
+      2. 新增 MQ 重发状态统计接口
+         - 接口：GET /op-analytics/register/resend-state-stats
+         - 统计各 resendState 状态数量
+         - 用于管理后台数据分析饼图展示
+         - 支持扩展状态枚举（即使为 0 也可返回）
+
+      优化：
+      - 管理端数据分析模块对接真实后端数据
+      - 完成补发流程与统计数据联动刷新
+
+---
+Day27: feat: 实现 MQ 失败兜底与统一补偿机制（含三模块接入与统一管理）
+
+一、背景
+为解决 MQ 发送失败后不可追踪、不可恢复的问题，本次实现了完整的 MQ 失败兜底与补偿机制。将原有“发送失败即结束”的处理方式升级为“失败可记录、可查询、可补发、可统一管理”的可靠消息体系。
+
+本次改造覆盖用户模块、商户模块、运营分析模块，实现跨模块统一失败管理与补偿能力。
+
+二、核心功能实现
+1. 新增 MQ 失败兜底机制
+新增 MQ 失败记录表，用于持久化发送失败消息。
+
+记录内容包括：
+
+msgId
+
+sourceModule
+
+bizId
+
+exchange
+
+routingKey
+
+topic
+
+payload（JSON）
+
+状态（WAIT / FAILED / DOING / SUCCESS）
+
+retry 次数
+
+错误信息
+
+resend_last_time / resend_attempt_cnt
+
+collect_time / collect_version
+
+创建与更新时间
+
+支持记录以下异常场景：
+
+confirm 未 ack
+
+无路由（NO_ROUTE）
+
+sendAndWaitConfirm 返回 null
+
+其他发送异常
+
+实现失败消息可追踪、可排查。
+
+2. 抽象统一 MQ 发送逻辑（mqGuard）
+封装统一发送入口：
+
+抽象 mqGuard.send 方法
+
+统一封装 sendAndWaitConfirm 调用
+
+统一 ack / noRoute / null 判定逻辑
+
+统一失败落库逻辑
+
+支持是否抛出异常（throwOnFail）
+
+避免各模块重复实现发送与失败处理逻辑，提高代码复用性与一致性。
+
+3. 三个模块接入统一发送机制
+对以下模块进行改造：
+
+用户模块
+
+商户模块
+
+运营分析模块
+
+原有直接发送 MQ 的逻辑统一改为通过 mqGuard 发送，实现：
+
+发送失败自动落库
+
+错误处理逻辑统一
+
+结构一致便于维护
+
+4. 实现 MQ 失败统一管理接口
+新增统一 MQ 错误管理能力。
+
+4.1 查询失败记录接口
+支持：
+
+查询 WAIT / FAILED 状态
+
+支持 DOING 超时重新识别
+
+返回完整失败记录
+
+用于人工排查与补偿。
+
+4.2 单条补发接口
+实现单条补发能力：
+
+原子抢锁（WAIT / FAILED → DOING）
+
+DOING 超时可重新抢占
+
+调用发送逻辑
+
+根据 confirm 结果回写 SUCCESS 或 FAILED
+
+自动递增 resend_attempt_cnt
+
+更新 resend_last_time
+
+保证并发安全与幂等处理。
+
+4.3 批量补发接口
+实现一键批量补发：
+
+查询所有待补发记录
+
+逐条调用单条补发逻辑
+
+返回统计结果：
+
+totalCandidates
+
+locked
+
+success
+
+failed
+
+skipped
+
+支持人工快速恢复历史失败消息。
+
+5. 跨模块远程整合与统一管理
+通过远程调用整合三个模块的失败记录能力：
+
+提供统一 MQ 错误管理入口
+
+支持后续定时任务统一调度
+
+实现集中化补偿能力
+
+为后续自动补发功能预留扩展点。
+
+三、架构优化与代码重构
+在功能实现过程中同步进行了结构优化与静态检查修复。
+
+1. 使用参数对象模式
+重构参数过多方法：
+
+引入 BuildCmd / MqSendCmd 等参数对象
+
+降低方法参数数量
+
+提高可读性与扩展性
+
+解决 Sonar 方法参数过多问题。
+
+2. 抽取重复 SQL 片段为常量
+将以下重复 SQL 字符串提取为常量：
+
+resend_last_time = NOW()
+
+collect_time = NOW()
+
+collect_version = collect_version + 1
+
+减少重复字面量，提高维护性。
+
+3. 降低方法复杂度
+重构内容包括：
+
+去除嵌套三元表达式
+
+去除嵌套 try-catch
+
+抽取重复 LambdaUpdateWrapper 构造逻辑
+
+拆分复杂方法
+
+降低认知复杂度，通过 SonarQube 静态检查。
+
+4. 统一 JSON 序列化处理
+修复 payload 双重序列化问题：
+
+统一 JSON 序列化入口
+
+避免 String 被再次包裹成 ""json""
+
+保证消费者可正常反序列化
+
+解决历史 convert 异常问题。
+
+四、系统收益
+本次改造带来以下能力提升：
+
+MQ 发送失败可追踪
+
+消息丢失风险显著降低
+
+支持人工与批量补偿
+
+支持跨模块统一管理
+
+提升系统可靠性与可运维性
+
+为自动定时补发奠定基础
+
+属于系统可靠性增强型改造。
+
+五、当前状态
+已完成：
+
+失败落库机制
+
+统一发送抽象
+
+三模块接入
+
+查询接口
+
+单条补发
+
+批量补发
+
+跨模块统一管理
+
+Sonar 警告清理
+
+待完成：
+
+自动定时补发机制
+
+本次提交完成 MQ 失败补偿闭环能力建设，实现从“发送失败不可恢复”到“失败可管理、可补偿”的架构升级。
+
+---
+Day26: 代码大规模重构，无法提交
+
+
+---
+Day25: feat(analytics): 支付链路接入运营统计MQ，补齐KPI与趋势接口 本次提交将订单支付链路接入 meteor_operation_analytics，完成运营统计的事件采集、去重、日汇总更新及趋势查询接口。
+
+主要内容：
+1. MQ 契约与拓扑
+- 新增 OperationAnalyticsContract：analytics.exchange + routingKey（USER_REGISTERED / PAY_CREATED / PAY_SUCCESS）
+- 新增 analytics 拓扑自动装配：注册 / 支付尝试 / 支付成功队列与绑定
+
+2. 事件采集（发送端，meteor-order / meteor-user）
+- 用户注册成功后发布 USER_REGISTERED 事件
+- 创建支付单成功后发布 PAY_CREATED 事件（事务提交后 afterCommit 发送，避免回滚造成统计脏数据）
+- 模拟支付成功后发布 PAY_SUCCESS 事件（事务提交后发送）
+
+3. 统计落库（消费端，meteor-operation-analytics）
+- 新增事件去重表 op_analytics_event_log，按 (event_type, event_key) 唯一约束防重复消费
+- 新增日汇总表 op_analytics_daily：register_cnt / pay_attempt_cnt / pay_success_cnt / deal_order_cnt / gmv_cent 等
+- USER_REGISTERED：register_cnt +1（不存在则插入当日 GLOBAL 记录）
+- PAY_CREATED：pay_attempt_cnt +1（不存在则插入当日 GLOBAL 记录）
+- PAY_SUCCESS：pay_success_cnt +1、deal_order_cnt +1、gmv_cent 累加（按 PAY_SUCCESS eventId 去重）
+- 记录 calc_time，便于排查刷新时间
+
+4. 查询接口（给 Admin 仪表盘/子页面用）
+- 近7日注册趋势接口（dates/values）
+- 近7日支付尝试/成交订单趋势接口（dates/values）
+- 今日支付概览（attempt/success/gmv/deal）
+- GMV 趋势接口（支持 7/30 天）
+
+5. 代码结构与质量优化
+- 提取 assembler/defaults 常量，消除魔法数字（初始增量、默认 calc_version、success_rate_bp 等）
+- 提取通用趋势构建逻辑，减少重复代码（Sonar 规则处理）
+- NOTE/TODO：后续再统一 calcTime/now 口径与统计字段口径升级
+
+影响范围：
+- meteor-user / meteor-order / meteor-mq-contract / meteor-mq-topology-starter / meteor-operation-analytics
+
+验证：
+- 本地注册、创建支付单、模拟支付成功后，analytics 服务消费日志正常
+- op_analytics_event_log 去重生效，op_analytics_daily 对应字段累加正确
+
+---
+Day25: feat(analytics): 实现查询近7日注册趋势接口 - 避免数据库为空情况，使用默认值代替 - 统一返回日期格式为MM-DD
+
+
+---
+Day25: feat(analytics): 新增用户注册统计功能与MQ消费闭环
+
+- 用户注册成功后发送 UserRegistered MQ 消息
+- 新增 analytics 模块与统计表结构
+- 实现 UserRegisteredConsumer 累计每日注册数
+- 增加事件去重表，保证幂等消费
+- 将 bizScope 改为枚举 BizScopeEnum
+- 引入 OpAnalyticsDailyAssembler 与 AnalyticsDefaults
+- 为后续支付/订单统计预留扩展结构
+
+实现用户注册 -> MQ -> analytics +1 的完整链路
+
+---
+Day23: fix: 修复管理员权限校验异常
+
+
+---
+Day23: feat: 完成支付创建/确认/状态查询三大主流程
+
+- 支付创建支持幂等复用 INIT 支付单
+- 支付确认通过条件更新保证状态一致性
+- 支付状态查询以订单状态作为最终事实
+- 提取校验与组装逻辑，清理魔法值
+
+---
+Day24:
+
+feat(order+ticketing): 完成订单超时关单与库存回滚全链路，重构MP与Redis库存服务
+
+订单超时与库存回滚链路完善
+--------------------------------
+- 实现订单延时关单消费者 OrderPayTimeoutConsumer
+- 支付超时后自动关闭订单并发送库存释放消息
+- 完成订单 -> 票务模块库存回滚 MQ 流程闭环
+- 新增 TicketStockReleaseMessageAssembler 统一消息构建
+
+订单领域重构（去除魔法数字）
+--------------------------------
+- 新增订单领域枚举：
+  OrderStatusEnum / PayChannelEnum / OrderOperateTypeEnum / OperatorTypeEnum / OrderBizTypeEnum
+- 提取 OrderBizConstants 统一支付超时与默认值
+- 重构 OrderCreateAssembler，消除硬编码状态与常量
+
+MyBatis-Plus 改造
+--------------------------------
+- 移除 OrderMapper 自定义 SQL
+- 新增 OrderCommandService，封装 exists 与 closeTimeout 领域操作
+- OrderServiceImpl 仅保留订单创建职责，职责拆分清晰
+- OrderItem 查询改为 MP lambdaQuery 实现
+
+Redis 库存服务抽取
+--------------------------------
+- 新增 TicketingStockRedisService，统一管理：
+  扣库存 / 回滚库存 / 开售判断 / key 重建
+- 引入 RedisStockResultEnum 与 RedisStockOpResult
+- 消费者彻底移除 RedisScript 与 key 细节
+- 优化库存回滚日志与异常语义
+
+整体结果
+--------------------------------
+完成抢票核心闭环：
+Redis预扣 → Ticketing落库 → Order创建 → 延时关单 → 库存回滚
+系统链路完整稳定，代码结构进一步解耦与规范化。
+
+---
+Day23: feat: 完成抢票链路（Redis扣减 → MQ → Ticketing落库）并补齐MQ幂等与DLQ
+
+抢票下单流程
+
+新增 GrabOrder 接口：执行 Redis Lua 原子扣减库存
+
+使用 Snowflake 生成 orderNo
+
+统一改为 MqSender + Publisher 发送抢票下单消息（去除直接使用 RabbitTemplate）
+
+MQ 基础设施完善
+
+新增 TicketOrderContract DLX/DLQ 常量
+
+完成 ticket.order 拓扑声明（Exchange / Queue / DLX / DLQ）
+
+统一 MQ 发送风格，与现有 MerchantApply 流程保持一致
+
+Ticketing 消费者落库
+
+新增 ScreeningMapper 扣库存 SQL（原子更新）
+
+消费 ticket.order.create 后更新 screening：
+
+available_tickets -1
+
+sold_tickets +1
+
+自动标记售罄
+
+MQ 幂等处理（关键）
+
+新增表：ticket_mq_consume_log
+
+实现消费去重：基于 (topic + orderNo) 唯一索引
+
+避免重复消费导致重复扣库存
+
+基础设施统一
+
+全链路使用 SnowflakeIdGenerator
+
+MQ 发送统一走 Publisher + Confirm 机制
+
+---
+Day23: feat(meteor-ticketing): 完成抢票最小闭环（Lua扣库存 + MQ发送）
+
+    - 新增抢票下单接口 /ticketing/order/grab
+    - 使用 Redis Lua 实现场次库存原子扣减
+    - 接入 RabbitMQ 发送订单创建消息
+    - 新增 GrabOrderResultEnum、GrabOrderVO
+    - 新增 LuaScripts 与 RedisScripts 脚本管理
+    - 新增 TicketOrder MQ 契约与拓扑声明
+    - 打通「点击下单 -> Redis扣减 -> MQ入队」完整链路
+
+---
+Day23: feat(gateway,ticketing): 实现抢票限流与Redis库存预热机制
+
+1. Gateway 限流优化
+   - 新增基于 Authorization Token 的限流 KeyResolver
+   - 移除全局限流，改为仅对 /ticketing/** 路由限流
+   - 限流策略调整为 1 req/s，burst=2，防止抢票接口被高并发冲击
+
+2. Ticketing 库存预热机制
+   - 新增 ScreeningStockWarmupJob 定时任务
+   - 开售前5分钟自动将场次库存预热至 Redis
+   - Redis Key: screening:stock:{screeningId}
+   - TTL = 抢票结束时间 + 300s
+   - 增加预热锁与ready标记，避免多实例重复预热
+
+---
+Day23: feat:<meteor-admin> - 新增查询在线用户数量接口(分页)
+
+
+---
+Day23: fix:<meteor-ticketing> - 实现获取实时场次信息接口
+
+
+---
+Day23: fix:<meteor-movie> - 修改之前接口的返回数据类型，使用枚举代替boolean可以返回更详细的信息
+
+
+---
+Day23: feat:<meteor-ticketing> - 实现接口: 实现接口，查询具体电影票务信息
+
+
+---
+Day23: feat:<meteor-ticketing> - 实现接口: 查询指定电影票务详情 - 修改票务状态返回类型为枚举类
+
+
+---
+Day23: feat:<meteor-movie> - 实现接口: 查询电影详情，拼接完整字符串 - 修改vo类类型record
+
+
+---
+Day21: - 过年打扫家里，只做github不间断
+
+
+---
+Day20: feat (movie): - 修改id返回类型为String
+
+
+---
+Day20: feat (movie): - 新增最近20场电影接口
+
+
+---
+Day20: feat (sql): - 新增默认数据
+
+
+---
+Day20: refactor(contract): 抽离远程调用 DTO 与 FeignClient 至 meteor-api-contract，解耦模块依赖 - 新增 meteor-api-contract 模块，统一管理跨模块远程调用契约 - 将 user / ticketing 相关 DTO 迁移至 contract 层 - 将 FeignClient 从 movie / merchant 模块迁移至 contract - 调整包结构：   - contract.user.dto / client   - contract.ticketing.dto / client - 修改调用方 import，统一依赖 contract - 解决 FeignClientSpecification 冲突（增加 contextId） - 统一 remote.base-url 配置方式
+
+目的：
+- 避免模块间直接依赖
+- 防止重复定义 FeignClient
+- 为后续服务扩展提供统一 API 契约层
+
+---
+Day20: feat(home): 重构首页推荐接口完整链路（用户偏好 → 电影聚合 → 票务信息合并）
+
+* 新增 getUserPreference 远程调用流程，完成用户喜好拉取与参数校验
+* 实现 allocate 权重分配逻辑（最大余数法 + 权重兜底）
+* 新增 pickCandidateMovieIds 按分类权重筛选候选电影并去重
+* 新增电影基础信息聚合：
+
+  * getTitleMap 批量获取标题
+  * getPosterObjectKeyMap 获取海报资源
+  * getCategoryNamesMap 批量查询分类名称
+* 构建 buildBaseCards 基础卡片结构，统一默认值策略
+* 接入 ticketing.getMovieInfo 批量远程调用
+* 新增 chooseScreening 场次选择逻辑及 isInGrabPeriod 判断
+* 实现 mergeTicketingInfo，覆盖 price / inGrabPeriod / hotScore 字段
+* 调整 DTO/VO 结构以支持首页推荐聚合返回
+
+refactor:
+
+* 优化多处空值判断与集合防空处理
+* 统一批量查询流程，减少重复遍历
+
+note:
+
+* 本次提交为首页推荐接口大规模重构，涉及聚合链路调整与返回结构变化
+
+---
+Day19: feat(meteor-user): - 新建接口 获取用户喜好接口
+
+
+---
+Day18: feat(meteor-user): - 用户喜好填写接口完成
+
+
+---
+Day18: feat(meteor-user): - 用户登录新增是否首次登录判断，返回类型修改
+
+
+---
+Day18: feat(meteor-movie): - 实现重复图片判断，新增默认电影类型
+
+
+---
+Day18: feat(meteor-message): - 新增查询电影分类列表接口，没有 token 拦截
+
+
+---
+Day18: feat(meteor-message): - 新增查询未读消息的接口
+
+
+---
+Day17: feat(meteor-movie): - 实现根据用户id查询电影标题接口
+
+
+---
+Day17: feat(meteor-ticketing): - 实现存入图片返回路径
+
+
+---
+Day17: feat(meteor-ticketing): - 实现新建电影功能 - 接口鉴权
+
+
+---
+Day17: feat(meteor-ticketing): - 新增功能，新建票务
+
+
+---
+Day17: feat(meteor-ticketing): - 新建模块ticketing,启动成功
+
+
+---
+Day16:
+
+- 做了一些必要的修改适配前端
+
+---
+Day16: feat(meteor-merchant): - 商家模块实现更具用户id查询用户
+
+
+---
+Day16: feat(meteor-merchant): - 新建用户注销商家身份接口，商家可以退回为普通用户
+
+
+---
+Day16: feat(meteor-product): - 新建商品模块，使用硬删除，避免无效的数据占用
+
+
+---
+Day16: feat(merchant): - 完成/me接口与user内部profile联调
+
+
+---
+Day15: 加了一堆doc
+
+
+---
+Day15: feat(商家模块): 新增商家开通 MQ 消费并实现幂等落库
+
+- 消费 merchant.activated 消息
+- 基于唯一键保证商家创建幂等性
+- 提取商家对象 assembler
+- 重复消息安全吞掉，不回队列
+
+---
+Day15: 整体项目结构调整
+
+
+---
+Day15: refactor  (meteor-user):
+
+- 项目结构调整
+
+---
+Day15: refactor  (meteor-user):
+
+- 优化项目结构，接收器DB、MQ相关代码移动至其他模块
+- 新增发送到merchant模块MQ代码
+
+---
+Day15: feat (meteor-merchant):
+
+- 新建merchant模块，端口8084,启动成功
+
+---
+Day15: feat (meteor-message):
+
+- 新增定时任务功能，可在Yaml配置
+
+---
+Day15: feat (meteor-message):
+
+- 完成模块接收消息，优化代码语句
+feat (meteor-admin)：
+
+- 实现模块发送管理拒绝，管理通过情况发送MQ到message
+
+---
+Day14: feat (meteor-message):
+
+- 新建通知模块的用户修改密码发送消息
+- 通知模块监听MQ Queue 并存入数据库
+- 数据库的biz_key添加唯一约束
+- 添加枚举类用于管理
+- 新建id-starter模块使用雪花算法生成唯一ID
+- 新建常量类统一管理转换类型代码
+- 新增模板字符串用于生成消息内容 Map 存储
+
+---
+Day14: refactor (mq-contract):
+
+-移动common模块相关枚举类和消息类型，修复相关bug
+
+---
+Day13: feat(message): 添加用户消息一键删除全部接口
+
+- 新增 /message/delete-all 接口
+- 软删除当前用户全部消息(仅删除未删除记录)
+- 返回影响行数便于前端提示
+
+---
+Day13: feat(message): 添加用户消息单条删除接口
+
+- 新增 /message/{id} DELETE 接口
+- 实现消息软删除逻辑，仅允许操作本人消息
+- 区分不存在与重复删除的幂等处理
+
+---
+Day13: feat(message): 添加用户消息一键已读接口
+
+- 新增 /message/read-all 批量标记消息已读
+- 仅更新当前用户未读且未删除的消息，并写入 read_time
+- 返回更新条数便于前端提示
+
+---
+Day13: feat(message): 完成用户消息单条已读接口
+
+- 新增 /message/{id}/read 单条消息已读接口
+- 实现未读消息更新为已读并记录读取时间
+- 增加消息存在性与越权校验逻辑
+- 支持重复点击幂等处理
+- 抽取消息校验与更新方法提升可读性
+
+---
+Day13: feat(message): 完成用户消息分页查询接口
+
+- 新增 meteor-message 模块用户消息分页查询接口
+- 实现 UserMessage 分页条件查询（按用户、已读状态、软删过滤）
+- 固定分页大小，按 id 倒序返回
+- 新增 ReadStatusQueryEnum 查询枚举
+- 新增 GetTheMessageDTO 入参 DTO
+- 新增 UserMessageVO 返回视图对象
+- 封装 PageResult 分页返回结构
+
+---
+Day13: feat(admin): 实现审核结果消息单条补发补偿流程
+
+- 新增未发送消息查询接口
+- 新增审核结果消息单条补发接口
+- 引入补偿服务处理 MQ 重发与 SENT 回写
+- 保证幂等与并发安全
+
+---
+Day13: feat(admin): 完成商家审核未发送消息列表接口并优化查询结构
+
+- 新增 reviewed/unsent 查询接口，支持固定分页与多条件过滤
+- 提取分页常量至 common PageConstants，移除魔法数字
+- 重构查询逻辑，拆分基础条件与动态过滤，提高可读性
+- 新增 MerchantApplyUnsentVO 及对应 VoAssembler
+- 保持 Controller 资源划分清晰，reviewed 补偿接口独立管理
+
+---
+Day13: fix<meteor-admin> - 拒绝策略新增回调，与同意策略一致
+
+
+---
+Day13: refactor<meteor-user> - 实现用户模块消息错误进入DLQ
+
+
+---
+Day13: refactor<meteor-admin> 管理员模块实现MQ消息发送的确定机制
+
+
+---
+Day12: feat: mq-starter 增加 RabbitMQ 启动连接自检并支持开关配置
+
+
+---
+Day12: refactor: 下沉 Redis/MinIO 启动自检到 starter 并支持开关配置
+
+
+---
+Day12: refactor: Redis 启动自检下放 redis-starter 并支持开关配置
+
+
+---
+Day12: refactor: 重构 Sa-Token 角色体系，统一 Redis 角色缓存与跨服务鉴权
+
+- 新增 RoleConst 统一全局鉴权角色常量（user / merchant / admin）
+- 修复 RoleEnum 中 merchant 拼写错误，仅保留业务域枚举语义
+- 登录流程改为标准 Sa-Token loginType，用 Redis 缓存角色信息
+- satoken-starter 下放 StpInterface 实现，基于 Redis 提供角色查询
+- gateway 移除私有 StpInterface，实现鉴权逻辑基础设施化
+- 打通 gateway / user / admin 三端 StpUtil.checkRole 一致行为
+- 接入 SaInterceptor 支持 @SaCheckRole 注解鉴权
+- 完善 Sa-Token 异常映射，区分 401/403 鉴权失败响应
+
+---
+Day12: feat: 完成商家申请审核MQ闭环与用户缓存失效处理
+
+- 商家申请创建/审核流程打通（created/reviewed）
+- user端消费reviewed消息并做幂等状态更新
+- 审核通过后清理用户缓存并强制下线
+- MQ消费异常处理器补齐并统一错误码
+- 预留身份校验与消息通知等后续TODO
+
+---
+Day12: 重构用户模块：拆分商家申请落库与事件发布逻辑，修复 Sonar 告警
+
+
+---
+Day12: feat: 完善商家申请审核通过/拒绝链路，统一 applyId 业务主键
+
+管理端审核接口改为基于 applyId 处理，统一跨服务业务主键语义
+
+完善 approve/reject 状态流转逻辑及幂等更新校验
+
+reviewed 事件统一发送审核结果，打通用户侧状态同步
+
+基于唯一索引 apply_id 提升管理端查询与更新性能
+统一 admin/user 队列声明逻辑，解决队列参数不一致问题
+
+优化 created 事件 TTL + DLQ 机制，保障消息可靠性
+
+---
+Day12: feat: 重构 MQ 拓扑与契约配置，统一多模块队列声明
+
+新增 mq-contract 模块，集中管理 MQ 协议常量与参数
+
+新增 mq-topology-starter，实现 MQ 交换机/队列/DLX/DLQ 自动装配
+
+统一 admin/user 队列声明逻辑，解决队列参数不一致问题
+
+优化 created 事件 TTL + DLQ 机制，保障消息可靠性
+
+---
+Day11: feat: 商家申请审核结果 MQ 回传链路完成
+
+admin 审核后发送 reviewed 事件
+user 监听 reviewed 队列并幂等更新申请状态
+补全公共 MQ 协议与常量定义
+
+---
+Day11: feat: 增加 MQ confirm / NO_ROUTE 检测，发送失败回滚事务 1. MQ starter 新增 sendAndWaitConfirm 方法，支持等待 broker confirm 结果 2. 增加 ReturnRecorder 记录 NO_ROUTE 回退消息 3. RabbitTemplate 绑定 JSON 消息转换器，支持发送对象消息 4. 用户模块发布商家申请事件时，发送失败将抛异常并回滚数据库事务 5. admin模块 增加死信队列
+
+
+---
+Day11: 优化：所有模块都适当添加注释
+
+
+---
+Day11: 优化<gateway> - 新增异常类型 优化<meteor-user> - yaml语句新增默认值 - 验证码系统防止改为Lua脚本避免并发问题 新增<meteor-admin> - yaml语句新增默认值 - 新增接口申请通过/未通过
+
+
+---
+Day10: refactor(meteor-gateway): 增加IP限流(待优化为获取token并根据token存储判断)
+
+
+---
+Day10: refactor(config): 统一环境变量命名并收敛服务配置
+
+- 集中管理中间件连接参数
+- 统一 MySQL / Redis / MQ / MinIO / Nacos 变量命名
+- 简化各模块 application.yml 配置结构
+
+---
+Day10:feat<meteor-admin> 项目初始化新建用户，避免环境问题，提高移植性
+
+
+---
+Day10:feat<meteor-User> -新增项目自动检查Minio情况，自动创建桶和用户默认头像
+
+
+---
+Day10:feat<meteor-User> -新增项目启动redis连接检查
+
+
+---
+Day10:dockerCompose 解决nacos连接错误，端口映射问题
+
+
+---
+Day9:refactor(admin)优化ES相关代码 - 降低代码耦合度，提取公共方法 - 减少ES请求次数，将数据的获取和页数的获取放进一个请求 - 后续提取常量
+
+
+---
+Day8: fix(gateway):修复网关模块鉴权异常导致系统返回500的问题 - 问题：接口异常时统一返回系统异常，前端无法识别具体错误 - 原因：网关层未正确捕获 Sa-Token 异常并映射业务错误码 - 解决：在网关全局异常处理中补充鉴权异常与业务异常的分类处理
+
+- 统一了错误返回结构
+- 提升网关模块的可维护性
+- 为后续角色权限扩展打下基础
+
+---
+Day8:feat(user-cache): 强绑定缓存 UserInfo + UserRole
+
+     - getCurrentUserInfo 方法优化
+       - 用户存在时同时缓存 UserInfo 和 UserRole
+       - 用户不存在时只写 UserInfo 空值缓存
+     - cacheUserAll 方法新增，封装 info + role 缓存写入
+     - getUserInfo / isNullCached 保持现有逻辑，确保空值判断与强绑定读取
+     - 修复头像更新后 Role 缓存丢失问题
+
+---
+Day7：完成网关统一角色鉴权 & Redis 角色缓存 - 用户登录时，根据角色写入 Redis（user:roles:{userId}）   - loginType 与 role 匹配：admin / merchant / user   - 与 Sa-Token token 超时时间一致 - 网关 SaReactorFilter 实现统一鉴权   - 登录校验 StpUtil.checkLogin()   - /admin/** 接口强制 checkRole("admin")   - /user/** 接口普通用户可访问 - 控制台打印 loginId + roles 信息，用于调试和验证 - StpInterfaceImpl 从 Redis 获取角色列表，支持多角色 - Redis 缓存失败不影响登录 - 系统异常统一返回 500 / 系统错误 - TODO:   1. 用户修改个人信息或注销时，需要清除 Redis 中 role 缓存   2. 权限粒度进一步扩展，可加入 checkPermission
+
+
+---
+Day7：管理员模块，获取申请列表完成 - 接口鉴权不成功，需要新建鉴权模块解决
+
+
+---
+Day7：新建meteor-mp-starter模块 - 通过自定义注解EnableMeteorMyBatisPlus来调用starter模块 - 将管理员的状态通过枚举类了管理
+
+
+---
+Day7：移除 user 模块的 MQ 配置，新增 admin 模块 MQ 消费相关
+
+     - 删除 user 模块的 MerchantApplyExchangeConfiguration
+       - 用户模块只负责发送消息，不再注册交换机/队列/绑定
+     - 新增 admin 模块 MQ 配置和消费者
+       - MerchantApplyQueueConfiguration：注册队列、交换机和绑定
+       - MerchantApplyCreatedConsumer：接收用户申请消息并持久化到 admin 表
+     - 保证模块独立，用户模块不依赖 admin 模块
+     - 更新文档说明：首次启动需先启动 admin 模块，确保交换机和队列存在
+
+---
+Day6:完成用户模块优化及单元测试覆盖提升 - 核心业务逻辑全面验证，包括用户注册、登录、信息获取、头像上传、个人信息更新 - 手机号唯一性校验、验证码发送及 IP 限流逻辑完善 - 清理所有 TODO，并明确当前策略及未来扩展方向 - service 单元测试覆盖率提升，分支覆盖率约 70%，行覆盖率约 75% - SonarQube 检测结果：0 Bugs / 0 Vulnerabilities / 0 Code Smells
+
+
+---
+Day6:获取验证码增加Ip认证
+
+
+---
+Day6:系统转移
+
+
+---
+Day6:测试类1
+
+
+---
+Day6:MQ相关代码优化，项目结构调优
+
+
+---
+Day6:User模块整体优化
+
+
+---
+Day6:注解代码优化、申请接口测试改造成功
+
+
+---
+Day5:用户申请基础流程
+
+
+---
+Day5:去除多余枚举类，增加用户修改密码和绑定手机号的验证码相关逻辑
+
+
+---
+Day5:防止用户用同一手机号无限获取验证码
+
+
+---
+新增获取验证码接口
+
+
+---
+Day5:用户图片上传自动剪切为正方形
+
+
+---
+Day4:用户图片使用路径存储，用于返回最新的预签名URL
+
+
+---
+Day4:使用预签名 URL，避免Minio桶public导致数据泄露
+
+
+---
+Day4:解决各种Bug，新增修改密码（根据手机号）接口,每个接口添加文档，修复访问不存在页面显示500而不是404问题，优化异常类型，调整项目结构，增加代码复用率
+
+
+---
+Day4:用户修改密码完成
+
+
+---
+Day4:用户更新数据完成
+
+
+---
+Day4:解决Sa-token地层默认返回TEXT问题
+
+
+---
+Day4:测试用户头像上传，不删除默认头像，代码结构优化，用户修改头像后删除原有存储
+
+
+---
+Day3:用户删除接口完成（待测试）
+
+
+---
+Day3:错误信息统一管理并删除多余异常枚举类
+
+
+---
+Day3：网关统一由异常枚举类管理
+
+
+---
+Day3用户默认头像完成
+
+
+---
+Day3: 图片上传优化，改造图片上传starter方法
+
+
+---
+集成Minio，头像上传功能完成
+
+
+---
+完成 Redis 工具类的封装，info接口引入Redis，防穿透雪崩
+
+
+---
+修复警告
+
+
+---
+用户/网关模块加入注册中心 用户模块接口info完成
+
+
+---
+全局异常+统一返回
+
+
+---
+完成公共部分配置的提取(starter模块)
+
+
+---
+更新 .gitignore 忽略日志文件
+
+
+---
+显式取消日志
+
+
+---
+显式取消日志
+
+
+---
+代码优化，提取公共方法，取消日志管理
+
+
+---
+网关拦截测试通过，
+
+
+---
+Day1:登录注册完成，项目初始化完成，网关可用
+
+
+---

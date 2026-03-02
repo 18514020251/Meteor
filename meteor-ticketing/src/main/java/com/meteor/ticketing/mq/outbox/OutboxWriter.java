@@ -2,12 +2,10 @@ package com.meteor.ticketing.mq.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.meteor.common.constants.MqConstants;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.id.utils.SnowflakeIdGenerator;
 import com.meteor.ticketing.domain.entity.MqOutboxEvent;
-import com.meteor.ticketing.enums.OutboxStatus;
 import com.meteor.ticketing.mq.assmabler.MqOutboxEventAssembler;
 import com.meteor.ticketing.service.IMqOutboxEventService;
 import lombok.Builder;
