@@ -1,4 +1,4 @@
-package com.meteor.common.domain;
+package com.meteor.common.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -3,7 +3,7 @@ package com.meteor.message.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.common.enums.system.DeleteStatus;
 import com.meteor.common.enums.message.MessageReadStatusEnum;
 import com.meteor.common.exception.BizException;

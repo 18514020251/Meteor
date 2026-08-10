@@ -1,7 +1,7 @@
 package com.meteor.message.controller;
 
 
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.common.result.Result;
 import com.meteor.message.controller.dto.GetTheMessageDTO;
 import com.meteor.message.controller.vo.UserMessageVO;

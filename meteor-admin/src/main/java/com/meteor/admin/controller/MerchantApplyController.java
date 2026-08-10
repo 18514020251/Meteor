@@ -6,7 +6,7 @@ import com.meteor.admin.controller.dto.MerchantApplyDTO;
 import com.meteor.admin.controller.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.controller.dto.MerchantApplyRejectDTO;
 import com.meteor.admin.service.IMerchantApplyService;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.common.result.Result;
 import com.meteor.satoken.constants.RoleConst;
 import io.swagger.v3.oas.annotations.Operation;

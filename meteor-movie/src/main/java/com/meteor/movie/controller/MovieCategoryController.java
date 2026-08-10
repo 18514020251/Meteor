@@ -2,7 +2,7 @@ package com.meteor.movie.controller;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.common.result.Result;
 import com.meteor.movie.controller.dto.MovieSearchDTO;
 import com.meteor.movie.controller.vo.MovieCategoryVO;
@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;

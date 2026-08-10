@@ -3,7 +3,7 @@ package com.meteor.admin.service.impl;
 import com.meteor.admin.controller.vo.OnlineUserVO;
 import com.meteor.admin.service.IUserCacheService;
 import com.meteor.common.cache.RedisKeyConstants;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.common.exception.BizException;
 import com.meteor.common.exception.CommonErrorCode;
 import com.meteor.satoken.context.LoginContext;

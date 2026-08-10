@@ -54,7 +54,6 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
 
     @Override
     public GrabOrderVO grab(Long screeningId, Long userId) {
-
         Span span = Span.current();
         span.setAttribute(BIZ_SCREENING_ID, String.valueOf(screeningId));
         span.setAttribute(BIZ_USER_ID, String.valueOf(userId));
@@ -68,7 +67,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
         span.setAttribute(BIZ_STOCK_DECR_CODE, r.code().name());
 
         switch (r.code()) {
-            case SUCCESS -> { /* 成功 */}
+            case SUCCESS -> { }
             case SOLD_OUT -> {
                 span.setAttribute(BIZ_GRAB_RESULT, "SOLD_OUT");
                 return GrabOrderVO.of(GrabOrderResultEnum.SOLD_OUT);
@@ -100,7 +99,6 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
             return GrabOrderVO.of(GrabOrderResultEnum.SUCCESS, orderNo, r.left());
 
         } catch (Exception e) {
-
             try {
                 stockRedisService.incrStockN(screeningId, 1);
             } catch (Exception rollbackEx) {
@@ -114,8 +112,11 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
             span.setAttribute(BIZ_FAIL_REASON, "OUTBOX_INSERT_FAIL");
 
             throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
+        } finally {
+            grabSemaphoreService.release(screeningId, lease.token());
         }
     }
+
 
     /**
      * 写 Outbox 事件

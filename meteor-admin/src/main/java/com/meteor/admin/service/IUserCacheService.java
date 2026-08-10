@@ -1,7 +1,7 @@
 package com.meteor.admin.service;
 
 import com.meteor.admin.controller.vo.OnlineUserVO;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 
 /**
  * @author Programmer

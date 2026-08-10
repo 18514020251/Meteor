@@ -10,7 +10,7 @@ import com.meteor.admin.mapper.MerchantApplyMapper;
 import com.meteor.admin.mq.publisher.MerchantApplyReviewedPublishe;
 import com.meteor.admin.service.IMerchantApplyNotifyService;
 import com.meteor.admin.service.IMerchantApplyService;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.satoken.context.LoginContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

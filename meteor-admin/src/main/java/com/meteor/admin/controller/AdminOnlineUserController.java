@@ -5,13 +5,12 @@ import com.meteor.admin.controller.dto.KickOutDTO;
 import com.meteor.admin.controller.vo.OnlineUserVO;
 import com.meteor.admin.service.IUserCacheService;
 import com.meteor.common.constants.PageConstants;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import com.meteor.common.result.Result;
 import com.meteor.satoken.constants.RoleConst;
 import com.meteor.satoken.context.LoginContext;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
 /**

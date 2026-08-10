@@ -4,7 +4,7 @@ import com.meteor.admin.controller.dto.MerchantApplyDTO;
 import com.meteor.admin.controller.dto.MerchantApplyQueryDTO;
 import com.meteor.admin.domain.entity.MerchantApply;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.meteor.common.domain.PageResult;
+import com.meteor.common.result.PageResult;
 import jakarta.validation.constraints.NotBlank;
 
 /**

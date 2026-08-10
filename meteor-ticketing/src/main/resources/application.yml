@@ -33,6 +33,9 @@ spring:
     nacos:
       discovery:
         server-addr: ${programmer.nacos.addr}
+        heart-beat-interval: 5000
+        heart-beat-timeout: 15000
+        ip-delete-timeout: 30000
 
   rabbitmq:
     host: ${programmer.rabbitmq.host}

@@ -123,7 +123,7 @@ docker-compose -f docker-compose-dev.yml up -d
 ```
 
 #### 2. 启动各个服务模块
-```bash
+```bash+ 
 # 启动网关服务
 ./mvnw spring-boot:run -pl meteor-gateway
 
