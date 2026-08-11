@@ -15,5 +15,5 @@ public class PaymentConfig {
     /**
      * 模拟支付密码
      */
-    private String mockPassword = "123456";
+    private String mockPassword;
 }

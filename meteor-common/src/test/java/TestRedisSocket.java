@@ -10,27 +10,35 @@ public class TestRedisSocket {
     public static void main(String[] args) {
         System.out.println("=== Redis Socket原始连接测试 ===");
 
-        String host = "localhost";
-        int port = 6379;
-        String password = "07210521";
+        String host = System.getenv().getOrDefault("REDIS_HOST", "localhost");
+        int port = Integer.parseInt(
+                System.getenv().getOrDefault("REDIS_PORT", "6379")
+        );
+        String password = System.getenv().getOrDefault("REDIS_PASSWORD", "");
+
 
         try (Socket socket = new Socket(host, port);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
-            System.out.println("✅ Socket连接建立");
+            System.out.println(" Socket连接建立");
 
-            // 发送AUTH命令
-            String authCommand = String.format("*2\r\n$4\r\nAUTH\r\n$%d\r\n%s\r\n",
-                    password.length(), password);
-            out.print(authCommand);
-            out.flush();
+            if (!password.isBlank()) {
+                System.out.println(" Redis 需要密码认证");
+                String authCommand = String.format("*2\r\n$4\r\nAUTH\r\n$%d\r\n%s\r\n",
+                        password.length(), password);
+                out.print(authCommand);
+                out.flush();
 
-            String authResponse = in.readLine();
-            System.out.println("AUTH响应: " + authResponse);
+                String authResponse = in.readLine();
+                System.out.println("AUTH响应: " + authResponse);
 
-            if (!authResponse.startsWith("+OK")) {
-                throw new RuntimeException("认证失败: " + authResponse);
+                if (!authResponse.startsWith("+OK")) {
+                    throw new RuntimeException("认证失败: " + authResponse);
+                }
+                System.out.println(" 认证成功");
+            } else {
+                System.out.println("ℹ Redis 未设置密码，跳过 AUTH");
             }
 
             // 发送PING命令
@@ -39,6 +47,10 @@ public class TestRedisSocket {
 
             String pingResponse = in.readLine();
             System.out.println("PING响应: " + pingResponse);
+
+            if (!pingResponse.equals("+PONG")) {
+                throw new RuntimeException("PING 失败: " + pingResponse);
+            }
 
             // 测试SET命令
             String key = "socket_test";
@@ -51,21 +63,31 @@ public class TestRedisSocket {
             String setResponse = in.readLine();
             System.out.println("SET响应: " + setResponse);
 
+            if (!setResponse.startsWith("+OK")) {
+                throw new RuntimeException("SET 失败: " + setResponse);
+            }
+
             // 测试GET命令
             String getCommand = String.format("*2\r\n$3\r\nGET\r\n$%d\r\n%s\r\n",
                     key.length(), key);
             out.print(getCommand);
             out.flush();
 
-            // Redis协议解析
-            String line1 = in.readLine(); // 第一行：$长度
-            String line2 = in.readLine(); // 第二行：实际值
-            System.out.println("GET响应: " + line1 + " -> " + line2);
+            // Redis协议解析 - 处理 GET 可能返回 nil 的情况
+            String line1 = in.readLine();
+            if (line1.startsWith("$-1")) {
+                System.out.println("GET响应: (nil) - 键不存在");
+            } else if (line1.startsWith("$")) {
+                String line2 = in.readLine();
+                System.out.println("GET响应: " + line1 + " -> " + line2);
+            } else {
+                System.out.println("GET响应: " + line1);
+            }
 
-            System.out.println("\n✅ Redis原始协议测试成功！");
+            System.out.println("\n Redis原始协议测试成功！");
 
         } catch (Exception e) {
-            System.err.println("❌ 测试失败: " + e.getMessage());
+            System.err.println(" 测试失败: " + e.getMessage());
             e.printStackTrace();
         }
     }
