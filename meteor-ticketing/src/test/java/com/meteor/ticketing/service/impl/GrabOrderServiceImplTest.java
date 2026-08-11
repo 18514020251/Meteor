@@ -375,7 +375,6 @@ class GrabOrderServiceImplTest {
         // 8. 保存失败
         when(outboxService.save(event)).thenReturn(false);
 
-        // Act
         BizException exception = assertThrows(
                 BizException.class,
                 () -> grabOrderService.grab(screeningId, userId)
@@ -385,8 +384,40 @@ class GrabOrderServiceImplTest {
                 .isEqualTo("系统繁忙，请重试");
 
 
-        // Semaphore 一定释放
         verify(grabSemaphoreService).release(screeningId, lease.token());
 
+    }
+
+    @DisplayName("当 Semaphore 拒绝请求时，应恢复已扣减的 Redis 库存")
+    @Test
+    void grabShouldRestoreStockWhenSemaphoreRejected() {
+        // Arrange
+        Long screeningId = 2001L;
+        Long userId = 1001L;
+
+        // 已开售
+        when(stockRedisService.isSaleStarted(screeningId)).thenReturn(true);
+
+        // Redis 扣库存成功
+        when(stockRedisService.decrStock1(screeningId))
+                .thenReturn(new RedisStockOpResult(RedisStockResultEnum.SUCCESS, 8L));
+
+
+        // 生成订单号
+        when(idGenerator.nextId()).thenReturn(900001L);
+
+
+        // Semaphore reject
+        when(grabSemaphoreService.tryAcquire(screeningId, 3000)).thenReturn(null);
+
+        // Act
+        GrabOrderVO result = grabOrderService.grab(screeningId, userId);
+
+        // Assert
+        // 确实返回 BUSY
+        assertThat(result.code()).isEqualTo(GrabOrderResultEnum.BUSY.getCode());
+
+        // 必须恢复刚刚扣掉的 1 张库存
+        verify(stockRedisService).incrStockN(screeningId, 1);
     }
 }
