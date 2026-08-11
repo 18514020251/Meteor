@@ -420,4 +420,98 @@ class GrabOrderServiceImplTest {
         // 必须恢复刚刚扣掉的 1 张库存
         verify(stockRedisService).incrStockN(screeningId, 1);
     }
+
+    @DisplayName("当 Outbox 写入失败时，应恢复已扣减的 Redis 库存")
+    @Test
+    void grabShouldRestoreStockWhenOutboxInsertFails()
+            throws JsonProcessingException {
+
+        // Arrange
+        Long screeningId = 2001L;
+        Long userId = 1001L;
+
+        long generatedOrderId = 900001L;
+        String orderNo = String.valueOf(generatedOrderId);
+        Long leftStock = 8L;
+
+        // 1. 已开售
+        when(stockRedisService.isSaleStarted(screeningId)).thenReturn(true);
+
+        // 2. Redis 扣库存成功
+        // 2.1 构建扣减方法decrStock1的返回结果
+        RedisStockOpResult decrStockResult =
+                new RedisStockOpResult(
+                        RedisStockResultEnum.SUCCESS,
+                        leftStock
+                );
+
+        // 2.2 设置decrStock1的返回结果
+        when(stockRedisService.decrStock1(screeningId))
+                .thenReturn(decrStockResult);
+
+        // 3. 生成订单号
+        when(idGenerator.nextId()).thenReturn(generatedOrderId);
+
+
+        // 4. Semaphore 获取成功
+        // 4.1 构建tryAcquire的返回结果
+        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease(
+                "ttookkeenn",
+                9999L
+        );
+
+        // 4.2 设置tryAcquire的返回结果
+        when(grabSemaphoreService.tryAcquire(screeningId, 3000))
+                .thenReturn(lease);
+
+
+        // 5. Outbox 所需 message
+        // 5.1 构建form返回结果
+        TicketOrderCreateMessage msg = new TicketOrderCreateMessage(
+                orderNo,
+                userId,
+                screeningId,
+                LocalDateTime.now()
+        );
+
+        // 5.2 设置form方法返回山上
+        when(assembler.from(orderNo,userId,screeningId)).thenReturn(msg);
+
+        // 6. JSON payload
+        String jsonPayload = "{\"test\":true}";
+
+        when(objectMapper.writeValueAsString(msg)).thenReturn(jsonPayload);
+
+
+        // 7. Outbox event
+        MqOutboxEvent event = new MqOutboxEvent();
+
+        when(mqOutboxEventAssembler.buildTicketOrderCreate(
+                eq(orderNo),
+                eq(jsonPayload),
+                any(LocalDateTime.class),
+                any(LocalDateTime.class)
+        )).thenReturn(event);
+
+
+        // 8. 保存失败
+        when(outboxService.save(event)).thenReturn(false);
+
+        // Act
+        assertThrows(
+                BizException.class,
+                () -> grabOrderService.grab(screeningId, userId)
+        );
+
+
+        // Semaphore 一定释放
+        verify(grabSemaphoreService).release(screeningId, lease.token());
+
+        // Outbox 确实保存
+        verify(outboxService).save(event);
+
+        // 库存恢复
+        verify(stockRedisService).incrStockN(screeningId, 1);
+
+    }
 }
