@@ -89,6 +89,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
         GrabSemaphoreService.Lease lease = grabSemaphoreService.tryAcquire(screeningId, 3000);
         if (lease == null) {
             span.setAttribute(BIZ_GRAB_RESULT, "BUSY");
+            stockRedisService.incrStockN(screeningId, 1);
             return GrabOrderVO.of(GrabOrderResultEnum.BUSY);
         }
 
