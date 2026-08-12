@@ -266,7 +266,7 @@ class ScreeningMapperIntegrationTest {
                     .isEqualTo(10);
 
         } finally {
-            executor.shutdown();
+            executor.shutdownNow();
         }
     }
     @DisplayName("两个线程同时释放最后一个 sold")
@@ -329,7 +329,7 @@ class ScreeningMapperIntegrationTest {
                     .isEqualTo(10);
 
         } finally {
-            executor.shutdown();
+            executor.shutdownNow();
         }
     }
 
@@ -361,6 +361,7 @@ class ScreeningMapperIntegrationTest {
         assertThat(queryAvailable()).isEqualTo(10);
         assertThat(querySold()).isZero();
     }
+
 
 
 }
