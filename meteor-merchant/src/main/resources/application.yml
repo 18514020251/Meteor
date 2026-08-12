@@ -4,6 +4,8 @@ application:
 spring:
   application:
     name: meteor-merchant
+  config:
+    import: "optional:file:.env[.properties]"
 
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
