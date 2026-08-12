@@ -26,11 +26,9 @@ import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -512,6 +510,45 @@ class GrabOrderServiceImplTest {
 
         // 库存恢复
         verify(stockRedisService).incrStockN(screeningId, 1);
+
+    }
+
+    @DisplayName("连续多次 Semaphore 拒绝时，每次已扣减库存都应得到补偿")
+    @Test
+    void grabShouldRestoreStockForEverySemaphoreRejection() {
+        Long screeningId = 2001L;
+        Long userId = 1001L;
+
+        when(stockRedisService.isSaleStarted(screeningId))
+                .thenReturn(true);
+
+        when(stockRedisService.decrStock1(screeningId))
+                .thenReturn(
+                        new RedisStockOpResult(
+                                RedisStockResultEnum.SUCCESS,
+                                9L
+                        )
+                );
+
+        when(idGenerator.nextId())
+                .thenReturn(900001L);
+
+        when(grabSemaphoreService.tryAcquire(screeningId, 3000))
+                .thenReturn(null);
+
+        for (int i = 0; i < 100; i++) {
+            GrabOrderVO result =
+                    grabOrderService.grab(screeningId, userId);
+
+            assertThat(result.code())
+                    .isEqualTo(GrabOrderResultEnum.BUSY.getCode());
+
+        }
+        verify(stockRedisService, times(100))
+                .decrStock1(screeningId);
+
+        verify(stockRedisService, times(100))
+                .incrStockN(screeningId, 1);
 
     }
 }
