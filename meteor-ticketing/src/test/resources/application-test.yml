@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_TICKETING_TEST_DB:meteor_ticketing_test}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/screening-test-schema.sql
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+      - com.meteor.satoken.autoconfigure.MeteorSaTokenAutoConfiguration
+      - com.meteor.satoken.autoconfigure.MeteorSaTokenMvcAutoConfiguration
+      - com.meteor.redis.autoconfigure.MeteorRedisHealthCheckAutoConfiguration
+      - com.meteor.mq.autoconfigure.MeteorMqAutoConfiguration
+      - com.meteor.mq.autoconfigure.MeteorMqHealthCheckAutoConfiguration
+      - com.meteor.minio.autoconfigure.MeteorMinioAutoConfiguration
+      - com.meteor.minio.autoconfigure.MeteorMinioHealthCheckAutoConfiguration
+      - cn.dev33.satoken.dao.SaTokenDaoRedisJackson
+
+  cloud:
+    nacos:
+      discovery:
+        enabled: false

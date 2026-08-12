@@ -418,17 +418,14 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
 
     @Override
     public boolean decrStockAndIncrSold(Long screeningId) {
-        return lambdaUpdate()
-                .setSql("available_tickets = available_tickets - 1")
-                .setSql("sold_tickets = sold_tickets + 1")
-                .setSql("version = version + 1")
-                .set(Screening::getUpdateTime, LocalDateTime.now())
-                .eq(Screening::getId, screeningId)
-                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
-                .gt(Screening::getAvailableTickets, ScreeningConstants.STOCK_EMPTY)
-                .update();
+        int affectedRows =
+                baseMapper.decreaseAvailableAndIncreaseSold(
+                        screeningId,
+                        1,
+                        LocalDateTime.now()
+                );
+        return affectedRows == 1;
     }
-
     @Override
     public void markSoldOutIfNeeded(Long screeningId) {
         lambdaUpdate()
@@ -472,15 +469,17 @@ public class ScreeningServiceImpl extends ServiceImpl<ScreeningMapper, Screening
      */
     @Override
     public boolean incrStockAndDecrSold(Long screeningId, Integer cnt) {
-        return lambdaUpdate()
-                .setSql("available_tickets = available_tickets + " + cnt)
-                .setSql("sold_tickets = sold_tickets - " + cnt)
-                .setSql("version = version + 1")
-                .set(Screening::getUpdateTime, LocalDateTime.now())
-                .eq(Screening::getId, screeningId)
-                .eq(Screening::getDeleted, DeleteStatus.NORMAL)
-                .ge(Screening::getSoldTickets, cnt)
-                .update();
+        if (cnt == null || cnt <= 0) {
+            return false;
+        }
+
+        int affectedRows =
+                baseMapper.increaseAvailableAndDecreaseSold(
+                        screeningId,
+                        cnt,
+                        LocalDateTime.now()
+                );
+        return affectedRows == 1;
     }
 
     /**

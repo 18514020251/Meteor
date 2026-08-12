@@ -2,4 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.meteor.ticketing.mapper.ScreeningMapper">
 
+    <update id="decreaseAvailableAndIncreaseSold">
+        UPDATE screening
+        SET available_tickets = available_tickets - #{quantity},
+            sold_tickets = sold_tickets + #{quantity},
+            version = version + 1,
+            update_time = #{updateTime}
+        WHERE id = #{screeningId}
+          AND deleted = 0
+          AND available_tickets >= #{quantity}
+    </update>
+
+    <update id="increaseAvailableAndDecreaseSold">
+        UPDATE screening
+        SET available_tickets = available_tickets + #{quantity},
+            sold_tickets = sold_tickets - #{quantity},
+            version = version + 1,
+            update_time = #{updateTime}
+        WHERE id = #{screeningId}
+          AND deleted = 0
+          AND sold_tickets >= #{quantity}
+    </update>
 </mapper>

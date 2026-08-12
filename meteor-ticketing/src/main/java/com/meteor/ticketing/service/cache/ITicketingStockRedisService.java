@@ -15,8 +15,17 @@ public interface ITicketingStockRedisService {
 
     RedisStockOpResult decrStock1(Long screeningId);
 
+    /**
+     * 增量增加 Redis 可售库存。
+     * quantity 表示变化量，不表示完整库存。
+     */
     RedisStockOpResult increaseAvailableStock(Long screeningId, int quantity);
 
+    /**
+     * 使用完整库存快照重建 Redis。
+     * availableStock 必须来自权威状态，
+     * 不得传入本次增量 quantity。
+     */
     void rebuildStockFromSnapshot(Long screeningId, int availableStock);
 
 }
