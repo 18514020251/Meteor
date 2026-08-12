@@ -15,8 +15,8 @@ public interface ITicketingStockRedisService {
 
     RedisStockOpResult decrStock1(Long screeningId);
 
-    RedisStockOpResult incrStockN(Long screeningId, int cnt);
+    RedisStockOpResult increaseAvailableStock(Long screeningId, int quantity);
 
-    void rebuildStock(Long screeningId, int cnt);
+    void rebuildStockFromSnapshot(Long screeningId, int availableStock);
 
 }

@@ -50,28 +50,30 @@ public class TicketingStockRedisServiceImpl implements ITicketingStockRedisServi
     }
 
     @Override
-    public RedisStockOpResult incrStockN(Long screeningId, int cnt) {
-        if (cnt <= 0) {
+    public RedisStockOpResult increaseAvailableStock(Long screeningId, int quantity) {
+        if (quantity <= 0) {
             return new RedisStockOpResult(RedisStockResultEnum.ERROR, null);
         }
 
         String stockKey = buildScreeningStockKey(screeningId);
+
         Long left = redis.execute(
                 RedisScripts.INCR_STOCK_N,
                 List.of(stockKey),
-                String.valueOf(cnt)
+                String.valueOf(quantity)
         );
 
         RedisStockResultEnum code = RedisStockResultEnum.fromIncrResult(left);
+
         return new RedisStockOpResult(code, left);
     }
 
     @Override
-    public void rebuildStock(Long screeningId, int cnt) {
+    public void rebuildStockFromSnapshot(Long screeningId, int availableStock) {
         String stockKey = buildScreeningStockKey(screeningId);
         redis.opsForValue().set(
                 stockKey,
-                String.valueOf(cnt),
+                String.valueOf(availableStock),
                 RedisKeyConstants.STOCK_RECOVER_REBUILD_TTL
         );
     }

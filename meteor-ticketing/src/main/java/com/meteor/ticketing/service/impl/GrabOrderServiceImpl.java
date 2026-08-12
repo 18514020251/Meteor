@@ -89,7 +89,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
         GrabSemaphoreService.Lease lease = grabSemaphoreService.tryAcquire(screeningId, 3000);
         if (lease == null) {
             span.setAttribute(BIZ_GRAB_RESULT, "BUSY");
-            stockRedisService.incrStockN(screeningId, 1);
+            stockRedisService.increaseAvailableStock(screeningId, 1);
             return GrabOrderVO.of(GrabOrderResultEnum.BUSY);
         }
 
@@ -101,7 +101,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
 
         } catch (Exception e) {
             try {
-                stockRedisService.incrStockN(screeningId, 1);
+                stockRedisService.increaseAvailableStock(screeningId, 1);
             } catch (Exception rollbackEx) {
                 span.recordException(rollbackEx);
                 span.setAttribute(BIZ_ROLLBACK_ERROR, "INCR_EXCEPTION");

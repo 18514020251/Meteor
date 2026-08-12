@@ -416,7 +416,7 @@ class GrabOrderServiceImplTest {
         assertThat(result.code()).isEqualTo(GrabOrderResultEnum.BUSY.getCode());
 
         // 必须恢复刚刚扣掉的 1 张库存
-        verify(stockRedisService).incrStockN(screeningId, 1);
+        verify(stockRedisService).increaseAvailableStock(screeningId, 1);
     }
 
     @DisplayName("当 Outbox 写入失败时，应恢复已扣减的 Redis 库存")
@@ -509,7 +509,7 @@ class GrabOrderServiceImplTest {
         verify(outboxService).save(event);
 
         // 库存恢复
-        verify(stockRedisService).incrStockN(screeningId, 1);
+        verify(stockRedisService).increaseAvailableStock(screeningId, 1);
 
     }
 
@@ -548,7 +548,7 @@ class GrabOrderServiceImplTest {
                 .decrStock1(screeningId);
 
         verify(stockRedisService, times(100))
-                .incrStockN(screeningId, 1);
+                .increaseAvailableStock(screeningId, 1);
 
     }
 }

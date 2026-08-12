@@ -5,6 +5,7 @@ import com.meteor.mq.contract.ticketing.TicketOrderContract;
 import com.meteor.mq.contract.ticketing.TicketStockReleaseMessage;
 import com.meteor.ticketing.mapper.TicketMqConsumeLogMapper;
 import com.meteor.ticketing.service.IScreeningService;
+import com.meteor.ticketing.service.IStockRecoveryService;
 import com.meteor.ticketing.service.cache.ITicketingStockRedisService;
 import com.meteor.ticketing.service.cache.model.RedisStockOpResult;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class TicketStockReleaseConsumer {
     private final TicketMqConsumeLogMapper consumeLogMapper;
     private final IScreeningService screeningStockService;
     private final ITicketingStockRedisService stockRedisService;
+    private final IStockRecoveryService stockRecoveryService;
 
     private static final String TOPIC = TicketOrderContract.RoutingKey.TICKET_ORDER_DB_RESERVED;
 
@@ -70,7 +72,7 @@ public class TicketStockReleaseConsumer {
 
         screeningStockService.markSellingIfHasStock(message.getScreeningId());
 
-        RedisStockOpResult r = stockRedisService.incrStockN(message.getScreeningId(), cnt);
+        RedisStockOpResult r = stockRedisService.increaseAvailableStock(message.getScreeningId(), cnt);
 
         switch (r.code()) {
 
@@ -80,12 +82,13 @@ public class TicketStockReleaseConsumer {
             );
 
             case NOT_READY -> {
-                stockRedisService.rebuildStock(message.getScreeningId(), cnt);
+                stockRecoveryService.rebuildFromAuthoritativeState(
+                        message.getScreeningId()
+                );
 
                 log.warn(
-                        "[StockRelease] redis key missing, rebuild screeningId={} cnt={} ttl={}m",
+                        "[StockRelease] redis key missing, rebuild from authoritative state screeningId={} ttl={}m",
                         message.getScreeningId(),
-                        cnt,
                         RedisKeyConstants.STOCK_RECOVER_REBUILD_TTL.toMinutes()
                 );
             }
