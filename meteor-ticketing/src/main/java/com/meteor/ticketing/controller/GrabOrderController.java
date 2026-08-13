@@ -2,16 +2,14 @@ package com.meteor.ticketing.controller;
 
 import com.meteor.common.result.Result;
 import com.meteor.satoken.context.LoginContext;
+import com.meteor.ticketing.controller.dto.GrabOrderDTO;
 import com.meteor.ticketing.controller.vo.GrabOrderVO;
 import com.meteor.ticketing.service.IGrabOrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import io.opentelemetry.api.trace.Span;
 
 /**
@@ -35,8 +33,9 @@ public class GrabOrderController {
 
     @Operation(summary = "抢票下单")
     @PostMapping("/grab")
-    public Result<GrabOrderVO> grab(@RequestParam @NotNull Long screeningId) {
+    public Result<GrabOrderVO> grab(@RequestBody @Valid GrabOrderDTO dto) {
         Long uid = loginContext.currentLoginId();
+        Long screeningId = dto.getScreeningId();
 
         Span span = Span.current();
         span.setAttribute("biz.screening_id", String.valueOf(screeningId));
