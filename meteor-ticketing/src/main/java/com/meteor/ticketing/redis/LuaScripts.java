@@ -105,4 +105,37 @@ public final class LuaScripts {
     return n
     """;
 
+    public static final String RESOLVE_GRAB_REQUEST_ID = """
+    -- KEYS[1] = requestKey
+    -- ARGV[1] = candidateRequestId
+    -- ARGV[2] = fingerprint
+    -- ARGV[3] = ttlMillis
+
+    local existingRequestId = redis.call('HGET', KEYS[1], 'requestId')
+
+    if existingRequestId then
+        local existingFingerprint = redis.call('HGET', KEYS[1], 'fingerprint')
+
+        if existingFingerprint ~= ARGV[2] then
+            return '__CONFLICT__'
+        end
+
+        return existingRequestId
+    end
+
+    redis.call(
+        'HSET',
+        KEYS[1],
+        'requestId', ARGV[1],
+        'fingerprint', ARGV[2]
+    )
+
+    local ttlMillis = tonumber(ARGV[3])
+
+    if ttlMillis and ttlMillis > 0 then
+        redis.call('PEXPIRE', KEYS[1], ttlMillis)
+    end
+
+    return ARGV[1]
+    """;
 }

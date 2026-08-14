@@ -50,4 +50,11 @@ public final class RedisScripts {
         GRAB_SEM_RECLAIM_EXPIRED.setScriptText(LuaScripts.GRAB_SEM_RECLAIM_EXPIRED);
         GRAB_SEM_RECLAIM_EXPIRED.setResultType(Long.class);
     }
+
+    public static final DefaultRedisScript<String> RESOLVE_GRAB_REQUEST_ID;
+    static {
+        RESOLVE_GRAB_REQUEST_ID = new DefaultRedisScript<>();
+        RESOLVE_GRAB_REQUEST_ID.setScriptText(LuaScripts.RESOLVE_GRAB_REQUEST_ID);
+        RESOLVE_GRAB_REQUEST_ID.setResultType(String.class);
+    }
 }

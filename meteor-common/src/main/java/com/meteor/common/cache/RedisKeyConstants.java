@@ -42,6 +42,7 @@ public class RedisKeyConstants {
     private static final String SCREENING_STOCK_KEY = "screening:stock:%d";
     private static final String SCREENING_STOCK_READY_KEY = "screening:stock:ready:%d";
     private static final String SCREENING_STOCK_WARM_LOCK_KEY = "lock:screening:stock:warm:%d";
+    private static final String GRAB_REQUEST_KEY = "grab:request:%d:%s";
 
     /**
      * 预热锁 TTL：避免死锁
@@ -134,6 +135,9 @@ public class RedisKeyConstants {
 
     public static String buildGrabSemLeaseZsetKey(Long screeningId) {
         return String.format(GRAB_SEM_LEASE_ZSET, screeningId);
+    }
+    public static String buildGrabRequestKey(Long userId, String clientRequestId) {
+        return String.format(GRAB_REQUEST_KEY, userId, clientRequestId);
     }
 
     public static String grabActiveScreeningZsetKey() {
