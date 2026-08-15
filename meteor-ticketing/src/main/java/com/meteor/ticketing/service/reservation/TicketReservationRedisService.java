@@ -2,6 +2,8 @@ package com.meteor.ticketing.service.reservation;
 
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.ticketing.enums.ReservationReserveResult;
+import com.meteor.ticketing.enums.ReservationStatus;
+import com.meteor.ticketing.enums.ReservationTransitionResult;
 import com.meteor.ticketing.redis.RedisScripts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,8 +28,9 @@ public class TicketReservationRedisService {
      * 原子预留库存。
      *
      * @param reservationId Reservation 业务身份
-     * @param screeningId 场次 ID
-     * @param quantity 预留数量
+     * @param screeningId  场次 ID
+     * @param quantity     预留数量
+     * @return reserve 业务结果
      */
     public ReservationReserveResult reserve(String reservationId, Long screeningId, int quantity) {
 
@@ -43,32 +46,112 @@ public class TicketReservationRedisService {
                 String.valueOf(quantity)
         );
 
+        return convertReserveResult(result);
+    }
+
+    /**
+     * 正常释放 Reservation，恢复库存。
+     *
+     * @param reservationId Reservation ID
+     * @param screeningId  场次 ID
+     */
+    public ReservationTransitionResult release(String reservationId, Long screeningId) {
+        return releaseReservation(reservationId, screeningId, ReservationStatus.RELEASED);
+    }
+
+    /**
+     * 补偿释放 Reservation，恢复库存。
+     *
+     * @param reservationId Reservation ID
+     * @param screeningId  场次 ID
+     */
+    public ReservationTransitionResult compensate(String reservationId, Long screeningId) {
+        return releaseReservation(reservationId, screeningId, ReservationStatus.COMPENSATED);
+    }
+
+    /**
+     * 确认 Reservation，不修改库存。
+     *
+     * @param reservationId Reservation ID
+     */
+    public ReservationTransitionResult confirm(String reservationId) {
+
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(reservationId);
+
+        Long result = redisTemplate.execute(
+                RedisScripts.CONFIRM_RESERVATION,
+                List.of(reservationKey)
+        );
+
+        return convertConfirmResult(result);
+    }
+
+    private ReservationTransitionResult releaseReservation(
+            String reservationId,
+            Long screeningId,
+            ReservationStatus targetStatus
+    ) {
+
+        String stockKey = RedisKeyConstants.buildScreeningStockKey(screeningId);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(reservationId);
+
+        Long result = redisTemplate.execute(
+                RedisScripts.RELEASE_RESERVATION,
+                List.of(stockKey, reservationKey),
+                targetStatus.name()
+        );
+
+        return convertReleaseResult(result);
+    }
+
+    private ReservationReserveResult convertReserveResult(Long result) {
+
         if (result == null) {
             throw new IllegalStateException("Redis 预留库存返回 null");
         }
 
-        if (result == 1L) {
-            return ReservationReserveResult.RESERVED;
-        }
-        if (result == 2L) {
-            return ReservationReserveResult.IDEMPOTENT;
-        }
-        if (result == -1L) {
-            return ReservationReserveResult.SOLD_OUT;
-        }
-        if (result == -2L) {
-            return ReservationReserveResult.INVALID_QUANTITY;
-        }
-        if (result == -3L) {
-            return ReservationReserveResult.NOT_READY;
-        }
-        if (result == -4L) {
-            return ReservationReserveResult.NOT_STARTED;
-        }
-        if (result == -5L) {
-            return ReservationReserveResult.SALE_CLOSED;
+        return switch (result.intValue()) {
+            case 1 -> ReservationReserveResult.RESERVED;
+            case 2 -> ReservationReserveResult.IDEMPOTENT;
+            case -1 -> ReservationReserveResult.SOLD_OUT;
+            case -2 -> ReservationReserveResult.INVALID_QUANTITY;
+            case -3 -> ReservationReserveResult.NOT_READY;
+            case -4 -> ReservationReserveResult.NOT_STARTED;
+            case -5 -> ReservationReserveResult.SALE_CLOSED;
+            default -> throw new IllegalStateException("未知的预留库存返回结果：" + result);
+        };
+    }
+
+    private ReservationTransitionResult convertReleaseResult(Long result) {
+
+        if (result == null) {
+            throw new IllegalStateException("Redis 释放预留返回 null");
         }
 
-        throw new IllegalStateException("未知的预留库存返回结果：" + result);
+        return switch (result.intValue()) {
+            case 1 -> ReservationTransitionResult.APPLIED;
+            case 2 -> ReservationTransitionResult.IDEMPOTENT;
+            case -1 -> ReservationTransitionResult.NOT_FOUND;
+            case -2 -> throw new IllegalStateException("非法的释放目标状态");
+            case -3 -> ReservationTransitionResult.ILLEGAL_STATE;
+            case -4 -> throw new IllegalStateException("无效的预留数量");
+            case -5 -> ReservationTransitionResult.STOCK_MISSING;
+            default -> throw new IllegalStateException("未知的释放预留返回结果：" + result);
+        };
+    }
+
+    private ReservationTransitionResult convertConfirmResult(Long result) {
+
+        if (result == null) {
+            throw new IllegalStateException("Redis 确认预留返回 null");
+        }
+
+        return switch (result.intValue()) {
+            case 1 -> ReservationTransitionResult.APPLIED;
+            case 2 -> ReservationTransitionResult.IDEMPOTENT;
+            case -1 -> ReservationTransitionResult.NOT_FOUND;
+            case -2 -> ReservationTransitionResult.ILLEGAL_STATE;
+            default -> throw new IllegalStateException("未知的确认预留返回结果：" + result);
+        };
     }
 }

@@ -2,6 +2,7 @@ package com.meteor.ticketing.redis;
 
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.ticketing.enums.ReservationReserveResult;
+import com.meteor.ticketing.enums.ReservationTransitionResult;
 import com.meteor.ticketing.service.reservation.TicketReservationRedisService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -369,6 +370,94 @@ class TicketReservationRedisIntegrationTest {
         assertThat(second).isEqualTo(ReservationReserveResult.IDEMPOTENT);
 
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
+    }
+
+    @DisplayName("Reservation Service release 应正确转换 Lua 返回结果")
+    @Test
+    void reservationServiceShouldMapReleaseResult() {
+
+        String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
+        String reservationKey = buildReservationKey(RESERVATION_ID);
+
+        redisTemplate.opsForValue().set(stockKey, "10");
+
+        ReservationReserveResult reserveResult =
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+
+        assertThat(reserveResult).isEqualTo(ReservationReserveResult.RESERVED);
+
+        ReservationTransitionResult first =
+                reservationRedisService.release(RESERVATION_ID, SCREENING_ID);
+
+        ReservationTransitionResult second =
+                reservationRedisService.release(RESERVATION_ID, SCREENING_ID);
+
+        assertThat(first).isEqualTo(ReservationTransitionResult.APPLIED);
+        assertThat(second).isEqualTo(ReservationTransitionResult.IDEMPOTENT);
+
+        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("10");
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("RELEASED");
+    }
+
+    @DisplayName("Reservation Service compensate 应正确转换 Lua 返回结果")
+    @Test
+    void reservationServiceShouldMapCompensateResult() {
+
+        String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
+        String reservationKey = buildReservationKey(RESERVATION_ID);
+
+        redisTemplate.opsForValue().set(stockKey, "10");
+
+        ReservationReserveResult reserveResult =
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+
+        assertThat(reserveResult).isEqualTo(ReservationReserveResult.RESERVED);
+
+        ReservationTransitionResult first =
+                reservationRedisService.compensate(RESERVATION_ID, SCREENING_ID);
+
+        ReservationTransitionResult second =
+                reservationRedisService.compensate(RESERVATION_ID, SCREENING_ID);
+
+        assertThat(first).isEqualTo(ReservationTransitionResult.APPLIED);
+        assertThat(second).isEqualTo(ReservationTransitionResult.IDEMPOTENT);
+
+        /*
+         * compensate 两次，
+         * 也只能恢复一次。
+         */
+        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("10");
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("COMPENSATED");
+    }
+
+    @DisplayName("Reservation Service confirm 应正确转换 Lua 返回结果")
+    @Test
+    void reservationServiceShouldMapConfirmResult() {
+
+        String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
+        String reservationKey = buildReservationKey(RESERVATION_ID);
+
+        redisTemplate.opsForValue().set(stockKey, "10");
+
+        ReservationReserveResult reserveResult =
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+
+        assertThat(reserveResult).isEqualTo(ReservationReserveResult.RESERVED);
+
+        ReservationTransitionResult first =
+                reservationRedisService.confirm(RESERVATION_ID);
+
+        ReservationTransitionResult second =
+                reservationRedisService.confirm(RESERVATION_ID);
+
+        assertThat(first).isEqualTo(ReservationTransitionResult.APPLIED);
+        assertThat(second).isEqualTo(ReservationTransitionResult.IDEMPOTENT);
+
+        /*
+         * confirm 不恢复也不再次扣库存。
+         */
+        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("CONFIRMED");
     }
 
 
