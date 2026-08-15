@@ -98,8 +98,10 @@ class GrabOrderControllerTest {
         when(loginContext.currentLoginId())
                 .thenReturn(userId);
 
-        when(grabOrderService.grab(screeningId, userId))
-                .thenReturn(GrabOrderVO.of(GrabOrderResultEnum.SUCCESS, "90001", 82L));
+        String clientRequestId = "client-abc-123";
+
+        when(grabOrderService.grab(screeningId, userId, clientRequestId)).
+                thenReturn(GrabOrderVO.of(GrabOrderResultEnum.SUCCESS, "90001", 82L));
 
         mockMvc.perform(
                 post("/ticketing/order/grab")
@@ -116,6 +118,6 @@ class GrabOrderControllerTest {
 
         verify(loginContext).currentLoginId();
 
-        verify(grabOrderService).grab(screeningId, userId);
+        verify(grabOrderService).grab(screeningId, userId, clientRequestId);
     }
 }

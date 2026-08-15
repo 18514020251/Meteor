@@ -36,13 +36,14 @@ public class GrabOrderController {
     public Result<GrabOrderVO> grab(@RequestBody @Valid GrabOrderDTO dto) {
         Long uid = loginContext.currentLoginId();
         Long screeningId = dto.getScreeningId();
+        String clientRequestId = dto.getClientRequestId();
 
         Span span = Span.current();
         span.setAttribute("biz.screening_id", String.valueOf(screeningId));
         span.setAttribute("biz.user_id", String.valueOf(uid));
 
         try {
-            GrabOrderVO vo = grabOrderService.grab(screeningId, uid);
+            GrabOrderVO vo = grabOrderService.grab(screeningId, uid, clientRequestId);
             span.setAttribute("biz.grab_result", "SUCCESS");
             return Result.success(vo);
         } catch (Exception e) {

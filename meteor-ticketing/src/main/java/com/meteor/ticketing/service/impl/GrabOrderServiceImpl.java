@@ -16,6 +16,7 @@ import com.meteor.ticketing.service.IGrabOrderService;
 import com.meteor.ticketing.service.IMqOutboxEventService;
 import com.meteor.ticketing.service.cache.ITicketingStockRedisService;
 import com.meteor.ticketing.service.cache.model.RedisStockOpResult;
+import com.meteor.ticketing.service.idempotency.GrabRequestIdResolver;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
     private final ObjectMapper objectMapper;
     private final GrabSemaphoreService grabSemaphoreService;
     private final MqOutboxEventAssembler mqOutboxEventAssembler;
+    private final GrabRequestIdResolver grabRequestIdResolver;
 
     private static final int BIZ_EXPIRE_MINUTES = 3;
 
@@ -51,9 +53,10 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
     private static final String BIZ_ORDER_NO = "biz.order_no";
     private static final String BIZ_FAIL_REASON = "biz.fail_reason";
     private static final String BIZ_ROLLBACK_ERROR = "biz.rollback_error";
+    private static final String BIZ_REQUEST_ID = "biz.request_id";
 
     @Override
-    public GrabOrderVO grab(Long screeningId, Long userId) {
+    public GrabOrderVO grab(Long screeningId, Long userId, String clientRequestId) {
         Span span = Span.current();
         span.setAttribute(BIZ_SCREENING_ID, String.valueOf(screeningId));
         span.setAttribute(BIZ_USER_ID, String.valueOf(userId));
@@ -62,6 +65,10 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
             span.setAttribute(BIZ_GRAB_RESULT, "NOT_READY");
             return GrabOrderVO.of(GrabOrderResultEnum.NOT_READY);
         }
+
+        String requestId = grabRequestIdResolver.resolve(userId, screeningId, clientRequestId, 1);
+
+        span.setAttribute(BIZ_REQUEST_ID, requestId);
 
         RedisStockOpResult r = stockRedisService.decrStock1(screeningId);
         span.setAttribute(BIZ_STOCK_DECR_CODE, r.code().name());

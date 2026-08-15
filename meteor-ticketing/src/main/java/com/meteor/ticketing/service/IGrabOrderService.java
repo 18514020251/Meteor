@@ -18,5 +18,5 @@ public interface IGrabOrderService {
      * @param screeningId 影片排期ID
      * @return 抢票结果
      */
-    GrabOrderVO grab(@NotNull Long screeningId , Long uid);
+    GrabOrderVO grab(@NotNull Long screeningId, Long userId, String clientRequestId);
 }

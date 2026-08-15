@@ -15,10 +15,12 @@ import com.meteor.ticketing.service.IMqOutboxEventService;
 import com.meteor.ticketing.service.cache.ITicketingStockRedisService;
 import com.meteor.ticketing.enums.RedisStockResultEnum;
 import com.meteor.ticketing.service.cache.model.RedisStockOpResult;
+import com.meteor.ticketing.service.idempotency.GrabRequestIdResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -62,19 +64,25 @@ class GrabOrderServiceImplTest {
     @Mock
     private MqOutboxEventAssembler mqOutboxEventAssembler;
 
+    @Mock
+    private GrabRequestIdResolver grabRequestIdResolver;
+
     private GrabOrderServiceImpl grabOrderService;
+
+    private static final String CLIENT_REQUEST_ID = "test-client-request-id";
 
     @BeforeEach
     void setUp() {
         grabOrderService = new GrabOrderServiceImpl(
-                idGenerator,
-                stockRedisService,
-                outboxService,
-                assembler,
-                objectMapper,
-                grabSemaphoreService,
-                mqOutboxEventAssembler
-        );
+                        idGenerator,
+                        stockRedisService,
+                        outboxService,
+                        assembler,
+                        objectMapper,
+                        grabSemaphoreService,
+                        mqOutboxEventAssembler,
+                        grabRequestIdResolver
+                );
     }
 
 
@@ -89,7 +97,7 @@ class GrabOrderServiceImplTest {
                 .thenReturn(false);
 
         // Act
-        GrabOrderVO result = grabOrderService.grab(screeningId, userId);
+        GrabOrderVO result = grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID);
 
         // Assert
         assertThat(result.code())
@@ -124,7 +132,7 @@ class GrabOrderServiceImplTest {
 
         // Act
         GrabOrderVO result =
-                grabOrderService.grab(screeningId, userId);
+                grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID);
 
         // Assert
         assertThat(result.code())
@@ -215,7 +223,7 @@ class GrabOrderServiceImplTest {
 
         // Act
         GrabOrderVO result =
-                grabOrderService.grab(screeningId, userId);
+                grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID);
 
         // Assert
         // SUCCESS
@@ -274,7 +282,7 @@ class GrabOrderServiceImplTest {
 
 
         // Act
-        GrabOrderVO result = grabOrderService.grab(screeningId, userId);
+        GrabOrderVO result = grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID);
 
 
         // Assert
@@ -375,7 +383,7 @@ class GrabOrderServiceImplTest {
 
         BizException exception = assertThrows(
                 BizException.class,
-                () -> grabOrderService.grab(screeningId, userId)
+                () -> grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID)
         );
 
         assertThat(exception.getMessage())
@@ -409,7 +417,7 @@ class GrabOrderServiceImplTest {
         when(grabSemaphoreService.tryAcquire(screeningId, 3000)).thenReturn(null);
 
         // Act
-        GrabOrderVO result = grabOrderService.grab(screeningId, userId);
+        GrabOrderVO result = grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID);
 
         // Assert
         // 确实返回 BUSY
@@ -498,7 +506,7 @@ class GrabOrderServiceImplTest {
         // Act
         assertThrows(
                 BizException.class,
-                () -> grabOrderService.grab(screeningId, userId)
+                () -> grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID)
         );
 
 
@@ -538,7 +546,7 @@ class GrabOrderServiceImplTest {
 
         for (int i = 0; i < 100; i++) {
             GrabOrderVO result =
-                    grabOrderService.grab(screeningId, userId);
+                    grabOrderService.grab(screeningId, userId, CLIENT_REQUEST_ID);
 
             assertThat(result.code())
                     .isEqualTo(GrabOrderResultEnum.BUSY.getCode());
@@ -549,6 +557,36 @@ class GrabOrderServiceImplTest {
 
         verify(stockRedisService, times(100))
                 .increaseAvailableStock(screeningId, 1);
+
+    }
+
+    @DisplayName("场次已开售时应先解析稳定 requestId 再扣减库存")
+    @Test
+    void grabShouldResolveRequestIdBeforeDecreasingStock() {
+        // Arrange
+        Long screeningId = 2001L;
+        Long userId = 1001L;
+        String clientRequestId = "client-request-001";
+
+        when(stockRedisService.isSaleStarted(screeningId)).thenReturn(true);
+
+        when(stockRedisService.decrStock1(screeningId)).thenReturn(new RedisStockOpResult(RedisStockResultEnum.SOLD_OUT, -1L));
+
+        when(grabRequestIdResolver.resolve(userId, screeningId, clientRequestId, 1)).thenReturn("request-900001");
+
+        // Act
+        GrabOrderVO result = grabOrderService.grab(screeningId, userId, clientRequestId);
+
+        // Assert
+        assertThat(result.code()).isEqualTo(GrabOrderResultEnum.SOLD_OUT.getCode());
+
+        InOrder inOrder = inOrder(stockRedisService, grabRequestIdResolver);
+
+        inOrder.verify(stockRedisService).isSaleStarted(screeningId);
+
+        inOrder.verify(grabRequestIdResolver).resolve(userId, screeningId, clientRequestId, 1);
+
+        inOrder.verify(stockRedisService).decrStock1(screeningId);
 
     }
 }
