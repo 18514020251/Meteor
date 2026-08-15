@@ -119,21 +119,90 @@ class ScreeningStockWarmupServiceRedisIntegrationTest {
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
         String actualSaleEndEpoch = redisTemplate.opsForValue().get(saleEndKey);
 
-        long expectedSaleEndEpoch = saleEndTime
-                .atZone(ZoneId.systemDefault())
-                .toEpochSecond();
+        long expectedSaleEndEpoch = saleEndTime.atZone(ZoneId.systemDefault()).toEpochSecond();
 
         assertThat(actualSaleEndEpoch).isEqualTo(String.valueOf(expectedSaleEndEpoch));
 
         Long actualTtlSeconds = redisTemplate.getExpire(saleEndKey, TimeUnit.SECONDS);
 
-        assertThat(actualTtlSeconds)
-                .isNotNull()
-                .isPositive();
+        assertThat(actualTtlSeconds).isNotNull().isPositive();
 
-        long expectedTtlSeconds = Duration.between(now, saleEndTime.plus(RedisKeyConstants.EXTRA_TTL))
-                .getSeconds();
+        long expectedTtlSeconds = Duration.between(now, saleEndTime.plus(RedisKeyConstants.EXTRA_TTL)).getSeconds();
 
         assertThat(actualTtlSeconds).isBetween(expectedTtlSeconds - 5, expectedTtlSeconds);
+    }
+
+    @DisplayName("预热异常后应立即释放分布式锁")
+    @Test
+    void warmOneShouldReleaseLockWhenExceptionOccurs() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        when(screeningMapper.selectById(SCREENING_ID)).thenThrow(new RuntimeException("模拟数据库异常"));
+
+        RuntimeException exception =
+                org.assertj.core.api.Assertions.catchThrowableOfType(
+                        () -> warmupService.warmOne(SCREENING_ID, now),
+                        RuntimeException.class
+                );
+
+        assertThat(exception).isNotNull().hasMessage("模拟数据库异常");
+
+        String lockKey = RedisKeyConstants.buildScreeningStockWarmLockKey(SCREENING_ID);
+
+        assertThat(redisTemplate.hasKey(lockKey)).isFalse();
+    }
+
+    @DisplayName("旧预热任务不得释放新 owner 已重新获取的锁")
+    @Test
+    void warmOneShouldNotReleaseLockOwnedByAnotherOwner() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        String lockKey = RedisKeyConstants.buildScreeningStockWarmLockKey(SCREENING_ID);
+
+        String newOwnerToken = "new-owner-token";
+
+        when(screeningMapper.selectById(SCREENING_ID)
+        ).thenAnswer(invocation -> {
+
+            /*
+             * 模拟并发场景：
+             *
+             * 1. warmOne 已经拿到自己的旧锁 token-A
+             * 2. 旧锁因为超时等原因失效
+             * 3. 新实例已经重新拿到同一个 lockKey
+             *
+             * 这里直接用新 token 覆盖，
+             * 模拟“当前锁已经属于新 owner”。
+             */
+            redisTemplate.opsForValue().set(
+                    lockKey,
+                    newOwnerToken,
+                    Duration.ofMinutes(1)
+            );
+
+            /*
+             * 再模拟旧任务发生异常退出，
+             * 从而进入 finally 解锁逻辑。
+             */
+            throw new RuntimeException(
+                    "模拟旧 owner 执行失败"
+            );
+        });
+
+        RuntimeException exception =
+                org.assertj.core.api.Assertions
+                        .catchThrowableOfType(
+                                () -> warmupService.warmOne(
+                                        SCREENING_ID,
+                                        now
+                                ),
+                                RuntimeException.class
+                        );
+
+        assertThat(exception).isNotNull().hasMessage("模拟旧 owner 执行失败");
+
+        assertThat(redisTemplate.opsForValue().get(lockKey)).isEqualTo(newOwnerToken);
     }
 }

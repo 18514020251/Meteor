@@ -57,4 +57,11 @@ public final class RedisScripts {
         RESOLVE_GRAB_REQUEST_ID.setScriptText(LuaScripts.RESOLVE_GRAB_REQUEST_ID);
         RESOLVE_GRAB_REQUEST_ID.setResultType(String.class);
     }
+
+    public static final DefaultRedisScript<Long> RELEASE_LOCK_IF_OWNER;
+    static {
+        RELEASE_LOCK_IF_OWNER = new DefaultRedisScript<>();
+        RELEASE_LOCK_IF_OWNER.setScriptText(LuaScripts.RELEASE_LOCK_IF_OWNER);
+        RELEASE_LOCK_IF_OWNER.setResultType(Long.class);
+    }
 }
