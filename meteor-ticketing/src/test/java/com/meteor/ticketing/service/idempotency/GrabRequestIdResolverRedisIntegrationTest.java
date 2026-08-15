@@ -16,6 +16,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,17 +79,14 @@ class GrabRequestIdResolverRedisIntegrationTest {
     void setUp() {
         clientRequestId = "it-" + UUID.randomUUID();
 
-        /*
-         * 使用真实 Snowflake。
-         * 每次 nextId() 都会产生不同候选 ID，
-         * 稳定性必须由 Redis/Lua 保证。
-         */
         SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator(1, 1);
 
         resolver = new GrabRequestIdResolver(redisTemplate, idGenerator);
 
-        prepareReadyKey(SCREENING_ID);
-        prepareReadyKey(OTHER_SCREENING_ID);
+        long saleEndEpoch = Instant.now().getEpochSecond() + 60;
+
+        prepareSaleWindow(SCREENING_ID, saleEndEpoch);
+        prepareSaleWindow(OTHER_SCREENING_ID, saleEndEpoch);
     }
 
     @AfterEach
@@ -97,7 +95,9 @@ class GrabRequestIdResolverRedisIntegrationTest {
                 List.of(
                         RedisKeyConstants.buildGrabRequestKey(USER_ID, clientRequestId),
                         RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID),
-                        RedisKeyConstants.buildScreeningStockReadyKey(OTHER_SCREENING_ID)
+                        RedisKeyConstants.buildScreeningStockReadyKey(OTHER_SCREENING_ID),
+                        RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID),
+                        RedisKeyConstants.buildScreeningSaleEndKey(OTHER_SCREENING_ID)
                 )
         );
     }
@@ -242,13 +242,145 @@ class GrabRequestIdResolverRedisIntegrationTest {
         }
     }
 
-    private static void prepareReadyKey(Long screeningId) {
-        String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(screeningId);
+
+    @DisplayName("停售后新的 clientRequestId 不得创建 requestId")
+    @Test
+    void newRequestAfterSaleEndShouldBeRejectedAndNotPersisted() {
+
+        String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
 
         redisTemplate.opsForValue().set(
                 readyKey,
-                "0",
+                String.valueOf(Instant.now().getEpochSecond() - 60),
                 Duration.ofMinutes(2)
         );
+
+
+        String saleEndKey =RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
+
+        redisTemplate.opsForValue().set(
+                saleEndKey,
+                String.valueOf(Instant.now().getEpochSecond() - 10),
+                Duration.ofMinutes(2)
+        );
+
+        BizException exception =
+                catchThrowableOfType(
+                        () -> resolver.resolve(
+                                USER_ID,
+                                SCREENING_ID,
+                                clientRequestId,
+                                1
+                        ),
+                        BizException.class
+                );
+
+        /*
+         * 期望：
+         * saleEnd 已经过了，
+         * 所以新的 clientRequestId 必须被拒绝。
+         */
+        assertThat(exception).isNotNull();
+
+        String requestKey = RedisKeyConstants.buildGrabRequestKey(USER_ID, clientRequestId);
+
+        /*
+         * 更重要的是：
+         * 失败以后 Redis 里不能偷偷创建 request identity。
+         */
+        assertThat(redisTemplate.hasKey(requestKey)).isFalse();
+    }
+
+    @DisplayName("停售前已存在的请求在停售后重试仍应返回原 requestId")
+    @Test
+    void existingRequestAfterSaleEndShouldReturnOriginalRequestId() {
+
+        prepareSaleWindow(SCREENING_ID, Instant.now().getEpochSecond() + 60);
+
+        String first = resolver.resolve(
+                USER_ID,
+                SCREENING_ID,
+                clientRequestId,
+                1
+        );
+
+        String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
+
+        redisTemplate.opsForValue().set(
+                saleEndKey,
+                String.valueOf(Instant.now().getEpochSecond() - 10),
+                Duration.ofMinutes(2)
+        );
+
+        String second = resolver.resolve(
+                USER_ID,
+                SCREENING_ID,
+                clientRequestId,
+                1
+        );
+
+        assertThat(second).isEqualTo(first);
+
+        String requestKey = RedisKeyConstants.buildGrabRequestKey(USER_ID, clientRequestId);
+
+        Map<Object, Object> stored = redisTemplate.opsForHash().entries(requestKey);
+
+        assertThat(stored).containsEntry("requestId", first);
+
+        String expectedFingerprint = "screeningId=" + SCREENING_ID + "&quantity=1";
+
+        assertThat(stored).containsEntry("fingerprint", expectedFingerprint);
+    }
+
+    /**
+     *  准备销售窗口
+     *  @param screeningId 屏幕 ID
+     *  @param saleEndEpoch 销售截止时间戳
+     * */
+    private static void prepareSaleWindow(Long screeningId, long saleEndEpoch) {
+        long nowEpoch = Instant.now().getEpochSecond();
+
+        String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(screeningId);
+
+        String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(screeningId);
+
+        redisTemplate.opsForValue().set(
+                readyKey,
+                String.valueOf(nowEpoch - 60),
+                Duration.ofMinutes(2)
+        );
+
+        // 模拟销售截止时间
+        redisTemplate.opsForValue().set(
+                saleEndKey,
+                String.valueOf(saleEndEpoch),
+                Duration.ofMinutes(2)
+        );
+    }
+
+    @DisplayName("saleEndKey 缺失时新的请求不得创建 requestId")
+    @Test
+    void newRequestWithoutSaleEndKeyShouldBeRejectedAndNotPersisted() {
+
+        String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
+
+        redisTemplate.delete(saleEndKey);
+
+        BizException exception =
+                catchThrowableOfType(() ->
+                                resolver.resolve(
+                                USER_ID,
+                                SCREENING_ID,
+                                clientRequestId,
+                                1
+                        ),
+                        BizException.class
+                );
+
+        assertThat(exception).isNotNull();
+
+        String requestKey = RedisKeyConstants.buildGrabRequestKey(USER_ID, clientRequestId);
+
+        assertThat(redisTemplate.hasKey(requestKey)).isFalse();
     }
 }

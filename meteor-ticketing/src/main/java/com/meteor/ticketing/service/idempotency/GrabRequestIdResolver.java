@@ -28,6 +28,8 @@ public class GrabRequestIdResolver {
 
 
     private static final String CONFLICT = "__CONFLICT__";
+    private static final String SALE_CLOSED = "__SALE_CLOSED__";
+    private static final String NOT_READY = "__NOT_READY__";
 
     private static final Duration REQUEST_TTL = Duration.ofHours(24);
 
@@ -47,23 +49,36 @@ public class GrabRequestIdResolver {
 
         String requestKey = RedisKeyConstants.buildGrabRequestKey(userId, clientRequestId);
 
+        String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(screeningId);
+
+        String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(screeningId);
+
         String result = redisTemplate.execute(
                 RedisScripts.RESOLVE_GRAB_REQUEST_ID,
-                List.of(requestKey),
+                List.of(requestKey, readyKey, saleEndKey),
                 candidateRequestId,
                 fingerprint,
                 String.valueOf(REQUEST_TTL.toMillis())
         );
 
-        if (CONFLICT.equals(result)) {
-            throw new BizException(CommonErrorCode.PARAM_ERROR, "clientRequestId 与原请求参数冲突");
-        }
-
         if (result == null || result.isBlank()) {
             throw new BizException(CommonErrorCode.SYSTEM_ERROR, "解析抢票请求身份失败");
         }
 
-        return result;
+        return switch (result) {
+            case CONFLICT ->
+                    throw new BizException(CommonErrorCode.PARAM_ERROR, "clientRequestId 与原请求参数冲突");
+            case SALE_CLOSED ->
+                    throw new BizException(CommonErrorCode.BIZ_ERROR, "场次已停售");
+            case NOT_READY ->
+                    throw new BizException(CommonErrorCode.BIZ_ERROR, "场次库存未准备好");
+            default -> {
+                if (result.startsWith("__")) {
+                    throw new BizException(CommonErrorCode.SYSTEM_ERROR, "未知的抢票请求状态: " + result);
+                }
+                yield result;
+            }
+        };
     }
 
     private String buildFingerprint(

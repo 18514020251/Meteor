@@ -107,6 +107,9 @@ public final class LuaScripts {
 
     public static final String RESOLVE_GRAB_REQUEST_ID = """
     -- KEYS[1] = requestKey
+    -- KEYS[2] = readyKey
+    -- KEYS[3] = saleEndKey
+    
     -- ARGV[1] = candidateRequestId
     -- ARGV[2] = fingerprint
     -- ARGV[3] = ttlMillis
@@ -121,6 +124,19 @@ public final class LuaScripts {
         end
 
         return existingRequestId
+    end
+    
+    local saleEndEpoch = redis.call('GET', KEYS[3])
+    
+    if not saleEndEpoch then
+        return '__NOT_READY__'
+    end
+    
+    local redisTime = redis.call('TIME')
+    local nowEpoch = tonumber(redisTime[1])
+    
+    if nowEpoch >= tonumber(saleEndEpoch) then
+        return '__SALE_CLOSED__'
     end
 
     redis.call(
