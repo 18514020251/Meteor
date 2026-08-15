@@ -64,4 +64,25 @@ public final class RedisScripts {
         RELEASE_LOCK_IF_OWNER.setScriptText(LuaScripts.RELEASE_LOCK_IF_OWNER);
         RELEASE_LOCK_IF_OWNER.setResultType(Long.class);
     }
+
+    public static final DefaultRedisScript<Long> RESERVE_TICKET;
+    static {
+        RESERVE_TICKET = new DefaultRedisScript<>();
+        RESERVE_TICKET.setScriptText(LuaScripts.RESERVE_TICKET);
+        RESERVE_TICKET.setResultType(Long.class);
+    }
+
+    public static final DefaultRedisScript<Long> RELEASE_RESERVATION;
+    static {
+        RELEASE_RESERVATION = new DefaultRedisScript<>();
+        RELEASE_RESERVATION.setScriptText(LuaScripts.RELEASE_RESERVATION);
+        RELEASE_RESERVATION.setResultType(Long.class);
+    }
+
+    public static final DefaultRedisScript<Long> CONFIRM_RESERVATION;
+    static {
+        CONFIRM_RESERVATION = new DefaultRedisScript<>();
+        CONFIRM_RESERVATION.setScriptText(LuaScripts.CONFIRM_RESERVATION);
+        CONFIRM_RESERVATION.setResultType(Long.class);
+    }
 }

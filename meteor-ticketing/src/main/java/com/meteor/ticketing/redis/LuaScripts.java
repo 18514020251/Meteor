@@ -165,4 +165,159 @@ public final class LuaScripts {
 
     return 0
     """;
+
+    public static final String RESERVE_TICKET = """
+    -- KEYS[1] = stockKey
+    -- KEYS[2] = reservationKey
+    -- KEYS[4] = saleEndKey
+    --
+    -- ARGV[1] = screeningId
+    -- ARGV[2] = quantity
+    -- ARGV[3] = reservationTtlMillis
+
+    -- 1. reservation 已存在时，本次属于幂等重放。
+    --    必须放在扣库存之前。
+    local existingStatus = redis.call('HGET', KEYS[2], 'status')
+    if existingStatus then
+        return 2
+    end
+
+    -- 2. 校验 quantity。
+    local quantity = tonumber(ARGV[2])
+    if not quantity or quantity <= 0 then
+        return -2
+    end
+
+    -- 3. 获取销售窗口。
+    local saleStartEpoch = redis.call('GET', KEYS[3])
+    local saleEndEpoch = redis.call('GET', KEYS[4])
+    if not saleStartEpoch or not saleEndEpoch then
+        return -3
+    end
+
+    -- 4. Redis TIME 作为统一时钟。
+    local redisTime = redis.call('TIME')
+    local nowEpoch = tonumber(redisTime[1])
+    if nowEpoch < tonumber(saleStartEpoch) then
+        return -4
+    end
+    if nowEpoch >= tonumber(saleEndEpoch) then
+        return -5
+    end
+
+    -- 5. 校验库存。
+    local stock = redis.call('GET', KEYS[1])
+    if not stock then
+        return -3
+    end
+    stock = tonumber(stock)
+    if stock < quantity then
+        return -1
+    end
+
+    -- 6. 原子扣减库存。
+    redis.call('DECRBY', KEYS[1], quantity)
+
+    -- 7. 登记 PRE_RESERVED。
+    redis.call('HSET', KEYS[2],
+        'status', 'PRE_RESERVED',
+        'screeningId', ARGV[1],
+        'quantity', ARGV[2]
+    )
+
+    return 1
+    """;
+
+    public static final String RELEASE_RESERVATION = """
+    -- KEYS[1] = stockKey
+    -- KEYS[2] = reservationKey
+    --
+    -- ARGV[1] = targetStatus
+    --           RELEASED / COMPENSATED
+
+    local status = redis.call('HGET', KEYS[2], 'status')
+
+    -- Reservation 根本不存在。
+    if not status then
+        return -1
+    end
+
+    local targetStatus = ARGV[1]
+
+    -- 只允许释放到两个合法终态。
+    if targetStatus ~= 'RELEASED' and targetStatus ~= 'COMPENSATED' then
+        return -2
+    end
+
+    -- 已经处于目标终态：
+    -- 本次属于幂等重放。
+    if status == targetStatus then
+        return 2
+    end
+
+    -- 只有 PRE_RESERVED
+    -- 才能够执行真正的库存恢复。
+    --
+    -- 例如：
+    -- CONFIRMED -> RELEASED
+    -- RELEASED -> COMPENSATED
+    -- 都禁止。
+    if status ~= 'PRE_RESERVED' then
+        return -3
+    end
+
+    local quantity = tonumber(redis.call('HGET', KEYS[2], 'quantity'))
+    if not quantity or quantity <= 0 then
+        return -4
+    end
+
+    -- 非常重要：
+    --
+    -- Redis stock key 如果丢失，
+    -- 不能直接 INCRBY。
+    --
+    -- 因为 INCRBY 一个不存在的 key
+    -- 会自动创建该 key。
+    --
+    -- 那样可能把：
+    -- "库存缓存丢失"
+    -- 错误变成
+    -- "库存 = reservation.quantity"。
+    local stock = redis.call('GET', KEYS[1])
+    if not stock then
+        return -5
+    end
+
+    -- 库存恢复 + 状态转换
+    -- 必须在同一 Lua 内原子完成。
+    redis.call('INCRBY', KEYS[1], quantity)
+    redis.call('HSET', KEYS[2], 'status', targetStatus)
+
+    return 1
+    """;
+
+    public static final String CONFIRM_RESERVATION = """
+    -- KEYS[1] = reservationKey
+
+    local status = redis.call('HGET', KEYS[1], 'status')
+
+    -- Reservation 不存在
+    if not status then
+        return -1
+    end
+
+    -- 已经确认，幂等重放
+    if status == 'CONFIRMED' then
+        return 2
+    end
+
+    -- 只有 PRE_RESERVED 可以确认
+    if status ~= 'PRE_RESERVED' then
+        return -2
+    end
+
+    redis.call('HSET', KEYS[1], 'status', 'CONFIRMED')
+
+    return 1
+    """;
 }
