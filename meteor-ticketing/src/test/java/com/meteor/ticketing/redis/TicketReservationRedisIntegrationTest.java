@@ -1,6 +1,8 @@
 package com.meteor.ticketing.redis;
 
 import com.meteor.common.cache.RedisKeyConstants;
+import com.meteor.ticketing.enums.ReservationReserveResult;
+import com.meteor.ticketing.service.reservation.TicketReservationRedisService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,6 +38,7 @@ class TicketReservationRedisIntegrationTest {
 
     private static LettuceConnectionFactory connectionFactory;
     private static StringRedisTemplate redisTemplate;
+    private TicketReservationRedisService reservationRedisService;
 
     @BeforeAll
     static void initRedis() {
@@ -62,6 +65,7 @@ class TicketReservationRedisIntegrationTest {
     void setUp() {
         long saleEndEpoch = Instant.now().getEpochSecond() + 60;
         prepareSaleWindow(SCREENING_ID, saleEndEpoch);
+        reservationRedisService = new TicketReservationRedisService(redisTemplate);
     }
 
     @AfterEach
@@ -345,6 +349,26 @@ class TicketReservationRedisIntegrationTest {
          */
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("CONFIRMED");
+    }
+
+    @DisplayName("Reservation Redis Service 应返回明确的 reserve 业务结果")
+    @Test
+    void reservationServiceShouldReturnExplicitReserveResult() {
+
+        String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
+
+        redisTemplate.opsForValue().set(stockKey, "10");
+
+        ReservationReserveResult first =
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+
+        ReservationReserveResult second =
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+
+        assertThat(first).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(second).isEqualTo(ReservationReserveResult.IDEMPOTENT);
+
+        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
     }
 
 
