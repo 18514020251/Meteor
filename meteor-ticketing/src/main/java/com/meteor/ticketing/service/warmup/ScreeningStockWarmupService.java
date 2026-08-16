@@ -36,7 +36,7 @@ public class ScreeningStockWarmupService {
     private final ScreeningMapper screeningMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
-    private static final int MAX_INFLIGHT = 500;
+    private static final int MAX_INFLIGHT = 800;
 
     /**
      * 预热单个场次
