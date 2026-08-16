@@ -21,6 +21,13 @@ public class GrabSemaphoreService {
 
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     *  尝试获取抢票信号量
+     *
+     *  @param screeningId 屏幕ID
+     *  @param ttlMs 抢票信号量的过期时间
+     *  @return 抢票信号量的租约信息
+     */
     public Lease tryAcquire(Long screeningId, long ttlMs) {
         String token = UUID.randomUUID().toString();
 

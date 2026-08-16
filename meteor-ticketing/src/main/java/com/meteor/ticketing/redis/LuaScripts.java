@@ -361,6 +361,7 @@ public final class LuaScripts {
      * <p>ARGV：
      * ARGV[1] = targetStatus
      *            RELEASED / COMPENSATED
+     * ARGV[2] = expectedScreeningId
      *
      * <p>返回码：
      *  1 = 本次真正执行状态转换，并恢复库存
@@ -370,6 +371,7 @@ public final class LuaScripts {
      * -3 = 当前 Reservation 状态不允许释放
      * -4 = Reservation quantity 缺失或非法
      * -5 = stock key 缺失
+     * -6 = Reservation 所属 screeningId 与调用方不一致
      *
      * <p>关键语义：
      * 只有 PRE_RESERVED 才允许恢复库存。
@@ -396,6 +398,7 @@ public final class LuaScripts {
     --
     -- ARGV[1] = targetStatus
     --           RELEASED / COMPENSATED
+    -- ARGV[2] = expectedScreeningId
 
     local status = redis.call('HGET', KEYS[2], 'status')
 
@@ -411,19 +414,17 @@ public final class LuaScripts {
         return -2
     end
 
-    -- 已经处于目标终态：
-    -- 本次属于幂等重放。
+    local storedScreeningId = redis.call('HGET', KEYS[2], 'screeningId')
+    if not storedScreeningId or storedScreeningId ~= ARGV[2] then
+        return -6
+    end
+
+    -- 已经处于目标终态：本次属于幂等重放。
     if status == targetStatus then
         return 2
     end
 
-    -- 只有 PRE_RESERVED
-    -- 才能够执行真正的库存恢复。
-    --
-    -- 例如：
-    -- CONFIRMED -> RELEASED
-    -- RELEASED -> COMPENSATED
-    -- 都禁止。
+    -- 只有 PRE_RESERVED 才能够执行真正的库存恢复。
     if status ~= 'PRE_RESERVED' then
         return -3
     end
@@ -433,25 +434,13 @@ public final class LuaScripts {
         return -4
     end
 
-    -- 非常重要：
-    --
-    -- Redis stock key 如果丢失，
-    -- 不能直接 INCRBY。
-    --
-    -- 因为 INCRBY 一个不存在的 key
-    -- 会自动创建该 key。
-    --
-    -- 那样可能把：
-    -- "库存缓存丢失"
-    -- 错误变成
-    -- "库存 = reservation.quantity"。
+    -- stock key 缺失不能 INCRBY，否则 Redis 会自动创建一个错误库存。
     local stock = redis.call('GET', KEYS[1])
     if not stock then
         return -5
     end
 
-    -- 库存恢复 + 状态转换
-    -- 必须在同一 Lua 内原子完成。
+    -- 身份、状态、库存全部确认以后，才允许恢复库存和写入终态。
     redis.call('INCRBY', KEYS[1], quantity)
     redis.call('HSET', KEYS[2], 'status', targetStatus)
 

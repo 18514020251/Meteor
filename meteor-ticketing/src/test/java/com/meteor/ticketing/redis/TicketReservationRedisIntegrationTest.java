@@ -2,6 +2,7 @@ package com.meteor.ticketing.redis;
 
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.ticketing.enums.ReservationReserveResult;
+import com.meteor.ticketing.enums.ReservationStatus;
 import com.meteor.ticketing.enums.ReservationTransitionResult;
 import com.meteor.ticketing.service.reservation.ReservationReserveOutcome;
 import com.meteor.ticketing.service.reservation.TicketReservationRedisService;
@@ -235,18 +236,19 @@ class TicketReservationRedisIntegrationTest {
         Long firstRelease = redisTemplate.execute(
                 RedisScripts.RELEASE_RESERVATION,
                 List.of(stockKey, reservationKey),
-                "RELEASED"
+                "RELEASED",
+                String.valueOf(SCREENING_ID)
         );
 
         Long secondRelease = redisTemplate.execute(
                 RedisScripts.RELEASE_RESERVATION,
                 List.of(stockKey, reservationKey),
-                "RELEASED"
+                "RELEASED",
+                String.valueOf(SCREENING_ID)
         );
 
         assertThat(firstRelease).isEqualTo(1L);
         assertThat(secondRelease).isEqualTo(2L);
-
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("10");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("RELEASED");
     }
@@ -322,7 +324,8 @@ class TicketReservationRedisIntegrationTest {
         Long releaseResult = redisTemplate.execute(
                 RedisScripts.RELEASE_RESERVATION,
                 List.of(stockKey, reservationKey),
-                "RELEASED"
+                "RELEASED",
+                String.valueOf(SCREENING_ID)
         );
 
         // -3：当前终态不允许 release
@@ -457,6 +460,38 @@ class TicketReservationRedisIntegrationTest {
         // confirm 不恢复，也不再次扣库存
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("CONFIRMED");
+    }
+
+    @DisplayName("释放 Reservation 时 screeningId 不匹配不得污染其他场次库存")
+    @Test
+    void releaseShouldRejectMismatchedScreeningId() {
+
+        Long reservationScreeningId = 2001L;
+        Long wrongScreeningId = 3001L;
+        String reservationId = "reservation-screening-binding-test";
+
+        String reservationStockKey = RedisKeyConstants.buildScreeningStockKey(reservationScreeningId);
+        String wrongStockKey = RedisKeyConstants.buildScreeningStockKey(wrongScreeningId);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(reservationId);
+
+        redisTemplate.opsForValue().set(reservationStockKey, "9");
+        redisTemplate.opsForValue().set(wrongStockKey, "20");
+
+        redisTemplate.opsForHash().put(reservationKey, "status", ReservationStatus.PRE_RESERVED.name());
+        redisTemplate.opsForHash().put(reservationKey, "screeningId", String.valueOf(reservationScreeningId));
+        redisTemplate.opsForHash().put(reservationKey, "quantity", "1");
+
+        ReservationTransitionResult result =
+                reservationRedisService.compensate(reservationId, wrongScreeningId);
+
+        assertThat(result).isEqualTo(ReservationTransitionResult.SCREENING_MISMATCH);
+
+        assertThat(redisTemplate.opsForValue().get(reservationStockKey)).isEqualTo("9");
+
+        assertThat(redisTemplate.opsForValue().get(wrongStockKey)).isEqualTo("20");
+
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "status"))
+                .isEqualTo(ReservationStatus.PRE_RESERVED.name());
     }
 
     /**

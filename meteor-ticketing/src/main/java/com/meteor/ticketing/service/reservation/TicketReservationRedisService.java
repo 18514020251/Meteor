@@ -99,7 +99,8 @@ public class TicketReservationRedisService {
         Long result = redisTemplate.execute(
                 RedisScripts.RELEASE_RESERVATION,
                 List.of(stockKey, reservationKey),
-                targetStatus.name()
+                targetStatus.name(),
+                String.valueOf(screeningId)
         );
 
         return convertReleaseResult(result);
@@ -144,6 +145,7 @@ public class TicketReservationRedisService {
             case -3 -> ReservationTransitionResult.ILLEGAL_STATE;
             case -4 -> throw new IllegalStateException("无效的预留数量");
             case -5 -> ReservationTransitionResult.STOCK_MISSING;
+            case -6 -> ReservationTransitionResult.SCREENING_MISMATCH;
             default -> throw new IllegalStateException("未知的释放预留返回结果：" + result);
         };
     }

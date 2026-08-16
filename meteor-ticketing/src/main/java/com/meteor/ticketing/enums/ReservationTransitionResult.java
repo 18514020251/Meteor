@@ -36,5 +36,14 @@ public enum ReservationTransitionResult {
      * 只有需要恢复库存的 release / compensate
      * 才可能出现。
      */
-    STOCK_MISSING
+    STOCK_MISSING,
+
+
+    /**
+     * Redis 预检失败。
+     *
+     * 只有需要预检的 compensate
+     * 才可能出现。
+     */
+    SCREENING_MISMATCH
 }
