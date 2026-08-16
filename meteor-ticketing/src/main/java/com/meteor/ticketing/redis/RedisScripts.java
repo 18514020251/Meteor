@@ -3,7 +3,15 @@ package com.meteor.ticketing.redis;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
 /**
- *  Redis 脚本对象集中管理
+ * Ticketing Redis Lua 脚本注册中心。
+ *
+ * <p>这里只负责将 LuaScripts 中的脚本文本注册为
+ * Spring Data Redis 可执行的 DefaultRedisScript。
+ *
+ * <p>业务语义、KEYS / ARGV 和返回码说明统一维护在 LuaScripts。
+ *
+ * <p>业务 Service 不应直接依赖 Lua 数字返回码，
+ * 应通过对应 Java 门面转换成领域结果。
  *
  * @author Programmer
  * @version 1.0

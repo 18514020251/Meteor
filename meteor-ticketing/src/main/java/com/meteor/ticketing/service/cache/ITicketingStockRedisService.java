@@ -13,6 +13,28 @@ public interface ITicketingStockRedisService {
 
     boolean isSaleStarted(Long screeningId);
 
+    /**
+     * 旧版 Redis 可售库存扣减原语。
+     *
+     * <p>用于 M1A 及 Reservation 接入前的抢票库存裁决。
+     *
+     * <p>注意：
+     * M1B-05 开始后，GrabOrderServiceImpl 主链将逐步停止直接调用
+     * decrStock1()，改由 RESERVE_TICKET 将：
+     *
+     * reservationId 幂等判断
+     * +
+     * 库存判断
+     * +
+     * 库存扣减
+     * +
+     * Reservation 创建
+     *
+     * 放在同一 Lua 原子执行。
+     *
+     * <p>因此本脚本后续可能仍被其他库存场景使用，
+     * 但不再作为抢票 Reservation 主链的最终库存语义。
+     */
     RedisStockOpResult decrStock1(Long screeningId);
 
     /**
