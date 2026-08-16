@@ -3,6 +3,7 @@ package com.meteor.ticketing.redis;
 import com.meteor.common.cache.RedisKeyConstants;
 import com.meteor.ticketing.enums.ReservationReserveResult;
 import com.meteor.ticketing.enums.ReservationTransitionResult;
+import com.meteor.ticketing.service.reservation.ReservationReserveOutcome;
 import com.meteor.ticketing.service.reservation.TicketReservationRedisService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +16,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -24,8 +26,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Ticket Reservation Redis 集成测试。
  *
- * 目标：
- * 验证 Reservation Lua 对库存修改和 Reservation 状态登记的原子语义。
+ * <p>验证两层能力：
+ *
+ * <p>第一层：Redis Lua 原子协议
+ *
+ * <ul>
+ *     <li>reserve 幂等扣减库存</li>
+ *     <li>release 幂等恢复库存</li>
+ *     <li>confirm 幂等状态转换</li>
+ *     <li>非法终态转换被拒绝</li>
+ * </ul>
+ *
+ * <p>第二层：TicketReservationRedisService Java 门面
+ *
+ * <ul>
+ *     <li>隐藏 Lua 数字返回码</li>
+ *     <li>转换为 Java 领域结果</li>
+ *     <li>reserve 一次返回 result + leftStock</li>
+ * </ul>
  *
  * @author 昭兮
  * @version 1.0
@@ -34,7 +52,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TicketReservationRedisIntegrationTest {
 
     private static final Long SCREENING_ID = 2001L;
-
     private static final String RESERVATION_ID = "request-900001";
 
     private static LettuceConnectionFactory connectionFactory;
@@ -43,12 +60,12 @@ class TicketReservationRedisIntegrationTest {
 
     @BeforeAll
     static void initRedis() {
+
         String host = System.getenv().getOrDefault("REDIS_HOST", "127.0.0.1");
         int port = Integer.parseInt(System.getenv().getOrDefault("REDIS_PORT", "6379"));
         String password = System.getenv().getOrDefault("REDIS_PASSWORD", "");
 
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(host, port);
-
         configuration.setDatabase(15);
 
         if (!password.isBlank()) {
@@ -64,23 +81,27 @@ class TicketReservationRedisIntegrationTest {
 
     @BeforeEach
     void setUp() {
+
         long saleEndEpoch = Instant.now().getEpochSecond() + 60;
         prepareSaleWindow(SCREENING_ID, saleEndEpoch);
+
         reservationRedisService = new TicketReservationRedisService(redisTemplate);
     }
 
     @AfterEach
     void cleanRedis() {
+
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.delete(List.of(stockKey, readyKey, saleEndKey, reservationKey));
     }
 
     @AfterAll
     static void closeRedis() {
+
         if (connectionFactory != null) {
             connectionFactory.destroy();
         }
@@ -89,39 +110,21 @@ class TicketReservationRedisIntegrationTest {
     @DisplayName("同一 reservationId 重复 reserve 只应扣减一次库存")
     @Test
     void sameReservationIdShouldReserveStockOnlyOnce() {
-        /*
-         * Arrange
-         */
+
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
         /*
-         * KEYS:
-         *
-         * 1 = stockKey
-         * 2 = reservationKey
-         * 3 = readyKey
-         * 4 = saleEndKey
-         *
-         * ARGV:
-         *
-         * 1 = screeningId
-         * 2 = quantity
-         * 3 = reservation TTL(ms)
+         * 第一次：
+         * stock 10 -> 9
+         * Reservation -> PRE_RESERVED
+         * 返回：{1, 9}
          */
-        Long first = redisTemplate.execute(
-                RedisScripts.RESERVE_TICKET,
-                List.of(stockKey, reservationKey, readyKey, saleEndKey),
-                String.valueOf(SCREENING_ID),
-                "1",
-                "60000"
-        );
-
-        Long second = redisTemplate.execute(
+        List<?> first = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(SCREENING_ID),
@@ -129,25 +132,26 @@ class TicketReservationRedisIntegrationTest {
         );
 
         /*
-         * Assert
-         *
-         * 1 = 本次真正完成 reserve
-         * 2 = reservation 已存在，
-         *     本次属于幂等重放
+         * 第二次：
+         * Reservation 已经存在，不再次扣库存。
+         * 返回：{2, -1}
          */
-        assertThat(first).isEqualTo(1L);
-        assertThat(second).isEqualTo(2L);
+        List<?> second = redisTemplate.execute(
+                RedisScripts.RESERVE_TICKET,
+                List.of(stockKey, reservationKey, readyKey, saleEndKey),
+                String.valueOf(SCREENING_ID),
+                "1"
+        );
+
+        assertThat(scriptLong(first, 0)).isEqualTo(1L);
+        assertThat(scriptLong(first, 1)).isEqualTo(9L);
+        assertThat(scriptLong(second, 0)).isEqualTo(2L);
+        assertThat(scriptLong(second, 1)).isEqualTo(-1L);
 
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
-
-        assertThat(redisTemplate.opsForHash().get(reservationKey, "status"))
-                .isEqualTo("PRE_RESERVED");
-
-        assertThat(redisTemplate.opsForHash().get(reservationKey, "screeningId"))
-                .isEqualTo(String.valueOf(SCREENING_ID));
-
-        assertThat(redisTemplate.opsForHash().get(reservationKey, "quantity"))
-                .isEqualTo("1");
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("PRE_RESERVED");
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "screeningId")).isEqualTo(String.valueOf(SCREENING_ID));
+        assertThat(redisTemplate.opsForHash().get(reservationKey, "quantity")).isEqualTo("1");
     }
 
     @DisplayName("PRE_RESERVED reservation 不应通过 TTL 静默过期")
@@ -157,19 +161,21 @@ class TicketReservationRedisIntegrationTest {
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        Long result = redisTemplate.execute(
+        List<?> result = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(SCREENING_ID),
                 "1"
         );
 
-        assertThat(result).isEqualTo(1L);
+        assertThat(scriptLong(result, 0)).isEqualTo(1L);
+        assertThat(scriptLong(result, 1)).isEqualTo(9L);
 
+        // -1：key 存在，但没有过期时间
         assertThat(redisTemplate.getExpire(reservationKey)).isEqualTo(-1L);
     }
 
@@ -180,27 +186,28 @@ class TicketReservationRedisIntegrationTest {
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        redisTemplate.opsForValue().set(
-                saleEndKey,
-                String.valueOf(Instant.now().getEpochSecond() - 1),
-                Duration.ofMinutes(2)
-        );
+        // 强制设置为已经停售
+        long closedSaleEnd = Instant.now().getEpochSecond() - 60;
+        redisTemplate.opsForValue().set(saleEndKey, String.valueOf(closedSaleEnd), Duration.ofMinutes(2));
 
-        Long result = redisTemplate.execute(
+        // 验证测试数据已写入 Redis
+        assertThat(redisTemplate.opsForValue().get(saleEndKey)).isEqualTo(String.valueOf(closedSaleEnd));
+
+        List<?> result = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(SCREENING_ID),
                 "1"
         );
 
-        assertThat(result).isEqualTo(-5L);
+        assertThat(scriptLong(result, 0)).isEqualTo(-5L);
+        assertThat(scriptLong(result, 1)).isEqualTo(-1L);
 
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("10");
-
         assertThat(redisTemplate.hasKey(reservationKey)).isFalse();
     }
 
@@ -211,22 +218,19 @@ class TicketReservationRedisIntegrationTest {
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
-
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-
-        Long reserveResult = redisTemplate.execute(
+        List<?> reserveResult = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(SCREENING_ID),
                 "1"
         );
 
-        assertThat(reserveResult).isEqualTo(1L);
-        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
-
+        assertThat(scriptLong(reserveResult, 0)).isEqualTo(1L);
+        assertThat(scriptLong(reserveResult, 1)).isEqualTo(9L);
 
         Long firstRelease = redisTemplate.execute(
                 RedisScripts.RELEASE_RESERVATION,
@@ -234,17 +238,14 @@ class TicketReservationRedisIntegrationTest {
                 "RELEASED"
         );
 
-
         Long secondRelease = redisTemplate.execute(
                 RedisScripts.RELEASE_RESERVATION,
                 List.of(stockKey, reservationKey),
                 "RELEASED"
         );
 
-
         assertThat(firstRelease).isEqualTo(1L);
         assertThat(secondRelease).isEqualTo(2L);
-
 
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("10");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("RELEASED");
@@ -257,48 +258,34 @@ class TicketReservationRedisIntegrationTest {
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        /*
-         * stock 10 -> 9
-         * status -> PRE_RESERVED
-         */
-        Long reserveResult = redisTemplate.execute(
+        List<?> reserveResult = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(SCREENING_ID),
                 "1"
         );
 
-        assertThat(reserveResult).isEqualTo(1L);
-        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
+        assertThat(scriptLong(reserveResult, 0)).isEqualTo(1L);
+        assertThat(scriptLong(reserveResult, 1)).isEqualTo(9L);
 
-        /*
-         * PRE_RESERVED -> CONFIRMED
-         */
         Long firstConfirm = redisTemplate.execute(
                 RedisScripts.CONFIRM_RESERVATION,
                 List.of(reservationKey)
         );
 
-        /*
-         * CONFIRMED -> CONFIRMED
-         * 应该是幂等重放。
-         */
         Long secondConfirm = redisTemplate.execute(
                 RedisScripts.CONFIRM_RESERVATION,
                 List.of(reservationKey)
         );
 
-        /*
-         * 1 = 本次真正完成确认
-         * 2 = 已经 CONFIRMED，幂等重放
-         */
         assertThat(firstConfirm).isEqualTo(1L);
         assertThat(secondConfirm).isEqualTo(2L);
 
+        // confirm 只转换状态，不修改库存
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("CONFIRMED");
     }
@@ -310,20 +297,19 @@ class TicketReservationRedisIntegrationTest {
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        Long reserveResult = redisTemplate.execute(
+        List<?> reserveResult = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(SCREENING_ID),
                 "1"
         );
 
-        assertThat(reserveResult).isEqualTo(1L);
-
-        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
+        assertThat(scriptLong(reserveResult, 0)).isEqualTo(1L);
+        assertThat(scriptLong(reserveResult, 1)).isEqualTo(9L);
 
         Long confirmResult = redisTemplate.execute(
                 RedisScripts.CONFIRM_RESERVATION,
@@ -339,15 +325,9 @@ class TicketReservationRedisIntegrationTest {
                 "RELEASED"
         );
 
-        /*
-         * -3 = 当前状态不允许 release
-         */
+        // -3：当前终态不允许 release
         assertThat(releaseResult).isEqualTo(-3L);
 
-        /*
-         * CONFIRMED 后 release 被拒绝，
-         * 库存绝不能从 9 恢复到 10。
-         */
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("CONFIRMED");
     }
@@ -360,14 +340,35 @@ class TicketReservationRedisIntegrationTest {
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        ReservationReserveResult first =
+        ReservationReserveOutcome first =
                 reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
 
-        ReservationReserveResult second =
+        ReservationReserveOutcome second =
                 reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
 
-        assertThat(first).isEqualTo(ReservationReserveResult.RESERVED);
-        assertThat(second).isEqualTo(ReservationReserveResult.IDEMPOTENT);
+        assertThat(first.result()).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(first.leftStock()).isEqualTo(9L);
+        assertThat(second.result()).isEqualTo(ReservationReserveResult.IDEMPOTENT);
+
+        // 幂等重放不伪造"第一次成功时的剩余库存"
+        assertThat(second.leftStock()).isNull();
+
+        assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
+    }
+
+    @DisplayName("reserve 成功时应一次返回业务结果和扣减后的剩余库存")
+    @Test
+    void reservationServiceShouldReturnLeftStockWhenReserved() {
+
+        String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
+
+        redisTemplate.opsForValue().set(stockKey, "10");
+
+        ReservationReserveOutcome outcome =
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+
+        assertThat(outcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(outcome.leftStock()).isEqualTo(9L);
 
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
     }
@@ -377,14 +378,15 @@ class TicketReservationRedisIntegrationTest {
     void reservationServiceShouldMapReleaseResult() {
 
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        ReservationReserveResult reserveResult =
+        ReservationReserveOutcome reserveOutcome =
                 reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
 
-        assertThat(reserveResult).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(reserveOutcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(reserveOutcome.leftStock()).isEqualTo(9L);
 
         ReservationTransitionResult first =
                 reservationRedisService.release(RESERVATION_ID, SCREENING_ID);
@@ -404,14 +406,15 @@ class TicketReservationRedisIntegrationTest {
     void reservationServiceShouldMapCompensateResult() {
 
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        ReservationReserveResult reserveResult =
+        ReservationReserveOutcome reserveOutcome =
                 reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
 
-        assertThat(reserveResult).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(reserveOutcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(reserveOutcome.leftStock()).isEqualTo(9L);
 
         ReservationTransitionResult first =
                 reservationRedisService.compensate(RESERVATION_ID, SCREENING_ID);
@@ -422,10 +425,7 @@ class TicketReservationRedisIntegrationTest {
         assertThat(first).isEqualTo(ReservationTransitionResult.APPLIED);
         assertThat(second).isEqualTo(ReservationTransitionResult.IDEMPOTENT);
 
-        /*
-         * compensate 两次，
-         * 也只能恢复一次。
-         */
+        // compensate 两次，库存也只能恢复一次
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("10");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("COMPENSATED");
     }
@@ -435,14 +435,15 @@ class TicketReservationRedisIntegrationTest {
     void reservationServiceShouldMapConfirmResult() {
 
         String stockKey = RedisKeyConstants.buildScreeningStockKey(SCREENING_ID);
-        String reservationKey = buildReservationKey(RESERVATION_ID);
+        String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
 
         redisTemplate.opsForValue().set(stockKey, "10");
 
-        ReservationReserveResult reserveResult =
+        ReservationReserveOutcome reserveOutcome =
                 reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
 
-        assertThat(reserveResult).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(reserveOutcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
+        assertThat(reserveOutcome.leftStock()).isEqualTo(9L);
 
         ReservationTransitionResult first =
                 reservationRedisService.confirm(RESERVATION_ID);
@@ -453,42 +454,49 @@ class TicketReservationRedisIntegrationTest {
         assertThat(first).isEqualTo(ReservationTransitionResult.APPLIED);
         assertThat(second).isEqualTo(ReservationTransitionResult.IDEMPOTENT);
 
-        /*
-         * confirm 不恢复也不再次扣库存。
-         */
+        // confirm 不恢复，也不再次扣库存
         assertThat(redisTemplate.opsForValue().get(stockKey)).isEqualTo("9");
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status")).isEqualTo("CONFIRMED");
     }
 
-
     /**
      * 准备有效销售窗口。
-     *
-     * readyKey 当前保存 saleStart epoch。
      *
      * @param screeningId 场次 ID
      * @param saleEndEpoch 销售截止时间 epoch 秒
      */
     private static void prepareSaleWindow(Long screeningId, long saleEndEpoch) {
+
         long nowEpoch = Instant.now().getEpochSecond();
 
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(screeningId);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(screeningId);
 
-        /*
-         * saleStart = 当前时间前 60 秒，
-         * 所以当前必然已经开售。
-         */
+        // saleStart = 当前时间前 60 秒，当前必然已开售
         redisTemplate.opsForValue().set(readyKey, String.valueOf(nowEpoch - 60), Duration.ofMinutes(2));
 
-        /*
-         * saleEnd = 当前时间后 60 秒，
-         * 所以当前必然尚未停售。
-         */
+        // saleEnd = 当前时间后 60 秒，当前必然未停售
         redisTemplate.opsForValue().set(saleEndKey, String.valueOf(saleEndEpoch), Duration.ofMinutes(2));
     }
 
-    private static String buildReservationKey(String reservationId) {
-        return "grab:reservation:" + reservationId;
+    /**
+     * 读取 Redis Lua multi-bulk 返回值中的整数。
+     */
+    private static long scriptLong(List<?> result, int index) {
+
+        assertThat(result).as("Redis Lua result").isNotNull();
+        assertThat(result.size()).as("Redis Lua result size").isGreaterThan(index);
+
+        Object value = result.get(index);
+
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+
+        if (value instanceof byte[] bytes) {
+            return Long.parseLong(new String(bytes, StandardCharsets.UTF_8));
+        }
+
+        return Long.parseLong(String.valueOf(value));
     }
 }

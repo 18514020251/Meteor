@@ -285,63 +285,62 @@ public final class LuaScripts {
     public static final String RESERVE_TICKET = """
     -- KEYS[1] = stockKey
     -- KEYS[2] = reservationKey
+    -- KEYS[3] = readyKey / saleStartKey
     -- KEYS[4] = saleEndKey
     --
     -- ARGV[1] = screeningId
     -- ARGV[2] = quantity
-    -- ARGV[3] = reservationTtlMillis
 
-    -- 1. reservation 已存在时，本次属于幂等重放。
-    --    必须放在扣库存之前。
-    local existingStatus = redis.call('HGET', KEYS[2], 'status')
-    if existingStatus then
-        return 2
+    local status = redis.call('HGET', KEYS[2], 'status')
+
+    -- 已存在 Reservation：幂等重放，不再次扣库存。
+    if status then
+        return {2, -1}
     end
 
-    -- 2. 校验 quantity。
     local quantity = tonumber(ARGV[2])
     if not quantity or quantity <= 0 then
-        return -2
+        return {-2, -1}
     end
 
-    -- 3. 获取销售窗口。
-    local saleStartEpoch = redis.call('GET', KEYS[3])
-    local saleEndEpoch = redis.call('GET', KEYS[4])
-    if not saleStartEpoch or not saleEndEpoch then
-        return -3
+    local saleStart = redis.call('GET', KEYS[3])
+    local saleEnd = redis.call('GET', KEYS[4])
+    if not saleStart or not saleEnd then
+        return {-3, -1}
     end
 
-    -- 4. Redis TIME 作为统一时钟。
-    local redisTime = redis.call('TIME')
-    local nowEpoch = tonumber(redisTime[1])
-    if nowEpoch < tonumber(saleStartEpoch) then
-        return -4
+    local now = tonumber(redis.call('TIME')[1])
+    saleStart = tonumber(saleStart)
+    saleEnd = tonumber(saleEnd)
+
+    if now < saleStart then
+        return {-4, -1}
     end
-    if nowEpoch >= tonumber(saleEndEpoch) then
-        return -5
+    if now > saleEnd then
+        return {-5, -1}
     end
 
-    -- 5. 校验库存。
     local stock = redis.call('GET', KEYS[1])
     if not stock then
-        return -3
+        return {-3, -1}
     end
     stock = tonumber(stock)
+
     if stock < quantity then
-        return -1
+        return {-1, -1}
     end
 
-    -- 6. 原子扣减库存。
-    redis.call('DECRBY', KEYS[1], quantity)
+    local leftStock = redis.call('DECRBY', KEYS[1], quantity)
 
-    -- 7. 登记 PRE_RESERVED。
-    redis.call('HSET', KEYS[2],
+    redis.call(
+        'HSET',
+        KEYS[2],
         'status', 'PRE_RESERVED',
         'screeningId', ARGV[1],
         'quantity', ARGV[2]
     )
 
-    return 1
+    return {1, leftStock}
     """;
 
     /**

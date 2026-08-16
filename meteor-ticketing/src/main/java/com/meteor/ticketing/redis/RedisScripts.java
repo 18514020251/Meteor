@@ -2,6 +2,8 @@ package com.meteor.ticketing.redis;
 
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 
+import java.util.List;
+
 /**
  * Ticketing Redis Lua 脚本注册中心。
  *
@@ -73,11 +75,11 @@ public final class RedisScripts {
         RELEASE_LOCK_IF_OWNER.setResultType(Long.class);
     }
 
-    public static final DefaultRedisScript<Long> RESERVE_TICKET;
+    public static final DefaultRedisScript<List> RESERVE_TICKET;
     static {
         RESERVE_TICKET = new DefaultRedisScript<>();
         RESERVE_TICKET.setScriptText(LuaScripts.RESERVE_TICKET);
-        RESERVE_TICKET.setResultType(Long.class);
+        RESERVE_TICKET.setResultType(List.class);
     }
 
     public static final DefaultRedisScript<Long> RELEASE_RESERVATION;

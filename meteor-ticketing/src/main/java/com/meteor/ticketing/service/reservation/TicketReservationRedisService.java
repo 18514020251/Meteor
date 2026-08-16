@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -32,14 +33,14 @@ public class TicketReservationRedisService {
      * @param quantity     预留数量
      * @return reserve 业务结果
      */
-    public ReservationReserveResult reserve(String reservationId, Long screeningId, int quantity) {
+    public ReservationReserveOutcome  reserve(String reservationId, Long screeningId, int quantity) {
 
         String stockKey = RedisKeyConstants.buildScreeningStockKey(screeningId);
         String reservationKey = RedisKeyConstants.buildGrabReservationKey(reservationId);
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(screeningId);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(screeningId);
 
-        Long result = redisTemplate.execute(
+        List<?> result = redisTemplate.execute(
                 RedisScripts.RESERVE_TICKET,
                 List.of(stockKey, reservationKey, readyKey, saleEndKey),
                 String.valueOf(screeningId),
@@ -104,13 +105,16 @@ public class TicketReservationRedisService {
         return convertReleaseResult(result);
     }
 
-    private ReservationReserveResult convertReserveResult(Long result) {
+    private ReservationReserveOutcome convertReserveResult(List<?> result) {
 
-        if (result == null) {
-            throw new IllegalStateException("Redis 预留库存返回 null");
+        if (result == null || result.size() != 2) {
+            throw new IllegalStateException("Redis 预留库存返回结果无效: " + result);
         }
 
-        return switch (result.intValue()) {
+        long code = toLong(result.get(0));
+        long rawLeftStock = toLong(result.get(1));
+
+        ReservationReserveResult reserveResult = switch ((int) code) {
             case 1 -> ReservationReserveResult.RESERVED;
             case 2 -> ReservationReserveResult.IDEMPOTENT;
             case -1 -> ReservationReserveResult.SOLD_OUT;
@@ -118,8 +122,12 @@ public class TicketReservationRedisService {
             case -3 -> ReservationReserveResult.NOT_READY;
             case -4 -> ReservationReserveResult.NOT_STARTED;
             case -5 -> ReservationReserveResult.SALE_CLOSED;
-            default -> throw new IllegalStateException("未知的预留库存返回结果：" + result);
+            default -> throw new IllegalStateException("未知的预留库存返回码: " + code);
         };
+
+        Long leftStock = reserveResult == ReservationReserveResult.RESERVED ? rawLeftStock : null;
+
+        return new ReservationReserveOutcome(reserveResult, leftStock);
     }
 
     private ReservationTransitionResult convertReleaseResult(Long result) {
@@ -138,6 +146,30 @@ public class TicketReservationRedisService {
             case -5 -> ReservationTransitionResult.STOCK_MISSING;
             default -> throw new IllegalStateException("未知的释放预留返回结果：" + result);
         };
+    }
+
+    private long toLong(Object value) {
+
+        if (value == null) {
+            throw new IllegalStateException("Redis 脚本返回了 null 元素");
+        }
+
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+
+        String raw;
+        if (value instanceof byte[] bytes) {
+            raw = new String(bytes, StandardCharsets.UTF_8);
+        } else {
+            raw = value.toString();
+        }
+
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Redis 脚本返回了非数字元素: " + raw + ", 类型=" + value.getClass().getName(), e);
+        }
     }
 
     private ReservationTransitionResult convertConfirmResult(Long result) {
