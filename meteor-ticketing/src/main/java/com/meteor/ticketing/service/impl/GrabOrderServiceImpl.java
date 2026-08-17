@@ -56,6 +56,7 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
     private static final String BIZ_ORDER_NO = "biz.order_no";
     private static final String BIZ_FAIL_REASON = "biz.fail_reason";
     private static final String BIZ_ROLLBACK_ERROR = "biz.rollback_error";
+    private static final String BIZ_SEMAPHORE_RELEASE_ERROR = "biz.semaphore_release_error";
     private static final String BIZ_REQUEST_ID = "biz.request_id";
     private static final String BIZ_RESERVATION_ID = "biz.reservation_id";
     /* 抢购信号量租约 ttl 当前3秒为历史经验值,后续应根据 critical section 的 P99/P99.9 值进行调整 */
@@ -77,7 +78,9 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
 
         span.setAttribute(BIZ_REQUEST_ID, requestId);
         span.setAttribute(BIZ_RESERVATION_ID, requestId);
-        span.setAttribute(BIZ_REQUEST_ID, requestId);
+
+        log.debug("[GrabIdentity] requestId={} reservationId={} screeningId={} userId={}",
+                requestId, requestId, screeningId, userId);
 
         ReservationReserveOutcome reserveOutcome =
                 reservationRedisService.reserve(requestId, screeningId, 1);
@@ -109,23 +112,25 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
                     throw new IllegalStateException("抢票预留数量必须为正数");
         }
 
-        GrabSemaphoreService.Lease lease = grabSemaphoreService.tryAcquire(screeningId, GRAB_SEMAPHORE_LEASE_TTL_MS);
+        GrabSemaphoreService.Lease lease;
+        try {
+            lease = grabSemaphoreService.tryAcquire(screeningId, GRAB_SEMAPHORE_LEASE_TTL_MS);
+        } catch (Exception acquireEx) {
+            span.setStatus(StatusCode.ERROR);
+            span.recordException(acquireEx);
+            span.setAttribute(BIZ_GRAB_RESULT, "FAILED");
+            span.setAttribute(BIZ_FAIL_REASON, "SEMAPHORE_ACQUIRE_EXCEPTION");
+            log.warn("[GrabSemaphoreAcquireFailed] requestId={} reservationId={} screeningId={}",
+                    requestId, requestId, screeningId, acquireEx);
+            compensateAfterAdmissionFailure(requestId, screeningId, span, "SEMAPHORE_ACQUIRE_EXCEPTION");
+            throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
+        }
 
         if (lease == null) {
-
-            ReservationTransitionResult compensationResult = reservationRedisService.compensate(requestId, screeningId);
-
-            if (compensationResult != ReservationTransitionResult.APPLIED
-                    && compensationResult != ReservationTransitionResult.IDEMPOTENT) {
-
-                span.setStatus(StatusCode.ERROR);
-                span.setAttribute(BIZ_GRAB_RESULT, "FAILED");
-                span.setAttribute(BIZ_FAIL_REASON, "SEMAPHORE_REJECT_COMPENSATE_" + compensationResult.name());
-
-                throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
-            }
-
+            compensateAfterAdmissionFailure(requestId, screeningId, span, "SEMAPHORE_REJECT");
             span.setAttribute(BIZ_GRAB_RESULT, "BUSY");
+            log.debug("[GrabSemaphoreRejected] requestId={} reservationId={} screeningId={}",
+                    requestId, requestId, screeningId);
             return GrabOrderVO.of(GrabOrderResultEnum.BUSY);
         }
         String orderNo = String.valueOf(idGenerator.nextId());
@@ -157,10 +162,63 @@ public class GrabOrderServiceImpl implements IGrabOrderService {
             span.recordException(e);
             span.setAttribute(BIZ_GRAB_RESULT, "FAILED");
             span.setAttribute(BIZ_FAIL_REASON, "OUTBOX_INSERT_FAIL");
+            log.warn("[GrabOutboxInsertFailed] requestId={} reservationId={} screeningId={} orderNo={}",
+                    requestId, requestId, screeningId, orderNo, e);
 
             throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
         } finally {
+            releaseSemaphoreSafely(screeningId, lease, requestId, span);
+        }
+    }
+
+    private void compensateAfterAdmissionFailure(
+            String reservationId,
+            Long screeningId,
+            Span span,
+            String reason
+    ) {
+        try {
+            ReservationTransitionResult compensationResult =
+                    reservationRedisService.compensate(reservationId, screeningId);
+
+            if (compensationResult == ReservationTransitionResult.APPLIED
+                    || compensationResult == ReservationTransitionResult.IDEMPOTENT) {
+                return;
+            }
+
+            span.setStatus(StatusCode.ERROR);
+            span.setAttribute(BIZ_GRAB_RESULT, "FAILED");
+            span.setAttribute(BIZ_FAIL_REASON, reason + "_COMPENSATE_" + compensationResult.name());
+            log.error("[GrabReservationCompensateFailed] reason={} requestId={} reservationId={} screeningId={} result={}",
+                    reason, reservationId, reservationId, screeningId, compensationResult);
+            throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
+        } catch (BizException e) {
+            throw e;
+        } catch (Exception compensationEx) {
+            span.recordException(compensationEx);
+            span.setStatus(StatusCode.ERROR);
+            span.setAttribute(BIZ_ROLLBACK_ERROR, reason + "_COMPENSATE_EXCEPTION");
+            log.error("[GrabReservationCompensateException] reason={} requestId={} reservationId={} screeningId={}",
+                    reason, reservationId, reservationId, screeningId, compensationEx);
+            throw new BizException(CommonErrorCode.SYSTEM_ERROR, "系统繁忙，请重试");
+        }
+    }
+
+    private void releaseSemaphoreSafely(
+            Long screeningId,
+            GrabSemaphoreService.Lease lease,
+            String reservationId,
+            Span span
+    ) {
+        try {
             grabSemaphoreService.release(screeningId, lease.token());
+        } catch (Exception releaseEx) {
+            // lease 自身带 TTL，并有 GrabSemaphoreReclaimJob 兜底。
+            // 释放失败不能覆盖已经落库的业务结果，否则会制造“业务成功但 API 报错”的不确定性。
+            span.recordException(releaseEx);
+            span.setAttribute(BIZ_SEMAPHORE_RELEASE_ERROR, true);
+            log.warn("[GrabSemaphoreReleaseFailed] requestId={} reservationId={} screeningId={} token={}",
+                    reservationId, reservationId, screeningId, lease.token(), releaseEx);
         }
     }
 

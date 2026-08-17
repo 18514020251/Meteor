@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -186,6 +187,53 @@ class GrabOrderServiceImplTest {
 
         // Semaphore 都没拿到，Outbox 绝不能执行
         verify(outboxService, never()).save(any(MqOutboxEvent.class));
+    }
+
+    @DisplayName("Semaphore 获取异常时应按 reservationId 尝试补偿")
+    @Test
+    void grabShouldCompensateReservationWhenSemaphoreAcquireThrows() {
+        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
+        stubReserved(REQUEST_ID, 8L);
+
+        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong()))
+                .thenThrow(new RuntimeException("mock semaphore redis failure"));
+        when(reservationRedisService.compensate(REQUEST_ID, SCREENING_ID))
+                .thenReturn(ReservationTransitionResult.APPLIED);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID)
+        );
+
+        assertThat(exception.getMessage()).isEqualTo("系统繁忙，请重试");
+        verify(reservationRedisService).compensate(REQUEST_ID, SCREENING_ID);
+        verify(outboxService, never()).save(any(MqOutboxEvent.class));
+        verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
+    }
+
+    @DisplayName("Semaphore 释放异常不应覆盖已经成功的抢票结果")
+    @Test
+    void grabShouldKeepSuccessWhenSemaphoreReleaseThrows() throws Exception {
+        Long leftStock = 8L;
+        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
+        stubReserved(REQUEST_ID, leftStock);
+
+        when(idGenerator.nextId()).thenReturn(GENERATED_ORDER_ID);
+        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
+        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
+
+        MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
+        when(outboxService.save(event)).thenReturn(true);
+        doThrow(new RuntimeException("mock semaphore release failure"))
+                .when(grabSemaphoreService).release(SCREENING_ID, lease.token());
+
+        GrabOrderVO result = grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID);
+
+        assertThat(result.code()).isEqualTo(GrabOrderResultEnum.SUCCESS.getCode());
+        assertThat(result.orderNo()).isEqualTo(ORDER_NO);
+        assertThat(result.leftStock()).isEqualTo(leftStock);
+        verify(outboxService).save(event);
+        verify(grabSemaphoreService).release(SCREENING_ID, lease.token());
     }
 
     @DisplayName("Semaphore 拒绝时不得再使用裸库存 +1 补偿")

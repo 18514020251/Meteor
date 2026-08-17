@@ -358,6 +358,24 @@ class GrabRequestIdResolverRedisIntegrationTest {
         );
     }
 
+    @DisplayName("readyKey 缺失时新的请求不得创建 requestId")
+    @Test
+    void newRequestWithoutReadyKeyShouldBeRejectedAndNotPersisted() {
+        String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
+        redisTemplate.delete(readyKey);
+
+        BizException exception = catchThrowableOfType(
+                () -> resolver.resolve(USER_ID, SCREENING_ID, clientRequestId, 1),
+                BizException.class
+        );
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getCode()).isEqualTo(CommonErrorCode.BIZ_ERROR.getCode());
+
+        String requestKey = RedisKeyConstants.buildGrabRequestKey(USER_ID, clientRequestId);
+        assertThat(redisTemplate.hasKey(requestKey)).isFalse();
+    }
+
     @DisplayName("saleEndKey 缺失时新的请求不得创建 requestId")
     @Test
     void newRequestWithoutSaleEndKeyShouldBeRejectedAndNotPersisted() {

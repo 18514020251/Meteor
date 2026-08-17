@@ -161,16 +161,28 @@ public final class LuaScripts {
         return existingRequestId
     end
     
+    local saleStartEpoch = redis.call('GET', KEYS[2])
     local saleEndEpoch = redis.call('GET', KEYS[3])
-    
-    if not saleEndEpoch then
+
+    if not saleStartEpoch or not saleEndEpoch then
         return '__NOT_READY__'
     end
-    
+
+    saleStartEpoch = tonumber(saleStartEpoch)
+    saleEndEpoch = tonumber(saleEndEpoch)
+
+    if not saleStartEpoch or not saleEndEpoch then
+        return '__NOT_READY__'
+    end
+
     local redisTime = redis.call('TIME')
     local nowEpoch = tonumber(redisTime[1])
-    
-    if nowEpoch >= tonumber(saleEndEpoch) then
+
+    if nowEpoch < saleStartEpoch then
+        return '__NOT_READY__'
+    end
+
+    if nowEpoch >= saleEndEpoch then
         return '__SALE_CLOSED__'
     end
 
@@ -316,7 +328,7 @@ public final class LuaScripts {
     if now < saleStart then
         return {-4, -1}
     end
-    if now > saleEnd then
+    if now >= saleEnd then
         return {-5, -1}
     end
 
