@@ -71,7 +71,7 @@ mybatis-plus:
 # 日志
 logging:
   level:
-    com.meteor: ${LOG_LEVEL:debug}
+    com.meteor: ${LOG_LEVEL:warn}
   file:
     path: logs
 
@@ -89,7 +89,7 @@ sa-token:
   is-concurrent: false
   is-share: true
   token-style: uuid
-  is-log: ${SA_TOKEN_IS_LOG:true}
+  is-log: ${SA_TOKEN_IS_LOG:false}
   token-prefix: Bearer
 
 meteor:
