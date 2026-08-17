@@ -1,11 +1,8 @@
 -- =========================================================
 -- meteor_ticketing
 -- =========================================================
-use meteor_ticketing;
-
-DROP TABLE IF EXISTS screening;
 CREATE TABLE screening (
-        id                BIGINT PRIMARY KEY COMMENT '场次ID',
+        id                BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '场次ID',
         merchant_id       BIGINT NOT NULL COMMENT '商家ID(影院方/售票方)',
         movie_id          BIGINT NOT NULL COMMENT '电影ID',
         start_time        DATETIME NOT NULL COMMENT '开始时间',
@@ -34,13 +31,6 @@ CREATE TABLE screening (
         KEY idx_price (min_price, max_price)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='电影场次表';
 
-ALTER TABLE screening
-    MODIFY COLUMN id BIGINT NOT NULL AUTO_INCREMENT COMMENT '场次ID';
-
-DELETE FROM mq_outbox_event
-WHERE routing_key = 'ticket.order.db_reserved';
-
-drop table if exists mq_outbox_event;
 CREATE TABLE mq_outbox_event (
         id              BIGINT      NOT NULL PRIMARY KEY,
         biz_key         VARCHAR(64)  NOT NULL,
@@ -63,8 +53,6 @@ CREATE TABLE mq_outbox_event (
         KEY idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
-DROP TABLE IF EXISTS hot_rank;
 CREATE TABLE hot_rank (
         id            BIGINT PRIMARY KEY COMMENT '主键',
         period        TINYINT NOT NULL COMMENT '1=DAY 2=WEEK 3=MONTH',
@@ -83,7 +71,6 @@ CREATE TABLE hot_rank (
         UNIQUE KEY uk_period_date_item (period, stat_date, screening_id),
         KEY idx_period_date_score (period, stat_date, score)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='场次热度榜';
-
 
 CREATE TABLE ticket_mq_consume_log (
         id           BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键',
