@@ -11,13 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 /**
- *  票务库存预留表
+ *  库存预留Mapper集成测试
  *
  * @author 昭兮
  * @version 1.0
@@ -92,5 +94,33 @@ class TicketInventoryReservationMapperIntegrationTest {
         assertThat(persisted.getExpireAt()).isNull();
         assertThat(persisted.getCreatedAt()).isNotNull();
         assertThat(persisted.getUpdatedAt()).isNotNull();
+    }
+
+    @DisplayName("同一用户和 clientRequestId 不允许创建不同 Reservation")
+    @Test
+    void duplicateUserAndClientRequestIdShouldBeRejected() {
+
+        TicketInventoryReservation first =
+                new TicketInventoryReservation()
+                        .setReservationId("reservation-m1b06-unique-001")
+                        .setClientRequestId("client-m1b06-unique-001")
+                        .setScreeningId(990001L)
+                        .setUserId(10001L)
+                        .setQuantity(1)
+                        .setStatus(ReservationStatus.PRE_RESERVED);
+
+        TicketInventoryReservation second =
+                new TicketInventoryReservation()
+                        .setReservationId("reservation-m1b06-unique-002")
+                        .setClientRequestId("client-m1b06-unique-001")
+                        .setScreeningId(990001L)
+                        .setUserId(10001L)
+                        .setQuantity(1)
+                        .setStatus(ReservationStatus.PRE_RESERVED);
+
+        reservationMapper.insert(first);
+
+        assertThatThrownBy(() -> reservationMapper.insert(second))
+                .isInstanceOf(DuplicateKeyException.class);
     }
 }

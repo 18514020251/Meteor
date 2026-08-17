@@ -2,6 +2,7 @@ package com.meteor.ticketing.service;
 
 import com.meteor.ticketing.domain.entity.TicketInventoryReservation;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.meteor.ticketing.enums.ReservationPersistResult;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface ITicketInventoryReservationService extends IService<TicketInventoryReservation> {
 
+    ReservationPersistResult persistPreReserved(TicketInventoryReservation reservation);
 }
