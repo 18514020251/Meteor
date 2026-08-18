@@ -62,22 +62,43 @@ class ScreeningMapperIntegrationTest {
             int available,
             int sold
     ) {
+        int total = available + sold;
+
+        LocalDateTime now = LocalDateTime.now();
+
         jdbcTemplate.update(
                 """
                 INSERT INTO screening
                 (
                     id,
+                    merchant_id,
+                    movie_id,
+                    start_time,
+                    sale_start_time,
+                    base_price,
+                    min_price,
+                    max_price,
+                    total_tickets,
                     available_tickets,
                     sold_tickets,
-                    version,
-                    update_time,
-                    deleted
+                    create_time,
+                    update_time
                 )
-                VALUES (?, ?, ?, 0, NOW(), 0)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 SCREENING_ID,
+                990001L,
+                990001L,
+                now.plusHours(2),
+                now.minusMinutes(10),
+                5000,
+                5000,
+                5000,
+                total,
                 available,
-                sold
+                sold,
+                now,
+                now
         );
     }
 

@@ -33,7 +33,7 @@ public class TicketReservationRedisService {
      * @param quantity     预留数量
      * @return reserve 业务结果
      */
-    public ReservationReserveOutcome  reserve(String reservationId, Long screeningId, int quantity) {
+    public ReservationReserveOutcome reserve(String reservationId, Long screeningId, int quantity) {
 
         String stockKey = RedisKeyConstants.buildScreeningStockKey(screeningId);
         String reservationKey = RedisKeyConstants.buildGrabReservationKey(reservationId);

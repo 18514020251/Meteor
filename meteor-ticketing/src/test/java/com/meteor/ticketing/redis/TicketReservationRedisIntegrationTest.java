@@ -55,6 +55,7 @@ class TicketReservationRedisIntegrationTest {
     private static final Long SCREENING_ID = 2001L;
     private static final String RESERVATION_ID = "request-900001";
 
+
     private static LettuceConnectionFactory connectionFactory;
     private static StringRedisTemplate redisTemplate;
     private TicketReservationRedisService reservationRedisService;
@@ -96,8 +97,14 @@ class TicketReservationRedisIntegrationTest {
         String readyKey = RedisKeyConstants.buildScreeningStockReadyKey(SCREENING_ID);
         String saleEndKey = RedisKeyConstants.buildScreeningSaleEndKey(SCREENING_ID);
         String reservationKey = RedisKeyConstants.buildGrabReservationKey(RESERVATION_ID);
-
-        redisTemplate.delete(List.of(stockKey, readyKey, saleEndKey, reservationKey));
+        redisTemplate.delete(
+                List.of(
+                        stockKey,
+                        readyKey,
+                        saleEndKey,
+                        reservationKey
+                )
+        );
     }
 
     @AfterAll
@@ -368,7 +375,7 @@ class TicketReservationRedisIntegrationTest {
         redisTemplate.opsForValue().set(stockKey, "10");
 
         ReservationReserveOutcome outcome =
-                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1 );
 
         assertThat(outcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
         assertThat(outcome.leftStock()).isEqualTo(9L);
@@ -386,7 +393,7 @@ class TicketReservationRedisIntegrationTest {
         redisTemplate.opsForValue().set(stockKey, "10");
 
         ReservationReserveOutcome reserveOutcome =
-                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1 );
 
         assertThat(reserveOutcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
         assertThat(reserveOutcome.leftStock()).isEqualTo(9L);
@@ -414,7 +421,7 @@ class TicketReservationRedisIntegrationTest {
         redisTemplate.opsForValue().set(stockKey, "10");
 
         ReservationReserveOutcome reserveOutcome =
-                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1 );
 
         assertThat(reserveOutcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
         assertThat(reserveOutcome.leftStock()).isEqualTo(9L);
@@ -443,7 +450,7 @@ class TicketReservationRedisIntegrationTest {
         redisTemplate.opsForValue().set(stockKey, "10");
 
         ReservationReserveOutcome reserveOutcome =
-                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1);
+                reservationRedisService.reserve(RESERVATION_ID, SCREENING_ID, 1 );
 
         assertThat(reserveOutcome.result()).isEqualTo(ReservationReserveResult.RESERVED);
         assertThat(reserveOutcome.leftStock()).isEqualTo(9L);
@@ -493,7 +500,6 @@ class TicketReservationRedisIntegrationTest {
         assertThat(redisTemplate.opsForHash().get(reservationKey, "status"))
                 .isEqualTo(ReservationStatus.PRE_RESERVED.name());
     }
-
     /**
      * 准备有效销售窗口。
      *

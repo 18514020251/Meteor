@@ -8,16 +8,19 @@ import com.meteor.id.utils.SnowflakeIdGenerator;
 import com.meteor.mq.contract.ticketing.TicketOrderCreateMessage;
 import com.meteor.ticketing.controller.vo.GrabOrderVO;
 import com.meteor.ticketing.domain.entity.MqOutboxEvent;
+import com.meteor.ticketing.domain.entity.TicketInventoryReservation;
 import com.meteor.ticketing.enums.ReservationReserveResult;
+import com.meteor.ticketing.enums.ReservationStatus;
 import com.meteor.ticketing.enums.ReservationTransitionResult;
 import com.meteor.ticketing.mq.assmabler.MqOutboxEventAssembler;
 import com.meteor.ticketing.mq.assmabler.TicketOrderMessageAssembler;
 import com.meteor.ticketing.redis.GrabSemaphoreService;
-import com.meteor.ticketing.service.IMqOutboxEventService;
 import com.meteor.ticketing.service.cache.ITicketingStockRedisService;
 import com.meteor.ticketing.service.idempotency.GrabRequestIdResolver;
 import com.meteor.ticketing.service.reservation.ReservationReserveOutcome;
 import com.meteor.ticketing.service.reservation.TicketReservationRedisService;
+import com.meteor.ticketing.service.transaction.ReservationOutboxRollbackException;
+import com.meteor.ticketing.service.transaction.ReservationOutboxTransactionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,8 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -61,13 +66,13 @@ class GrabOrderServiceImplTest {
 
     @Mock private SnowflakeIdGenerator idGenerator;
     @Mock private ITicketingStockRedisService stockRedisService;
-    @Mock private IMqOutboxEventService outboxService;
     @Mock private TicketOrderMessageAssembler assembler;
     @Mock private ObjectMapper objectMapper;
     @Mock private GrabSemaphoreService grabSemaphoreService;
     @Mock private MqOutboxEventAssembler mqOutboxEventAssembler;
     @Mock private GrabRequestIdResolver grabRequestIdResolver;
     @Mock private TicketReservationRedisService reservationRedisService;
+    @Mock private ReservationOutboxTransactionService reservationOutboxTransactionService;
 
     private GrabOrderServiceImpl grabOrderService;
 
@@ -76,13 +81,13 @@ class GrabOrderServiceImplTest {
         grabOrderService = new GrabOrderServiceImpl(
                 idGenerator,
                 stockRedisService,
-                outboxService,
                 assembler,
                 objectMapper,
                 grabSemaphoreService,
                 mqOutboxEventAssembler,
                 grabRequestIdResolver,
-                reservationRedisService
+                reservationRedisService,
+                reservationOutboxTransactionService
         );
     }
 
@@ -113,7 +118,7 @@ class GrabOrderServiceImplTest {
 
         stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
 
-        when(reservationRedisService.reserve(REQUEST_ID, SCREENING_ID, 1))
+        when(reservationRedisService.reserve(REQUEST_ID, SCREENING_ID, 1 ))
                 .thenReturn(new ReservationReserveOutcome(ReservationReserveResult.SOLD_OUT, null));
 
         GrabOrderVO result = grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID);
@@ -146,7 +151,6 @@ class GrabOrderServiceImplTest {
         when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
 
         MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
-        when(outboxService.save(event)).thenReturn(true);
 
         GrabOrderVO result = grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID);
 
@@ -155,7 +159,7 @@ class GrabOrderServiceImplTest {
         assertThat(result.orderNo()).isEqualTo(ORDER_NO);
         assertThat(result.leftStock()).isEqualTo(leftStock);
 
-        verify(outboxService).save(event);
+        verify(reservationOutboxTransactionService).persist(any(TicketInventoryReservation.class), same(event));
 
         // 正常流程必须主动释放 Semaphore
         verify(grabSemaphoreService).release(SCREENING_ID, lease.token());
@@ -185,8 +189,7 @@ class GrabOrderServiceImplTest {
 
         verify(reservationRedisService).compensate(REQUEST_ID, SCREENING_ID);
 
-        // Semaphore 都没拿到，Outbox 绝不能执行
-        verify(outboxService, never()).save(any(MqOutboxEvent.class));
+        verify(reservationOutboxTransactionService, never()).persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
     }
 
     @DisplayName("Semaphore 获取异常时应按 reservationId 尝试补偿")
@@ -207,7 +210,7 @@ class GrabOrderServiceImplTest {
 
         assertThat(exception.getMessage()).isEqualTo("系统繁忙，请重试");
         verify(reservationRedisService).compensate(REQUEST_ID, SCREENING_ID);
-        verify(outboxService, never()).save(any(MqOutboxEvent.class));
+        verify(reservationOutboxTransactionService, never()).persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
         verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
     }
 
@@ -223,7 +226,7 @@ class GrabOrderServiceImplTest {
         when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
 
         MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
-        when(outboxService.save(event)).thenReturn(true);
+
         doThrow(new RuntimeException("mock semaphore release failure"))
                 .when(grabSemaphoreService).release(SCREENING_ID, lease.token());
 
@@ -232,7 +235,7 @@ class GrabOrderServiceImplTest {
         assertThat(result.code()).isEqualTo(GrabOrderResultEnum.SUCCESS.getCode());
         assertThat(result.orderNo()).isEqualTo(ORDER_NO);
         assertThat(result.leftStock()).isEqualTo(leftStock);
-        verify(outboxService).save(event);
+        verify(reservationOutboxTransactionService).persist(any(TicketInventoryReservation.class), same(event));
         verify(grabSemaphoreService).release(SCREENING_ID, lease.token());
     }
 
@@ -327,7 +330,7 @@ class GrabOrderServiceImplTest {
 
     @DisplayName("稳定 requestId 应作为 reservationId 进入 Redis Reservation 预留")
     @Test
-    void grabShouldReserveByResolvedRequestId() throws JsonProcessingException {
+    void grabShouldReserveByResolvedRequestId(){
 
         String clientRequestId = "client-request-001";
         String requestId = "request-900001";
@@ -339,9 +342,6 @@ class GrabOrderServiceImplTest {
 
         GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
         when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
-
-        MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
-        when(outboxService.save(event)).thenReturn(true);
 
         grabOrderService.grab(SCREENING_ID, USER_ID, clientRequestId);
 
@@ -373,77 +373,7 @@ class GrabOrderServiceImplTest {
 
         verify(reservationRedisService).compensate(requestId, SCREENING_ID);
         verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
-        verify(outboxService, never()).save(any(MqOutboxEvent.class));
-    }
-
-
-    @DisplayName("当 Outbox save 返回 false 时应抛系统异常并按 reservationId 补偿")
-    @Test
-    void grabShouldThrowExceptionWhenOutboxInsertFails() throws JsonProcessingException {
-
-        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
-        stubReserved(REQUEST_ID, 8L);
-
-        when(idGenerator.nextId()).thenReturn(GENERATED_ORDER_ID);
-
-        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
-        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
-
-        MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
-        when(outboxService.save(event)).thenReturn(false);
-
-        when(reservationRedisService.compensate(REQUEST_ID, SCREENING_ID))
-                .thenReturn(ReservationTransitionResult.APPLIED);
-
-        BizException exception = assertThrows(
-                BizException.class,
-                () -> grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID)
-        );
-
-        assertThat(exception.getMessage()).isEqualTo("系统繁忙，请重试");
-
-        verify(outboxService).save(event);
-
-        // 即使 Outbox 失败，已获取的 Semaphore lease 也必须 finally 释放
-        verify(grabSemaphoreService).release(SCREENING_ID, lease.token());
-
-        verify(reservationRedisService).compensate(REQUEST_ID, SCREENING_ID);
-
-        // 新模型禁止裸库存 +1
-        verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
-    }
-
-    @DisplayName("当 Outbox save 直接抛异常时也应按 reservationId 补偿")
-    @Test
-    void grabShouldCompensateReservationWhenOutboxInsertFails() throws JsonProcessingException {
-
-        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
-        stubReserved(REQUEST_ID, 8L);
-
-        when(idGenerator.nextId()).thenReturn(GENERATED_ORDER_ID);
-
-        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
-        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
-
-        MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
-        when(outboxService.save(event)).thenThrow(new RuntimeException("mock outbox insert failure"));
-
-        when(reservationRedisService.compensate(REQUEST_ID, SCREENING_ID))
-                .thenReturn(ReservationTransitionResult.APPLIED);
-
-        BizException exception = assertThrows(
-                BizException.class,
-                () -> grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID)
-        );
-
-        assertThat(exception.getMessage()).isEqualTo("系统繁忙，请重试");
-
-        verify(grabSemaphoreService).release(SCREENING_ID, lease.token());
-
-        verify(reservationRedisService).compensate(REQUEST_ID, SCREENING_ID);
-
-        // 不允许留下 stock 已恢复但 Reservation 仍 PRE_RESERVED 的状态裂缝
-        verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
+        verify(reservationOutboxTransactionService, never()).persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
     }
 
     @DisplayName("Semaphore 拒绝时 Reservation 已补偿过也应幂等返回 BUSY")
@@ -470,7 +400,7 @@ class GrabOrderServiceImplTest {
         verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
 
         // Semaphore reject 后不能写 Outbox
-        verify(outboxService, never()).save(any(MqOutboxEvent.class));
+        verify(reservationOutboxTransactionService, never()).persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
     }
 
     @DisplayName("Semaphore 拒绝时不应生成订单号")
@@ -493,7 +423,7 @@ class GrabOrderServiceImplTest {
         // Semaphore 都没有获得，业务还没有进入订单创建阶段，因此不应该提前消费 orderId
         verify(idGenerator, never()).nextId();
         verify(reservationRedisService).compensate(REQUEST_ID, SCREENING_ID);
-        verify(outboxService, never()).save(any(MqOutboxEvent.class));
+        verify(reservationOutboxTransactionService, never()).persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
     }
 
     @DisplayName("Reservation reserve 幂等重放时不应再次进入 Semaphore 和 Outbox")
@@ -513,12 +443,103 @@ class GrabOrderServiceImplTest {
 
         verify(grabSemaphoreService, never()).tryAcquire(eq(SCREENING_ID), anyLong());
         verify(idGenerator, never()).nextId();
-        verify(outboxService, never()).save(any(MqOutboxEvent.class));
+        verify(reservationOutboxTransactionService, never()).persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
+
 
         verify(stockRedisService, never()).decrStock1(SCREENING_ID);
         verify(stockRedisService, never()).increaseAvailableStock(SCREENING_ID, 1);
     }
 
+    @DisplayName("Grab 成功路径应将 PRE_RESERVED Reservation 与 Outbox 交给同一事务持久化")
+    @Test
+    void grabShouldPersistReservationAndOutboxAtomicallyWhenSuccess() throws Exception {
+
+        Long leftStock = 8L;
+
+        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
+        stubReserved(REQUEST_ID, leftStock);
+
+        when(idGenerator.nextId()).thenReturn(GENERATED_ORDER_ID);
+
+        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
+        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
+
+        MqOutboxEvent event = prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
+
+        GrabOrderVO result = grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID);
+
+        assertThat(result.code()).isEqualTo(GrabOrderResultEnum.SUCCESS.getCode());
+        assertThat(result.orderNo()).isEqualTo(ORDER_NO);
+        assertThat(result.leftStock()).isEqualTo(leftStock);
+
+        verify(reservationOutboxTransactionService).persist(
+                argThat(reservation ->
+                        REQUEST_ID.equals(reservation.getReservationId())
+                                && CLIENT_REQUEST_ID.equals(reservation.getClientRequestId())
+                                && SCREENING_ID.equals(reservation.getScreeningId())
+                                && USER_ID.equals(reservation.getUserId())
+                                && Integer.valueOf(1).equals(reservation.getQuantity())
+                                && reservation.getStatus() == ReservationStatus.PRE_RESERVED
+                                && reservation.getExpireAt() == null
+                ),
+                same(event)
+        );
+
+
+        verify(grabSemaphoreService).release(SCREENING_ID, lease.token());
+    }
+
+    @DisplayName("Reservation+Outbox 明确回滚时应补偿 Redis Reservation 一次")
+    @Test
+    void grabShouldCompensateReservationWhenReservationOutboxDefinitelyRollsBack() throws Exception {
+
+        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
+        stubReserved(REQUEST_ID, 8L);
+
+        when(idGenerator.nextId()).thenReturn(GENERATED_ORDER_ID);
+
+        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
+        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
+
+        prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
+
+        doThrow(new ReservationOutboxRollbackException("mock definite rollback"))
+                .when(reservationOutboxTransactionService)
+                .persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
+
+        assertThrows(
+                BizException.class,
+                () -> grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID)
+        );
+
+        verify(reservationRedisService, times(1)).compensate(REQUEST_ID, SCREENING_ID);
+    }
+
+    @DisplayName("事务结果不确定时不得直接补偿 Redis Reservation")
+    @Test
+    void grabShouldNotCompensateReservationWhenTransactionOutcomeIsUnknown() throws Exception {
+
+        stubResolvedRequest(CLIENT_REQUEST_ID, REQUEST_ID);
+        stubReserved(REQUEST_ID, 8L);
+
+        when(idGenerator.nextId()).thenReturn(GENERATED_ORDER_ID);
+
+        GrabSemaphoreService.Lease lease = new GrabSemaphoreService.Lease("ttookkeenn", 9999L);
+        when(grabSemaphoreService.tryAcquire(eq(SCREENING_ID), anyLong())).thenReturn(lease);
+
+        prepareOutboxEvent(ORDER_NO, USER_ID, SCREENING_ID);
+
+        doThrow(new RuntimeException("mock transaction outcome unknown"))
+                .when(reservationOutboxTransactionService)
+                .persist(any(TicketInventoryReservation.class), any(MqOutboxEvent.class));
+
+        assertThrows(
+                BizException.class,
+                () -> grabOrderService.grab(SCREENING_ID, USER_ID, CLIENT_REQUEST_ID)
+        );
+
+        verify(reservationRedisService, never()).compensate(REQUEST_ID, SCREENING_ID);
+    }
 
     /**
      * 准备：已开售 + clientRequestId -> stable requestId
